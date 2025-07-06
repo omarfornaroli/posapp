@@ -3,8 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import type { SmtpSetting } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
-import { SINGLETON_KEY } from '@/models/SmtpSetting';
 
+const SINGLETON_KEY = 'global_smtp_settings';
 let isPopulating = false;
 
 interface SmtpSettingsWithStatus extends SmtpSetting {

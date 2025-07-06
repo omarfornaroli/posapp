@@ -3,8 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import type { POSSetting } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
-import { SINGLETON_KEY } from '@/models/POSSetting';
 
+const SINGLETON_KEY = 'global_pos_settings';
 let isPopulating = false;
 
 export function useDexiePOSSettings() {

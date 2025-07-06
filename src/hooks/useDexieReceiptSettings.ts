@@ -3,8 +3,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import type { ReceiptSetting } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
-import { SINGLETON_KEY } from '@/models/ReceiptSetting';
 
+const SINGLETON_KEY = 'global_receipt_settings';
 let isPopulating = false;
 
 export function useDexieReceiptSettings() {
