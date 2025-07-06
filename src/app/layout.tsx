@@ -24,7 +24,13 @@ const minimalFallbackTheme: Theme = {
 
 async function getDefaultTheme(): Promise<Theme> {
   try {
-    await dbConnect();
+    const connection = await dbConnect();
+    // If connection fails, dbConnect returns null. Immediately fallback.
+    if (!connection) {
+      console.warn("[PANOX RootLayout] No database connection. Using fallback theme.");
+      return minimalFallbackTheme;
+    }
+    
     let defaultThemeDoc = await ThemeModel.findOne({ isDefault: true }).lean();
     if (!defaultThemeDoc) {
       defaultThemeDoc = await ThemeModel.findOne({ name: 'Light' }).lean() || await ThemeModel.findOne().sort({ createdAt: 1 }).lean();
