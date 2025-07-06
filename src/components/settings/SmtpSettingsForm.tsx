@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Mail, Loader2, Save, CheckCircle2, AlertTriangle } from 'lucide-react';
-import { useRealtimeSmtpSettings } from '@/hooks/useRealtimeSmtpSettings';
+import { useDexieSmtpSettings } from '@/hooks/useDexieSmtpSettings';
 
 const smtpSettingsFormSchema = (t: Function) => z.object({
   host: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('SmtpSettingsForm.hostLabel')}) }),
@@ -30,7 +30,7 @@ export default function SmtpSettingsForm() {
   const { toast } = useToast();
   const formSchema = smtpSettingsFormSchema(t);
 
-  const { smtpSettings: initialSettings, isLoading: isLoadingSettings, refetch: refetchSettings } = useRealtimeSmtpSettings();
+  const { smtpSettings: initialSettings, isLoading: isLoadingSettings, refetch: refetchSettings } = useDexieSmtpSettings();
 
   const form = useForm<SmtpSettingsFormData>({
     resolver: zodResolver(formSchema),

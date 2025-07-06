@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import AccessDeniedMessage from '@/components/AccessDeniedMessage';
 import { Card, CardContent } from '@/components/ui/card';
 import { Truck, Loader2, ListFilter, Search } from 'lucide-react';
-import { useRealtimeSales } from '@/hooks/useRealtimeSales';
+import { useDexieSales } from '@/hooks/useDexieSales';
 import DispatchListTable from '@/components/dispatches/DispatchListTable';
 import DispatchDetailsDialog from '@/components/dispatches/DispatchDetailsDialog';
 import { SaleTransaction } from '@/types';
@@ -27,7 +27,7 @@ import {
 export default function DispatchManagerPage() {
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { hasPermission } = useAuth();
-  const { sales, isLoading: isLoadingSales, refetch } = useRealtimeSales();
+  const { sales, isLoading: isLoadingSales, refetch } = useDexieSales();
   const [selectedSale, setSelectedSale] = useState<SaleTransaction | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

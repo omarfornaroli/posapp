@@ -21,7 +21,7 @@ import { Loader2, Save, Eye, ReceiptText } from 'lucide-react';
 import Image from 'next/image';
 import ReceiptView from '@/components/receipt/ReceiptView';
 import { mockPreviewTransaction } from '@/lib/mock-data';
-import { useRealtimeReceiptSettings } from '@/hooks/useRealtimeReceiptSettings'; // Import the new hook
+import { useDexieReceiptSettings } from '@/hooks/useDexieReceiptSettings';
 
 const receiptWidthOptions = ['auto', '80mm', '58mm'] as const;
 const receiptMarginOptions: ReceiptMargin[] = ['none', 'small', 'medium', 'large'];
@@ -57,7 +57,7 @@ export default function ReceiptSettingsForm() {
   const { toast } = useToast();
   const formSchema = receiptSettingsFormSchema(t);
 
-  const { receiptSettings: initialSettings, isLoading: isLoadingSettings, refetch: refetchSettings } = useRealtimeReceiptSettings(); // Use the new hook
+  const { receiptSettings: initialSettings, isLoading: isLoadingSettings, refetch: refetchSettings } = useDexieReceiptSettings();
 
   const form = useForm<ReceiptSettingsFormData>({
     resolver: zodResolver(formSchema),

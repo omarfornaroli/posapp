@@ -13,8 +13,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Save, ShoppingCart } from 'lucide-react';
-import { useRealtimePOSSettings } from '@/hooks/useRealtimePOSSettings';
-import { useRouter } from 'next/navigation';
+import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
 
 const posSettingsFormSchema = (t: Function) => z.object({
   requireAuthForCartItemRemoval: z.boolean().default(true),
@@ -27,7 +26,6 @@ type POSSettingsFormData = z.infer<ReturnType<typeof posSettingsFormSchema>>;
 export default function POSBehaviorSettingsForm() {
   const currentLocale = useLocale();
   const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
-  const router = useRouter();
   
   useEffect(() => {
     initializeTranslations(currentLocale);
@@ -35,7 +33,7 @@ export default function POSBehaviorSettingsForm() {
 
   const { toast } = useToast();
   const formSchema = posSettingsFormSchema(t);
-  const { posSettings: initialSettings, isLoading: isLoadingSettings, refetch: refetchSettings } = useRealtimePOSSettings();
+  const { posSettings: initialSettings, isLoading: isLoadingSettings, refetch: refetchSettings } = useDexiePOSSettings();
 
   const form = useForm<POSSettingsFormData>({
     resolver: zodResolver(formSchema),

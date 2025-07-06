@@ -17,7 +17,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import SaveReportDialog from '@/components/reports/SaveReportDialog';
 import { useRouter } from 'next/navigation';
-import { useRealtimeReports } from '@/hooks/useRealtimeReports';
+import { useDexieReports } from '@/hooks/useDexieReports';
 import ReportListTable from '@/components/reports/ReportListTable';
 import {
   AlertDialog,
@@ -53,7 +53,7 @@ export default function ReportsPage() {
   const [isAiConfigured, setIsAiConfigured] = useState(false);
 
   // State for saved reports list
-  const { reports, isLoading: isLoadingReports, refetch: refetchReports } = useRealtimeReports();
+  const { reports, isLoading: isLoadingReports, refetch: refetchReports } = useDexieReports();
   const [reportToDelete, setReportToDelete] = useState<Report | null>(null);
   const [reportToView, setReportToView] = useState<Report | null>(null);
 

@@ -4,7 +4,7 @@ import type { Product, Client, SaleTransaction, Tax, Promotion, PaymentMethod, S
 
 export interface SyncQueueItem {
   id?: number;
-  entity: 'product' | 'client' | 'supplier' | 'promotion' | 'tax' | 'paymentMethod' | 'country' | 'currency' | 'appLanguage' | 'theme' | 'user' | 'notification';
+  entity: 'product' | 'client' | 'supplier' | 'promotion' | 'tax' | 'paymentMethod' | 'country' | 'currency' | 'appLanguage' | 'theme' | 'user' | 'notification' | 'posSetting' | 'receiptSetting' | 'smtpSetting';
   operation: 'create' | 'update' | 'delete';
   data: any;
   timestamp: number;
@@ -33,6 +33,9 @@ export class AppDexieDB extends Dexie {
   reports!: Table<Report>;
   translations!: Table<TranslationDexieRecord>;
   syncQueue!: Table<SyncQueueItem>;
+  posSettings!: Table<POSSetting>;
+  receiptSettings!: Table<ReceiptSetting>;
+  smtpSettings!: Table<SmtpSetting>;
 
   constructor() {
     super('posAppDB');
@@ -64,6 +67,11 @@ export class AppDexieDB extends Dexie {
     });
     this.version(6).stores({
       translations: 'keyPath' // keyPath is unique e.g. "Header.title"
+    });
+    this.version(7).stores({
+        posSettings: 'key',
+        receiptSettings: 'key',
+        smtpSettings: 'key',
     });
   }
 }

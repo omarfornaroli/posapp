@@ -12,10 +12,12 @@ import { format, subDays } from 'date-fns';
 import type { DateRange } from 'react-day-picker';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useToast } from '@/hooks/use-toast';
-import { useRealtimeSales } from '@/hooks/useRealtimeSales'; 
+import { useDexieSales } from '@/hooks/useDexieSales'; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import GridSettingsDialog from '@/components/products/GridSettingsDialog';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
+import { useDexieClients } from '@/hooks/useDexieClients';
+import { useDexiePaymentMethods } from '@/hooks/useDexiePaymentMethods';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 
@@ -30,8 +32,10 @@ export default function SalesReportPage() {
   
   const { toast } = useToast();
 
-  const { sales: allTransactions, isLoading: isLoadingSales, refetch: refetchSales } = useRealtimeSales(); 
+  const { sales: allTransactions, isLoading: isLoadingSales } = useDexieSales(); 
   const { currencies, isLoading: isLoadingCurrencies } = useDexieCurrencies();
+  const { clients, isLoading: isLoadingClients } = useDexieClients();
+  const { paymentMethods, isLoading: isLoadingPaymentMethods } = useDexiePaymentMethods();
   
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: subDays(new Date(), 29), 
@@ -45,30 +49,11 @@ export default function SalesReportPage() {
   const [persistedColumnSettings, setPersistedColumnSettings] = useState<PersistedColumnSetting[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   
-  const [clients, setClients] = useState<Client[]>([]);
-  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>('all');
   const [selectedPaymentMethodId, setSelectedPaymentMethodId] = useState<string>('all');
   const [selectedDispatchStatus, setSelectedDispatchStatus] = useState<string>('all');
 
   const defaultCurrency = useMemo(() => currencies.find(c => c.isDefault) || currencies[0], [currencies]);
-
-  useEffect(() => {
-    const fetchFiltersData = async () => {
-        try {
-            const [clientsRes, pmRes] = await Promise.all([
-                fetch('/api/clients'),
-                fetch('/api/payment-methods')
-            ]);
-            if(clientsRes.ok) setClients((await clientsRes.json()).data);
-            if(pmRes.ok) setPaymentMethods((await pmRes.json()).data);
-        } catch (error) {
-            console.error("Failed to fetch filter data for sales report", error);
-            toast({ variant: 'destructive', title: t('Common.error'), description: "Failed to load filter options." });
-        }
-    };
-    fetchFiltersData();
-  }, [toast, t]);
 
   const getDefaultColumnDefinitions = useCallback((translateFn: typeof t): ColumnDefinition<SaleTransaction>[] => [
     { key: 'id', label: translateFn('SalesTable.headerTransactionId'), isSortable: true, isGroupable: false, className: "w-[150px]" },
@@ -255,7 +240,7 @@ export default function SalesReportPage() {
       }).filter(Boolean) as ColumnDefinition<SaleTransaction>[];
   }, [columnDefinitions, persistedColumnSettings]);
 
-  if (isLoadingTranslations || isLoadingSales || isLoadingCurrencies) {
+  if (isLoadingTranslations || isLoadingSales || isLoadingCurrencies || isLoadingClients || isLoadingPaymentMethods) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-var(--header-height,64px)-4rem)]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />

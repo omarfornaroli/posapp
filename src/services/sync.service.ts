@@ -19,6 +19,9 @@ const entityToEndpointMap: Record<string, string> = {
   theme: 'themes',
   user: 'users',
   notification: 'notifications',
+  posSetting: 'pos-settings',
+  receiptSetting: 'receipt-settings',
+  smtpSetting: 'settings/smtp',
 };
 
 type SyncStatus = 'idle' | 'syncing' | 'offline';

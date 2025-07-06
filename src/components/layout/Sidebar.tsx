@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { LayoutGrid, Package, FileText, Users, Percent, Languages, UserCog, TicketPercent, Palette, CreditCardIcon, Cog, Loader2, X, Bell, ShieldAlert, Lock, MapIcon, Landmark, Building2, Truck, BrainCircuit, LayoutDashboard, ListCollapse, ShoppingCart } from 'lucide-react'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from '@/context/AuthContext';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
-import { useRealtimePOSSettings } from '@/hooks/useRealtimePOSSettings';
+import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
 
 interface SidebarProps {
   toggleSidebar: () => void; 
@@ -44,7 +44,7 @@ interface MenuItemConfig {
 export default function Sidebar({ toggleSidebar }: SidebarProps) {
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { user: loggedInUser, hasPermission } = useAuth(); 
-  const { posSettings } = useRealtimePOSSettings();
+  const { posSettings } = useDexiePOSSettings();
   
   useEffect(() => {
     initializeTranslations(currentLocale);

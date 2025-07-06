@@ -5,7 +5,7 @@ import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useAuth } from '@/context/AuthContext';
 import AccessDeniedMessage from '@/components/AccessDeniedMessage';
 import { Loader2 } from 'lucide-react';
-import { useRealtimeDashboardSummary } from '@/hooks/useRealtimeDashboardSummary';
+import { useDexieDashboardSummary } from '@/hooks/useDexieDashboardSummary';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import SalesChart from '@/components/dashboard/SalesChart';
 import RecentSales from '@/components/dashboard/RecentSales';
@@ -22,7 +22,7 @@ export default function DashboardPage() {
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
 
-  const { summary, isLoading, error } = useRealtimeDashboardSummary();
+  const { summary, isLoading } = useDexieDashboardSummary();
   const { currency: selectedCurrencyCode } = useCurrency();
   const { currencies, isLoading: isLoadingCurrencies } = useDexieCurrencies();
 
@@ -41,14 +41,6 @@ export default function DashboardPage() {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-var(--header-height,64px)-4rem)]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center text-destructive py-10">
-        <p>{t('Dashboard.errorLoading')}: {error}</p>
       </div>
     );
   }
