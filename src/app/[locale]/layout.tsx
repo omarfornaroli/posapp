@@ -12,10 +12,8 @@ import type { ReactNode } from 'react';
 
 export default function PassThroughLocaleLayout({
   children,
-  // params: { locale } // locale param might still be passed by Next.js file-system routing, but we don't use it here.
 }: {
   children: React.ReactNode;
-  params: { locale: string };
 }) {
   // This layout should no longer be responsible for NextIntlClientProvider.
   // That is now handled by the root src/app/layout.tsx.
