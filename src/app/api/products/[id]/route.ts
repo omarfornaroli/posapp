@@ -21,8 +21,8 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function GET(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function GET(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
   await dbConnect();
 
   try {
@@ -37,8 +37,8 @@ export async function GET(request: Request, context: { params: { id: string } })
   }
 }
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
   await dbConnect();
 
   try {
@@ -112,8 +112,8 @@ export async function PUT(request: Request, context: { params: { id: string } })
   }
 }
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
   await dbConnect();
 
   try {

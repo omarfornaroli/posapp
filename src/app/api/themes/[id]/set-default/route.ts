@@ -4,8 +4,8 @@ import dbConnect from '@/lib/dbConnect';
 import Theme from '@/models/Theme';
 import mongoose from 'mongoose';
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ success: false, error: 'Invalid theme ID format' }, { status: 400 });

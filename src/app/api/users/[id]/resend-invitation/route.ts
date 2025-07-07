@@ -22,8 +22,8 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function POST(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
 
   try {
     await dbConnect();
