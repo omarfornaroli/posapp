@@ -25,9 +25,6 @@ export const ALL_PERMISSIONS: Permission[] = [
   'manage_roles_permissions_page',
   'manage_countries_page',
   'manage_currencies_page',
-  'manage_ai_reports_page',
   'manage_reports_page',
   'change_global_currency',
 ];
-
-    

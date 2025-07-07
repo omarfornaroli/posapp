@@ -1,7 +1,5 @@
-// This page has been merged into /reports/page.tsx and is no longer used.
-// You can safely delete this file and the corresponding /app/[locale]/ai-reports/page.tsx file.
-import { redirect } from 'next/navigation';
-
+// This page is deprecated and has been merged into /reports.
+// The file is kept to avoid breaking dynamic imports during build, but renders nothing.
 export default function AiReportsPage() {
-    redirect('/reports');
+  return null;
 }

@@ -131,7 +131,6 @@ export default function POSPage() {
   const [pendingCarts, setPendingCarts] = useState<PendingCart[]>([]);
   const [isLoadingPendingCarts, setIsLoadingPendingCarts] = useState(false);
   const [activePendingCartId, setActivePendingCartId] = useState<string | null>(null);
-  const [isSavingCart, setIsSavingCart] = useState(false);
 
   const fetchPendingCarts = useCallback(async () => {
     setIsLoadingPendingCarts(true);
