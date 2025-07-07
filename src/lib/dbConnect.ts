@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 import { runSeedOperations } from './seedCore'; // Import the seeder
+import '@/models/User'; // Explicitly import to ensure model is registered
+
+// Disable Mongoose's buffering. If not connected, operations will fail immediately.
+mongoose.set('bufferCommands', false);
 
 // Cache the Mongoose connection and promise over multiple requests in development.
 let cached = (global as any).mongoose;
