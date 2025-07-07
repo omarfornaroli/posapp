@@ -58,6 +58,13 @@ export function useDexieCurrencies() {
   };
 
   const updateCurrency = async (updatedCurrency: Currency) => {
+    if (updatedCurrency.isDefault) {
+      const oldDefault = await db.currencies.filter(c => c.isDefault === true).first();
+      if (oldDefault && oldDefault.id !== updatedCurrency.id) {
+        await db.currencies.update(oldDefault.id, { isDefault: false });
+        await syncService.addToQueue({ entity: 'currency', operation: 'update', data: { ...oldDefault, isDefault: false } });
+      }
+    }
     await db.currencies.put({ ...updatedCurrency, updatedAt: new Date().toISOString() });
     await syncService.addToQueue({ entity: 'currency', operation: 'update', data: updatedCurrency });
   };

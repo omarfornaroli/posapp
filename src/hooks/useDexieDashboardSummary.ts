@@ -12,7 +12,7 @@ export function useDexieDashboardSummary() {
   const sales = useLiveQuery(() => db.sales.toArray(), []);
   const products = useLiveQuery(() => db.products.toArray(), []);
   const clients = useLiveQuery(() => db.clients.toArray(), []);
-  const defaultCurrency = useLiveQuery(() => db.currencies.where('isDefault').equals(true).first(), []);
+  const defaultCurrency = useLiveQuery(() => db.currencies.filter(c => c.isDefault === true).first(), []);
 
   const summary = useMemo<DashboardSummary | null>(() => {
     if (!sales || !products || !clients || !defaultCurrency) {

@@ -58,6 +58,13 @@ export function useDexieCountries() {
   };
 
   const updateCountry = async (updatedCountry: Country) => {
+    if (updatedCountry.isDefault) {
+      const oldDefault = await db.countries.filter(c => c.isDefault === true).first();
+      if (oldDefault && oldDefault.id !== updatedCountry.id) {
+        await db.countries.update(oldDefault.id, { isDefault: false });
+        await syncService.addToQueue({ entity: 'country', operation: 'update', data: { ...oldDefault, isDefault: false } });
+      }
+    }
     await db.countries.put({ ...updatedCountry, updatedAt: new Date().toISOString() });
     await syncService.addToQueue({ entity: 'country', operation: 'update', data: updatedCountry });
   };

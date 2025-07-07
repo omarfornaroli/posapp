@@ -61,7 +61,7 @@ export function useDexieThemes() {
   const updateTheme = async (updatedTheme: Theme) => {
     // If setting a new default, unset the old one locally first.
     if (updatedTheme.isDefault) {
-        const oldDefault = await db.themes.where('isDefault').equals(true).first();
+        const oldDefault = await db.themes.filter(t => t.isDefault === true).first();
         if (oldDefault && oldDefault.id !== updatedTheme.id) {
             await db.themes.update(oldDefault.id, { isDefault: false });
             await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...oldDefault, isDefault: false } });
