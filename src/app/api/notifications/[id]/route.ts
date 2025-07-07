@@ -5,8 +5,8 @@ import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
 
 // This GET handler can be used if you need to fetch a single notification by ID directly.
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ success: false, error: 'Invalid notification ID format' }, { status: 400 });
@@ -27,8 +27,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function DELETE(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ success: false, error: 'Invalid notification ID format' }, { status: 400 });

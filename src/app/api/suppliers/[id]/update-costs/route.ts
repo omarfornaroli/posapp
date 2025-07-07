@@ -1,3 +1,4 @@
+
 // src/app/api/suppliers/[id]/update-costs/route.ts
 
 import { NextResponse } from 'next/server';
@@ -32,8 +33,8 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
-  const { id: supplierId } = params;
+export async function POST(request: Request, context: { params: { id: string } }) {
+  const { id: supplierId } = context.params;
 
   if (!mongoose.Types.ObjectId.isValid(supplierId)) {
     return NextResponse.json({ success: false, error: 'Invalid Supplier ID format' }, { status: 400 });

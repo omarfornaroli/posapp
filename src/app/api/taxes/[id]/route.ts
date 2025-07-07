@@ -6,10 +6,6 @@ import User from '@/models/User';
 import type { Tax as TaxType } from '@/types';
 import NotificationService from '@/services/notification.service';
 
-interface Params {
-  id: string;
-}
-
 async function getActorDetails(request: Request) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
@@ -25,8 +21,8 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function GET(request: Request, { params }: { params: Params }) {
-  const { id } = params;
+export async function GET(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
   await dbConnect();
 
   try {
@@ -41,8 +37,8 @@ export async function GET(request: Request, { params }: { params: Params }) {
   }
 }
 
-export async function PUT(request: Request, { params }: { params: Params }) {
-  const { id } = params;
+export async function PUT(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
   await dbConnect();
 
   try {
@@ -85,8 +81,8 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: Params }) {
-  const { id } = params;
+export async function DELETE(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
   await dbConnect();
 
   try {
