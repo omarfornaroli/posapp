@@ -1,12 +1,12 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import PendingCart from '@/models/PendingCart';
 import User from '@/models/User';
 import type { PendingCart as PendingCartType } from '@/types';
 import mongoose from 'mongoose';
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await User.findOne({ email: userEmail }).lean();
@@ -21,7 +21,7 @@ async function getActorDetails(request: Request) {
 }
 
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   await dbConnect();
   try {
     const pendingCarts = await PendingCart.find({}).sort({ createdAt: -1 });
@@ -32,7 +32,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
   try {
     const body: Omit<PendingCartType, 'id' | 'createdAt' | 'updatedAt'> = await request.json();

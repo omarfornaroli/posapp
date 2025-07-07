@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/models/User';
 import type { UserDocument } from '@/models/User';
@@ -7,7 +7,7 @@ import EmailService from '@/services/email.service';
 import NotificationService from '@/services/notification.service';
 import { randomBytes } from 'crypto';
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await UserModel.findOne({ email: userEmail }).lean();
@@ -22,8 +22,8 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
 
   try {
     await dbConnect();

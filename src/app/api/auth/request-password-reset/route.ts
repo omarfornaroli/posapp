@@ -1,11 +1,11 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/models/User';
 import EmailService from '@/services/email.service';
 import { randomBytes } from 'crypto';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     await dbConnect();
     const { email } = await request.json();

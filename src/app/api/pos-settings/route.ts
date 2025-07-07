@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import POSSetting from '@/models/POSSetting';
 import { SINGLETON_KEY } from '@/models/POSSetting';
@@ -12,7 +12,7 @@ const defaultSettings: Partial<Omit<POSSettingType, 'id' | 'key'>> = {
   dispatchAtSaleDefault: true,
 };
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await User.findOne({ email: userEmail }).lean();
@@ -41,7 +41,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
   try {
     const body = await request.json() as Partial<Omit<POSSettingType, 'id' | 'key'>>;

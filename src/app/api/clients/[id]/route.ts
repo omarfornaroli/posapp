@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Client from '@/models/Client';
 import User from '@/models/User';
@@ -7,7 +7,7 @@ import type { Client as ClientType } from '@/types';
 import NotificationService from '@/services/notification.service';
 import mongoose from 'mongoose';
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await User.findOne({ email: userEmail }).lean();
@@ -22,8 +22,8 @@ async function getActorDetails(request: Request) {
   return { actorId: null, actorName: 'System', actorImageUrl: undefined };
 }
 
-export async function GET(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   await dbConnect();
 
   try {
@@ -38,8 +38,8 @@ export async function GET(request: Request, context: { params: { id: string } })
   }
 }
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   await dbConnect();
 
   try {
@@ -87,8 +87,8 @@ export async function PUT(request: Request, context: { params: { id: string } })
   }
 }
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
-  const { id } = context.params;
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   await dbConnect();
 
   try {

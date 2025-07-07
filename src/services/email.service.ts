@@ -1,8 +1,8 @@
 
-// src/services/email.service.ts
 import nodemailer from 'nodemailer';
 import dbConnect from '@/lib/dbConnect';
 import SmtpSetting from '@/models/SmtpSetting';
+import type { NextRequest } from 'next/server';
 
 type EmailSendResult = {
   method: 'smtp' | 'log';

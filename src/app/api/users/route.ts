@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/models/User'; // Renamed to avoid conflict
 import type { User as UserType } from '@/types';
@@ -9,7 +9,7 @@ import { randomBytes } from 'crypto';
 
 const generateAuthCode = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await UserModel.findOne({ email: userEmail }).lean();
@@ -24,7 +24,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   await dbConnect();
   try {
     const users = await UserModel.find({}).sort({ createdAt: -1 });
@@ -35,7 +35,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
   try {
     const body = await request.json() as Omit<UserType, 'id' | 'joinDate' | 'status'> & { joinDate?: string };

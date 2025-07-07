@@ -1,10 +1,10 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import PendingCart from '@/models/PendingCart';
 import mongoose from 'mongoose';
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {

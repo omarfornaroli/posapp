@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import AppLanguage from '@/models/AppLanguage';
 import User from '@/models/User';
@@ -21,7 +21,7 @@ export const defaultLocale = '${defaultLocale}';
   console.log('[API/languages/apply-configuration] Successfully updated src/i18n-config.ts');
 }
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await User.findOne({ email: userEmail }).lean();
@@ -36,7 +36,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
   try {
     const enabledLanguages = await AppLanguage.find({ isEnabled: true }).sort({ code: 1 });

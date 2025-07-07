@@ -1,16 +1,16 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/models/User';
 import { getUserPermissions } from '@/lib/permissions';
 import type { User as UserType, Permission } from '@/types';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   // In a real app, user identification would come from a session cookie or auth token.
   // For this mock setup, we'll rely on an email passed in a header or query param.
   // THIS IS NOT SECURE FOR PRODUCTION.
   const userEmailFromHeader = request.headers.get('X-User-Email');
-  const { searchParams } = new URL(request.url);
+  const { searchParams } = request.nextUrl;
   const userEmailFromQuery = searchParams.get('email');
 
   const userEmail = userEmailFromHeader || userEmailFromQuery;

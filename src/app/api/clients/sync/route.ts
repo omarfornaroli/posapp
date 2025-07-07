@@ -1,10 +1,10 @@
-// src/api/clients/sync/route.ts
-import { NextResponse } from 'next/server';
+
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Client from '@/models/Client';
 import type { SyncQueueItem } from '@/lib/dexie-db';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
 
   try {

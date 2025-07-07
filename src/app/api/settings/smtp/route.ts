@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import SmtpSettingModel, { SINGLETON_KEY } from '@/models/SmtpSetting';
 import User from '@/models/User';
@@ -13,7 +13,7 @@ const defaultSettings: Omit<SmtpSetting, 'id' | 'key' | 'pass'> = {
   from: '',
 };
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await User.findOne({ email: userEmail }).lean();
@@ -47,7 +47,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
   try {
     const body = await request.json() as Partial<Omit<SmtpSetting, 'id' | 'key'>>;

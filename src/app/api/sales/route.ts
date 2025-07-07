@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import SaleTransaction from '@/models/SaleTransaction';
 import User from '@/models/User';
@@ -8,7 +8,7 @@ import NotificationService from '@/services/notification.service';
 import Product from '@/models/Product';
 import mongoose from 'mongoose';
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await User.findOne({ email: userEmail }).lean();
@@ -23,7 +23,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   await dbConnect();
   try {
     const sales = await SaleTransaction.find({}).sort({ date: -1 }); 
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
   const session = await mongoose.startSession();
   session.startTransaction();

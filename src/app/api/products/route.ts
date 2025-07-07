@@ -1,12 +1,12 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Product from '@/models/Product';
 import User from '@/models/User';
 import type { Product as ProductType } from '@/types';
 import NotificationService from '@/services/notification.service';
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await User.findOne({ email: userEmail }).lean();
@@ -21,7 +21,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   await dbConnect();
   try {
     const products = await Product.find({});
@@ -32,7 +32,7 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
   try {
     const body = await request.json() as Omit<ProductType, 'id'>;

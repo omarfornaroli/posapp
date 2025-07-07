@@ -1,5 +1,5 @@
 
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import AppLanguage from '@/models/AppLanguage';
 import User from '@/models/User';
@@ -13,7 +13,7 @@ interface ImportRequestBody {
   };
 }
 
-async function getActorDetails(request: Request) {
+async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
     const actingUser = await User.findOne({ email: userEmail }).lean();
@@ -28,7 +28,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   await dbConnect();
   try {
     const body = await request.json() as ImportRequestBody;
