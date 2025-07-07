@@ -5,7 +5,14 @@ import Translation from '@/models/Translation';
 import AppLanguage from '@/models/AppLanguage'; // Import the correct model
 
 export async function GET() {
-  await dbConnect();
+  const connection = await dbConnect();
+  if (!connection) {
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Database connection not established. Check server logs and .env.local configuration.' 
+    }, { status: 503 });
+  }
+
   try {
     // Fetch active locales from AppLanguage model
     const enabledLanguages = await AppLanguage.find({ isEnabled: true }).lean();
