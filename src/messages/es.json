@@ -41,7 +41,8 @@
     "categoryCatalog": "Catálogo",
     "categoryConfiguration": "Configuración de Tienda",
     "categoryAdministration": "Administración",
-    "categorySystem": "Sistema"
+    "categorySystem": "Sistema",
+    "reportsOfflineMessage": "Los reportes requieren conexión a internet."
   },
   "Dashboard": {
     "title": "Dashboard",

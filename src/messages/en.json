@@ -41,7 +41,8 @@
     "categoryCatalog": "Catalog",
     "categoryConfiguration": "Store Setup",
     "categoryAdministration": "Administration",
-    "categorySystem": "System"
+    "categorySystem": "System",
+    "reportsOfflineMessage": "Reports require an internet connection."
   },
   "Dashboard": {
     "title": "Dashboard",
@@ -791,10 +792,10 @@
     "userImportFailed": "Error en la importación de usuarios. Error: {error}",
     "posSettingsUpdated": "La configuración del PDV fue actualizada.",
     "posSettingsUpdateFailed": "Error al actualizar la configuración del PDV. Error: {error}",
-    "userInviteResentTitle": "Invitación Reenviada",
-    "userInviteResentDescription": "Se ha enviado una nueva invitación de configuración a {userEmail}.",
-    "smtpNotConfiguredTitle": "SMTP No Configurado",
-    "userInviteLoggedToConsole": "Servicio de correo no configurado. El enlace de invitación para {userEmail} se mostró en la consola del servidor.",
+    "userInviteResentTitle": "Invitation Resent",
+    "userInviteResentDescription": "A new setup invitation has been sent to {userEmail}.",
+    "smtpNotConfiguredTitle": "SMTP Not Configured",
+    "userInviteLoggedToConsole": "Email service not configured. Invitation link for {userEmail} was logged to the server console.",
     "saleDispatched": "La venta #{saleId} ha sido despachada."
   },
   "NotificationsManagerPage": {

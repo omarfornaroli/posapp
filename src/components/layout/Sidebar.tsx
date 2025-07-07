@@ -16,6 +16,8 @@ import { useAuth } from '@/context/AuthContext';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { cn } from '@/lib/utils';
 import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
+import { useSyncStatus } from '@/hooks/useSyncStatus';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface SidebarProps {
   toggleSidebar: () => void; 
@@ -45,6 +47,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { user: loggedInUser, hasPermission } = useAuth(); 
   const { posSettings } = useDexiePOSSettings();
+  const syncStatus = useSyncStatus();
   
   useEffect(() => {
     initializeTranslations(currentLocale);
@@ -149,22 +152,47 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
     return nextPathname.startsWith(href);
   };
 
-  const renderMenuItem = (item: MenuItemConfig & { translatedLabel: string }) => (
-    <li key={item.href}>
+  const renderMenuItem = (item: MenuItemConfig & { translatedLabel: string }) => {
+    const isOffline = syncStatus === 'offline';
+    const isDisabled = isOffline && item.href === '/reports';
+
+    const linkContent = (
       <Link
-        href={item.href}
-        onClick={handleLinkClick}
-        className={`flex items-center gap-3 p-3 rounded-lg transition-colors
-          ${ isActive(item.href)
-            ? 'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90'
-            : 'hover:bg-muted hover:text-foreground'
-          }`}
+        href={isDisabled ? '#' : item.href}
+        onClick={isDisabled ? (e) => e.preventDefault() : handleLinkClick}
+        className={cn(
+          'flex items-center gap-3 p-3 rounded-lg transition-colors w-full',
+          {
+            'bg-primary text-primary-foreground shadow-sm hover:bg-primary/90': isActive(item.href) && !isDisabled,
+            'hover:bg-muted hover:text-foreground': !isActive(item.href) && !isDisabled,
+            'opacity-50 cursor-not-allowed': isDisabled,
+          }
+        )}
+        aria-disabled={isDisabled}
+        tabIndex={isDisabled ? -1 : undefined}
       >
-        <item.icon className={`h-5 w-5 ${isActive(item.href) ? 'text-primary-foreground' : 'text-primary/80'}`} />
+        <item.icon className={cn('h-5 w-5 shrink-0', isActive(item.href) && !isDisabled ? 'text-primary-foreground' : 'text-primary/80')} />
         <span className="font-medium">{item.translatedLabel}</span>
       </Link>
-    </li>
-  );
+    );
+
+    return (
+      <li key={item.href}>
+        {isDisabled ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="w-full">{linkContent}</div>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>{t('Sidebar.reportsOfflineMessage')}</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          linkContent
+        )}
+      </li>
+    );
+  };
 
   if (isLoadingTranslations && !loggedInUser) { 
     return (
@@ -188,70 +216,72 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
   }
   
   return (
-    <aside className="w-full lg:w-64 bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
-      <div className="flex items-center justify-between shrink-0 pt-3 pb-1">
-        <div className="flex-grow flex flex-col items-center space-y-3">
-          <Avatar className="h-20 w-20 ring-2 ring-primary/50">
-            <AvatarImage 
-              src={loggedInUser?.imageUrl || 'https://placehold.co/128x128.png'} 
-              alt={loggedInUser?.name || 'User Avatar'} 
-              data-ai-hint={loggedInUser?.imageUrl ? "user profile" : "human male"}
-            />
-            <AvatarFallback className="text-xl bg-muted">
-              {getInitials(loggedInUser?.name)}
-            </AvatarFallback>
-          </Avatar>
-          <span className="font-semibold text-lg font-headline text-primary">
-            {loggedInUser?.name || 'User'}
-          </span>
+    <TooltipProvider>
+      <aside className="w-full lg:w-64 bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
+        <div className="flex items-center justify-between shrink-0 pt-3 pb-1">
+          <div className="flex-grow flex flex-col items-center space-y-3">
+            <Avatar className="h-20 w-20 ring-2 ring-primary/50">
+              <AvatarImage 
+                src={loggedInUser?.imageUrl || 'https://placehold.co/128x128.png'} 
+                alt={loggedInUser?.name || 'User Avatar'} 
+                data-ai-hint={loggedInUser?.imageUrl ? "user profile" : "human male"}
+              />
+              <AvatarFallback className="text-xl bg-muted">
+                {getInitials(loggedInUser?.name)}
+              </AvatarFallback>
+            </Avatar>
+            <span className="font-semibold text-lg font-headline text-primary">
+              {loggedInUser?.name || 'User'}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleSidebar}
+            className="lg:hidden absolute top-4 right-4 text-muted-foreground hover:text-foreground"
+            aria-label={t('Common.toggleNavigation')}
+          >
+            <X className="h-6 w-6" />
+          </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleSidebar}
-          className="lg:hidden absolute top-4 right-4 text-muted-foreground hover:text-foreground"
-          aria-label={t('Common.toggleNavigation')}
-        >
-          <X className="h-6 w-6" />
-        </Button>
-      </div>
-      <Separator className="shrink-0" />
-      
-      <ScrollArea className="flex-grow min-h-0"> 
-        <nav className="pr-2">
-           {groupedMenuItems['uncategorized'] && (
-            <ul className="space-y-1">
-              {groupedMenuItems['uncategorized'].map(renderMenuItem)}
-            </ul>
-           )}
-          <Accordion type="multiple" defaultValue={['main', 'sales', 'catalog']} className="w-full space-y-1">
-            {categoryOrder.map(categoryKey => {
-              if (categoryKey === 'uncategorized' || !groupedMenuItems[categoryKey]) return null;
-              const categoryStyle = categoryStyles[categoryKey] || 'hover:bg-muted';
-              return (
-                <AccordionItem value={categoryKey} key={categoryKey} className="border-b-0">
-                  <AccordionTrigger className={cn(
-                    "py-3 px-3 rounded-lg hover:no-underline text-sm font-semibold",
-                    categoryStyle
-                  )}>
-                    {t(`Sidebar.category${categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)}`)}
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-0 pl-2">
-                    <ul className="space-y-1 border-l-2 border-primary/20 pl-4 py-2">
-                      {groupedMenuItems[categoryKey].map(renderMenuItem)}
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-              )
-            })}
-          </Accordion>
-        </nav>
-      </ScrollArea>
-      
-      <Separator className="shrink-0" />
-      <div className="py-2 text-center text-xs text-muted-foreground shrink-0">
-        POSAPP v1.0
-      </div>
-    </aside>
+        <Separator className="shrink-0" />
+        
+        <ScrollArea className="flex-grow min-h-0"> 
+          <nav className="pr-2">
+            {groupedMenuItems['uncategorized'] && (
+              <ul className="space-y-1">
+                {groupedMenuItems['uncategorized'].map(renderMenuItem)}
+              </ul>
+            )}
+            <Accordion type="multiple" defaultValue={['main', 'sales', 'catalog']} className="w-full space-y-1">
+              {categoryOrder.map(categoryKey => {
+                if (categoryKey === 'uncategorized' || !groupedMenuItems[categoryKey]) return null;
+                const categoryStyle = categoryStyles[categoryKey] || 'hover:bg-muted';
+                return (
+                  <AccordionItem value={categoryKey} key={categoryKey} className="border-b-0">
+                    <AccordionTrigger className={cn(
+                      "py-3 px-3 rounded-lg hover:no-underline text-sm font-semibold",
+                      categoryStyle
+                    )}>
+                      {t(`Sidebar.category${categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)}`)}
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-0 pl-2">
+                      <ul className="space-y-1 border-l-2 border-primary/20 pl-4 py-2">
+                        {groupedMenuItems[categoryKey].map(renderMenuItem)}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                )
+              })}
+            </Accordion>
+          </nav>
+        </ScrollArea>
+        
+        <Separator className="shrink-0" />
+        <div className="py-2 text-center text-xs text-muted-foreground shrink-0">
+          POSAPP v1.0
+        </div>
+      </aside>
+    </TooltipProvider>
   );
 }

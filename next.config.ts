@@ -13,7 +13,7 @@ const pwaConfig = {
     disable: process.env.NODE_ENV === 'development',
     runtimeCaching: [
       {
-        urlPattern: /(\/login|\/setup-account|\/reset-password)/,
+        urlPattern: /(\/login|\/setup-account|\/reset-password|\/reports|\/ai-reports)/,
         handler: 'NetworkOnly'
       },
       ...runtime,
