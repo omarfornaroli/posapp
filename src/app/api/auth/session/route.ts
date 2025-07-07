@@ -37,6 +37,9 @@ export async function GET(request: NextRequest) {
       joinDate: user.joinDate.toISOString(),
       imageUrl: user.imageUrl,
       permissions: permissions,
+      status: user.status,
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
     };
 
     return NextResponse.json({ success: true, data: userWithPermissions });
