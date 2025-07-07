@@ -16,13 +16,14 @@ async function getActorDetails(request: Request) {
   return { actorId: null };
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
   await dbConnect();
   try {
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, error: 'Invalid report ID' }, { status: 400 });
     }
-    const report = await Report.findById(params.id);
+    const report = await Report.findById(id);
     if (!report) {
       return NextResponse.json({ success: false, error: 'Report not found' }, { status: 404 });
     }
@@ -33,10 +34,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
   await dbConnect();
   try {
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, error: 'Invalid report ID' }, { status: 400 });
     }
     const { actorId } = await getActorDetails(request);
@@ -44,7 +46,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const { name, description } = body;
 
     const report = await Report.findByIdAndUpdate(
-      params.id,
+      id,
       { name, description, updatedBy: actorId },
       { new: true, runValidators: true }
     );
@@ -59,13 +61,14 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
   await dbConnect();
   try {
-    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+    if (!mongoose.Types.ObjectId.isValid(id)) {
       return NextResponse.json({ success: false, error: 'Invalid report ID' }, { status: 400 });
     }
-    const deletedReport = await Report.findByIdAndDelete(params.id);
+    const deletedReport = await Report.findByIdAndDelete(id);
     if (!deletedReport) {
       return NextResponse.json({ success: false, error: 'Report not found' }, { status: 404 });
     }
