@@ -25,7 +25,7 @@ async function getActorDetails(request: Request) {
 }
 
 // PUT to update permissions for a specific role
-export async function PUT(request: Request, { params }: { params: { roleName: UserRole } }) {
+export async function PUT(request: Request, { params }: any) {
   const { roleName } = params;
   
   if (!['Admin', 'Editor', 'Viewer'].includes(roleName)) {

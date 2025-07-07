@@ -4,7 +4,7 @@ import dbConnect from '@/lib/dbConnect';
 import Theme from '@/models/Theme';
 import mongoose from 'mongoose';
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: any) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {

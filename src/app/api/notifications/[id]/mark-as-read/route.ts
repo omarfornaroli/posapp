@@ -4,7 +4,7 @@ import dbConnect from '@/lib/dbConnect';
 import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: any) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {

@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
-export async function GET(request: Request, { params }: { params: { email: string } }) {
+export async function GET(request: Request, { params }: any) {
   const { email } = params;
   
   if (!email) {

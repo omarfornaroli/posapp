@@ -28,7 +28,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: any) {
   const { id } = params;
   const body = await request.json();
   const { itemsToDispatch }: { itemsToDispatch: DispatchItem[] } = body;

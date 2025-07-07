@@ -22,7 +22,7 @@ async function getActorDetails(request: Request) {
   return { actorId: null, actorName: 'System', actorImageUrl: undefined };
 }
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: any) {
   const { id } = params;
   await dbConnect();
 
@@ -38,7 +38,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: any) {
   const { id } = params;
   await dbConnect();
 
@@ -87,7 +87,7 @@ export async function PUT(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, { params }: any) {
   const { id } = params;
   await dbConnect();
 

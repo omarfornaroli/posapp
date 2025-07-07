@@ -33,7 +33,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, { params }: { params: { id: string } }) {
+export async function POST(request: Request, { params }: any) {
   const { id: supplierId } = params;
 
   if (!mongoose.Types.ObjectId.isValid(supplierId)) {

@@ -5,7 +5,7 @@ import Theme from '@/models/Theme';
 import type { Theme as ThemeType } from '@/types';
 import mongoose from 'mongoose';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET(request: Request, { params }: any) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -25,7 +25,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, { params }: any) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
