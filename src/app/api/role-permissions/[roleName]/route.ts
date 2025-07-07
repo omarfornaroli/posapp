@@ -1,3 +1,4 @@
+'use server';
 
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
@@ -5,7 +6,7 @@ import RolePermissionModel from '@/models/RolePermission';
 import UserModel from '@/models/User';
 import type { UserRole, Permission } from '@/types';
 import NotificationService from '@/services/notification.service';
-import { ALL_PERMISSIONS } from '@/lib/permissions';
+import { ALL_PERMISSIONS } from '@/lib/permissionKeys';
 
 interface Params {
   roleName: UserRole;
@@ -81,5 +82,3 @@ export async function PUT(request: Request, { params }: { params: Params }) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }
-
-    

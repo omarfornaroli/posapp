@@ -38,6 +38,12 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@opentelemetry/sdk-node', 
+      'handlebars'
+    ],
+  },
 };
 
 const configWithPWA = withPWA(pwaConfig);
