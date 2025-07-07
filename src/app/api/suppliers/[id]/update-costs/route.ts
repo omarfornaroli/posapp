@@ -33,8 +33,8 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, context: { params: { id: string } }) {
-  const { id: supplierId } = context.params;
+export async function POST(request: Request, { params }: { params: { id: string } }) {
+  const { id: supplierId } = params;
 
   if (!mongoose.Types.ObjectId.isValid(supplierId)) {
     return NextResponse.json({ success: false, error: 'Invalid Supplier ID format' }, { status: 400 });

@@ -25,8 +25,8 @@ async function getActorDetails(request: Request) {
 }
 
 // PUT to update permissions for a specific role
-export async function PUT(request: Request, context: { params: { roleName: UserRole } }) {
-  const { roleName } = context.params;
+export async function PUT(request: Request, { params }: { params: { roleName: UserRole } }) {
+  const { roleName } = params;
   
   if (!['Admin', 'Editor', 'Viewer'].includes(roleName)) {
     return NextResponse.json({ success: false, error: 'Invalid role name provided.' }, { status: 400 });

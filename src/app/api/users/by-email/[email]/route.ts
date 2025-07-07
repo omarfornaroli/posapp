@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
-export async function GET(request: Request, context: { params: { email: string } }) {
-  const { email } = context.params;
+export async function GET(request: Request, { params }: { params: { email: string } }) {
+  const { email } = params;
   
   if (!email) {
     return NextResponse.json({ success: false, error: 'Email parameter is missing' }, { status: 400 });
