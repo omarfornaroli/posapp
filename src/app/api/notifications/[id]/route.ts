@@ -4,12 +4,8 @@ import dbConnect from '@/lib/dbConnect';
 import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
 
-interface Params {
-  id: string;
-}
-
 // This GET handler can be used if you need to fetch a single notification by ID directly.
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -31,7 +27,7 @@ export async function GET(request: Request, { params }: { params: Params }) {
 }
 
 
-export async function DELETE(request: Request, { params }: { params: Params }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {

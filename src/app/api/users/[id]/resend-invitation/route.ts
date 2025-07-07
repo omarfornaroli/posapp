@@ -6,10 +6,6 @@ import EmailService from '@/services/email.service';
 import NotificationService from '@/services/notification.service';
 import { randomBytes } from 'crypto';
 
-interface Params {
-  id: string;
-}
-
 async function getActorDetails(request: Request) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
@@ -25,7 +21,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, { params }: { params: Params }) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   try {

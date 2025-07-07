@@ -3,11 +3,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
-interface Params {
-  email: string;
-}
-
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(request: Request, { params }: { params: { email: string } }) {
   const { email } = params;
   
   if (!email) {

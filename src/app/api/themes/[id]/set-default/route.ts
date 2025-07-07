@@ -4,11 +4,7 @@ import dbConnect from '@/lib/dbConnect';
 import Theme from '@/models/Theme';
 import mongoose from 'mongoose';
 
-interface Params {
-  id: string;
-}
-
-export async function PUT(request: Request, { params }: { params: Params }) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {

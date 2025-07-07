@@ -5,10 +5,6 @@ import Report from '@/models/Report';
 import User from '@/models/User';
 import mongoose from 'mongoose';
 
-interface Params {
-  id: string;
-}
-
 async function getActorDetails(request: Request) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
@@ -20,7 +16,7 @@ async function getActorDetails(request: Request) {
   return { actorId: null };
 }
 
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   await dbConnect();
   try {
     if (!mongoose.Types.ObjectId.isValid(params.id)) {
@@ -37,7 +33,7 @@ export async function GET(request: Request, { params }: { params: Params }) {
   }
 }
 
-export async function PUT(request: Request, { params }: { params: Params }) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   await dbConnect();
   try {
     if (!mongoose.Types.ObjectId.isValid(params.id)) {
@@ -63,7 +59,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: Params }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   await dbConnect();
   try {
     if (!mongoose.Types.ObjectId.isValid(params.id)) {
@@ -79,5 +75,3 @@ export async function DELETE(request: Request, { params }: { params: Params }) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }
-
-    

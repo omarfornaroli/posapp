@@ -8,10 +8,6 @@ import NotificationService from '@/services/notification.service';
 import User from '@/models/User';
 import type { CartItem, SaleTransaction as SaleTransactionType } from '@/types';
 
-interface Params {
-  id: string;
-}
-
 interface DispatchItem {
   productId: string;
   quantity: number;
@@ -32,7 +28,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, { params }: { params: Params }) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   const body = await request.json();
   const { itemsToDispatch }: { itemsToDispatch: DispatchItem[] } = body;

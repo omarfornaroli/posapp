@@ -7,10 +7,6 @@ import type { AppLanguage as AppLanguageType } from '@/types';
 import mongoose from 'mongoose';
 import NotificationService from '@/services/notification.service';
 
-interface Params {
-  id: string;
-}
-
 async function getActorDetails(request: Request) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
@@ -26,7 +22,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ success: false, error: 'Invalid ID format' }, { status: 400 });
@@ -44,7 +40,7 @@ export async function GET(request: Request, { params }: { params: Params }) {
   }
 }
 
-export async function PUT(request: Request, { params }: { params: Params }) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ success: false, error: 'Invalid ID format' }, { status: 400 });
@@ -109,7 +105,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: Params }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ success: false, error: 'Invalid ID format' }, { status: 400 });

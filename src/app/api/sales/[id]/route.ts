@@ -3,11 +3,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import SaleTransaction from '@/models/SaleTransaction';
 
-interface Params {
-  id: string;
-}
-
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   await dbConnect();
 

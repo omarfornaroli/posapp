@@ -8,10 +8,6 @@ import User from '@/models/User';
 import NotificationService from '@/services/notification.service';
 import mongoose from 'mongoose';
 
-interface Params {
-  id: string;
-}
-
 interface UpdateCostsRequestBody {
   data: Record<string, any>[];
   mappings: {
@@ -36,7 +32,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function POST(request: Request, { params }: { params: Params }) {
+export async function POST(request: Request, { params }: { params: { id: string } }) {
   const { id: supplierId } = params;
 
   if (!mongoose.Types.ObjectId.isValid(supplierId)) {

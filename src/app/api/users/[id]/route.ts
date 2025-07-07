@@ -5,10 +5,6 @@ import UserModel from '@/models/User'; // Renamed to avoid conflict with User ty
 import type { User as UserType } from '@/types';
 import NotificationService from '@/services/notification.service';
 
-interface Params {
-  id: string;
-}
-
 async function getActorDetails(request: Request) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
@@ -24,7 +20,7 @@ async function getActorDetails(request: Request) {
   return {};
 }
 
-export async function GET(request: Request, { params }: { params: Params }) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   await dbConnect();
 
@@ -40,7 +36,7 @@ export async function GET(request: Request, { params }: { params: Params }) {
   }
 }
 
-export async function PUT(request: Request, { params }: { params: Params }) {
+export async function PUT(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   await dbConnect();
 
@@ -83,7 +79,7 @@ export async function PUT(request: Request, { params }: { params: Params }) {
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: Params }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   await dbConnect();
 

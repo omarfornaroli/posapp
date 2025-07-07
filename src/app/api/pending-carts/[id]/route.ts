@@ -4,11 +4,7 @@ import dbConnect from '@/lib/dbConnect';
 import PendingCart from '@/models/PendingCart';
 import mongoose from 'mongoose';
 
-interface Params {
-  id: string;
-}
-
-export async function DELETE(request: Request, { params }: { params: Params }) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {

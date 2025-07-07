@@ -8,10 +8,6 @@ import type { UserRole, Permission } from '@/types';
 import NotificationService from '@/services/notification.service';
 import { ALL_PERMISSIONS } from '@/lib/permissionKeys';
 
-interface Params {
-  roleName: UserRole;
-}
-
 async function getActorDetails(request: Request) {
   const userEmail = request.headers.get('X-User-Email');
   if (userEmail) {
@@ -28,7 +24,7 @@ async function getActorDetails(request: Request) {
 }
 
 // PUT to update permissions for a specific role
-export async function PUT(request: Request, { params }: { params: Params }) {
+export async function PUT(request: Request, { params }: { params: { roleName: UserRole } }) {
   const { roleName } = params;
   
   if (!['Admin', 'Editor', 'Viewer'].includes(roleName)) {
