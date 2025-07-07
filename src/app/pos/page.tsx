@@ -27,7 +27,7 @@ import { Combobox } from '@/components/ui/combobox';
 import BarcodeScannerDialog from '@/components/pos/BarcodeScannerDialog';
 import AuthorizationDialog from '@/components/pos/AuthorizationDialog';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { useRealtimePOSSettings } from '@/hooks/useRealtimePOSSettings';
+import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -62,7 +62,7 @@ export default function POSPage() {
   const { products, isLoading: isLoadingProducts } = useDexieProducts();
   const { clients, isLoading: isLoadingClients } = useDexieClients();
   const { promotions: availablePromotions, isLoading: isLoadingPromotions } = useDexiePromotions();
-  const { posSettings, isLoading: isLoadingSettings } = useRealtimePOSSettings();
+  const { posSettings, isLoading: isLoadingSettings } = useDexiePOSSettings();
   const searchParams = useSearchParams();
   
   useEffect(() => {
