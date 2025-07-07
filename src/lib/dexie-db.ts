@@ -73,6 +73,10 @@ export class AppDexieDB extends Dexie {
         receiptSettings: 'key',
         smtpSettings: 'key',
     });
+    this.version(8).stores({
+      currencies: 'id, name, code, isDefault',
+      themes: 'id, name, isDefault'
+    });
   }
 }
 
