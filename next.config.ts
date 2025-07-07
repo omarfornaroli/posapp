@@ -11,7 +11,13 @@ const pwaConfig = {
     register: true,
     skipWaiting: true,
     disable: process.env.NODE_ENV === 'development',
-    runtimeCaching: runtime,
+    runtimeCaching: [
+      {
+        urlPattern: /(\/login|\/setup-account|\/reset-password)/,
+        handler: 'NetworkOnly'
+      },
+      ...runtime,
+    ],
 };
 
 const nextConfig: NextConfig = {
