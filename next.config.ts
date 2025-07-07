@@ -56,4 +56,5 @@ const pwaPlugin = withPWA(pwaConfig);
 const configWithIntl = withNextIntl(nextConfig);
 
 // Then, apply the PWA plugin to the result of the intl plugin
-export default pwaPlugin(configWithIntl);
+// We use `as any` here to resolve a deep type incompatibility between plugins.
+export default pwaPlugin(configWithIntl as any);

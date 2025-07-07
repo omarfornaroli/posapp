@@ -50,5 +50,11 @@ const nextConfig: NextConfig = {
   ],
 };
 
-const configWithPWA = withPWA(pwaConfig);
-export default configWithPWA(withNextIntl(nextConfig));
+const pwaPlugin = withPWA(pwaConfig);
+
+// First, apply the next-intl plugin to the base config
+const configWithIntl = withNextIntl(nextConfig);
+
+// Then, apply the PWA plugin to the result of the intl plugin
+// We use `as any` here to resolve a deep type incompatibility between plugins.
+export default pwaPlugin(configWithIntl as any);
