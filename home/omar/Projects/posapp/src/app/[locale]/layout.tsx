@@ -1,22 +1,25 @@
 
 import type { ReactNode } from 'react';
+import { locales } from '@/i18n-config';
+import { unstable_setRequestLocale } from 'next-intl/server';
 
-// This layout is now a pass-through.
-// Internationalization (NextIntlClientProvider, getMessages) is handled
-// by the root layout at src/app/layout.tsx since localePrefix is 'never'.
+// This function tells Next.js which locales to statically generate.
+export function generateStaticParams() {
+  return locales.map((locale) => ({locale}));
+}
 
-// Removed generateStaticParams as it's not needed if this layout is just a pass-through
-// and locale is handled by middleware and the root layout.
-
-// Removed metadata as it's handled by the root layout.
-
-export default function PassThroughLocaleLayout({
+// This layout now just sets the locale and passes children through.
+// The main internationalization provider and other layout components
+// are now handled by the root layout at src/app/layout.tsx.
+export default function LocaleLayout({
   children,
+  params: {locale},
 }: {
   children: React.ReactNode;
+  params: {locale: string};
 }) {
-  // This layout should no longer be responsible for NextIntlClientProvider.
-  // That is now handled by the root src/app/layout.tsx.
-  // We just render children here.
+  // This is the key to enabling static rendering for a specific locale.
+  unstable_setRequestLocale(locale);
+
   return <>{children}</>;
 }

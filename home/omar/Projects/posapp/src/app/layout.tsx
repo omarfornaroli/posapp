@@ -7,6 +7,9 @@ import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
 import ThemeModel from '@/models/Theme';
 import './globals.css'; 
+import { AuthProvider } from '@/context/AuthContext';
+import { CurrencyProvider } from '@/context/CurrencyContext';
+import { Toaster } from '@/components/ui/toaster';
 
 const minimalFallbackTheme: Theme = {
   id: 'fallback-light',
@@ -73,11 +76,17 @@ export const metadata = {
 
 export default async function RootLayout({ children, params }: { children: React.ReactNode, params: any }) {
   const activeTheme = await getDefaultTheme();
-  const locale = await getLocale(); 
-  const messages = await getMessages();
-
-  // This is the key change to enable static rendering
+  // Using params.locale is the correct way for the root layout to get the locale
+  const locale = params.locale || defaultLocale; 
   unstable_setRequestLocale(locale);
+  
+  let messages;
+  try {
+    messages = (await import(`@/messages/${locale}.json`)).default;
+  } catch (error) {
+    console.error(`Could not load messages for locale: ${locale}. Falling back to default.`, error);
+    messages = (await import(`@/messages/${defaultLocale}.json`)).default;
+  }
 
   return (
     <html lang={locale}>
