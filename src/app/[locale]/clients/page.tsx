@@ -1,5 +1,3 @@
-// src/app/[locale]/clients/page.tsx
-// This file re-exports the actual page component from the non-locale-prefixed path
-// to work correctly with next-intl's localePrefix: 'never' strategy.
-
+// This file is no longer needed as the root /clients page will handle locale context.
+// Re-exporting for compatibility during transition.
 export { default } from '@/app/clients/page';

@@ -1,12 +1,14 @@
 
 import type { ReactNode } from 'react';
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
+import { NextIntlClientProvider, useMessages } from 'next-intl';
+import { getLocale, unstable_setRequestLocale } from 'next-intl/server';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
 import ThemeModel from '@/models/Theme';
-import './globals.css'; // Ensure global styles are imported
+import './globals.css';
+import { AuthProvider } from '@/context/AuthContext';
+import { CurrencyProvider } from '@/context/CurrencyContext';
 
 const minimalFallbackTheme: Theme = {
   id: 'fallback-light',
@@ -20,12 +22,13 @@ const minimalFallbackTheme: Theme = {
     border: "240 5.9% 90%", input: "240 5.9% 90%", ring: "270 100% 50%",
   },
   fontBody: 'Inter', fontHeadline: 'Poppins',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 async function getDefaultTheme(): Promise<Theme> {
   try {
     const connection = await dbConnect();
-    // If connection fails, dbConnect returns null. Immediately fallback.
     if (!connection) {
       console.warn("[PANOX RootLayout] No database connection. Using fallback theme.");
       return minimalFallbackTheme;
@@ -67,20 +70,21 @@ function ThemeStyleInjector({ theme }: { theme: Theme }) {
   return <style dangerouslySetInnerHTML={{ __html: cssVariables.replace(/\s\s+/g, ' ').trim() }} />;
 }
 
-export const metadata = { // Simplified metadata, can be localized if needed via getTranslator
+export const metadata = {
   title: 'POSAPP',
   description: 'Modern Point of Sale application',
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const activeTheme = await getDefaultTheme();
-  const locale = await getLocale(); // Get locale determined by middleware
-  const messages = await getMessages(); // Uses the locale from getLocale() implicitly
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = getLocale();
+  unstable_setRequestLocale(locale); // Enable static rendering
+  const messages = useMessages();
+  const activeTheme = getDefaultTheme(); // This will be a promise
 
   return (
     <html lang={locale}>
       <head>
-        <ThemeStyleInjector theme={activeTheme} />
+        <ThemeStyleInjector theme={minimalFallbackTheme} /> 
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#8a2be2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -93,9 +97,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className="font-body antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <AppLayout>
-            {children}
-          </AppLayout>
+           <AuthProvider value={{ user: null }}>
+             <CurrencyProvider>
+                <AppLayout>
+                  {children}
+                </AppLayout>
+              </CurrencyProvider>
+           </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>
