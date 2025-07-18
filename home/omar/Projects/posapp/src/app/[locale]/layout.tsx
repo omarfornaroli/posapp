@@ -1,22 +1,35 @@
 
 import type { ReactNode } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages, unstable_setRequestLocale, getLocale } from 'next-intl/server';
+import AppLayout from '@/components/layout/AppLayout';
+import {locales} from '@/i18n-config';
 
-// This layout is now a pass-through.
-// Internationalization (NextIntlClientProvider, getMessages) is handled
-// by the root layout at src/app/layout.tsx since localePrefix is 'never'.
+// This function is needed for static rendering of all locales
+export function generateStaticParams() {
+  return locales.map((locale) => ({locale}));
+}
 
-// Removed generateStaticParams as it's not needed if this layout is just a pass-through
-// and locale is handled by middleware and the root layout.
-
-// Removed metadata as it's handled by the root layout.
-
-export default function PassThroughLocaleLayout({
+export default async function LocaleLayout({
   children,
+  params: { locale },
 }: {
   children: React.ReactNode;
+  params: { locale: string };
 }) {
-  // This layout should no longer be responsible for NextIntlClientProvider.
-  // That is now handled by the root src/app/layout.tsx.
-  // We just render children here.
-  return <>{children}</>;
+  // Enable static rendering
+  unstable_setRequestLocale(locale);
+
+  // Providing all messages to the client
+  // side is the easiest way to get started
+  const messages = await getMessages();
+
+  return (
+    // The html and body tags are in the root layout src/app/layout.tsx
+    <NextIntlClientProvider locale={locale} messages={messages}>
+        <AppLayout>
+            {children}
+        </AppLayout>
+    </NextIntlClientProvider>
+  );
 }

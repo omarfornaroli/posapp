@@ -13,9 +13,6 @@ export default getRequestConfig(async ({locale}) => {
   }
 
   return {
-    locale,
-    // Messages are loaded dynamically based on the locale.
-    // This requires a `[locale]` folder structure in `src/messages`.
     messages: (await import(`@/messages/${locale}.json`)).default // Use path alias
   };
 });

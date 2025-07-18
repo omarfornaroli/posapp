@@ -1,12 +1,13 @@
 
 import type { ReactNode } from 'react';
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
 import ThemeModel from '@/models/Theme';
-import '@/app/globals.css'; // Ensure global styles are imported
+import '@/app/globals.css'; // Use path alias
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/context/AuthContext';
+import { CurrencyProvider } from '@/context/CurrencyContext';
 
 const minimalFallbackTheme: Theme = {
   id: 'fallback-light',
@@ -73,19 +74,18 @@ export const metadata = {
   description: 'Modern Point of Sale application',
 };
 
-export default async function RootLayout({ children, params }: { children: React.ReactNode; params: { locale: string } }) {
-  const locale = await getLocale();
-  unstable_setRequestLocale(locale);
-  const messages = await getMessages();
-
+// The root layout is simplified and no longer handles i18n directly.
+// The `params: { locale: string }` prop is removed as it's not available here anymore.
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const activeTheme = await getDefaultTheme();
 
   return (
-    <html lang={locale}>
+    // The lang attribute will be set in the [locale]/layout.tsx file.
+    <html>
       <head>
         <ThemeStyleInjector theme={activeTheme} />
         <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#8a2be2" />
+        <meta name="theme-color" content="#8000FF" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -95,11 +95,8 @@ export default async function RootLayout({ children, params }: { children: React
         <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Lobster&family=Pacifico&family=Roboto+Slab&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <AppLayout>
-            {children}
-          </AppLayout>
-        </NextIntlClientProvider>
+          {/* We remove the Providers from here as they will be in the locale-specific layout */}
+          {children}
       </body>
     </html>
   );
