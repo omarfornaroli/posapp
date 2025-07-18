@@ -1,10 +1,12 @@
 
 import type { ReactNode } from 'react';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
 import ThemeModel from '@/models/Theme';
-import '@/app/globals.css'; // Use path alias
+import '@/app/globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/context/AuthContext';
 import { CurrencyProvider } from '@/context/CurrencyContext';
@@ -74,14 +76,26 @@ export const metadata = {
   description: 'Modern Point of Sale application',
 };
 
-// The root layout is simplified and no longer handles i18n directly.
-// The `params: { locale: string }` prop is removed as it's not available here anymore.
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+// This root layout now handles everything: locale, providers, and theme.
+export default async function RootLayout({
+  children,
+  params, // `params` is implicitly available in layouts
+}: {
+  children: React.ReactNode;
+  params: { locale?: string }; // Make locale optional as it might not be present on all routes
+}) {
   const activeTheme = await getDefaultTheme();
+  
+  // Use a fallback locale if `params.locale` isn't available
+  const locale = params.locale || 'en'; 
+  
+  // Ensure the locale is set for static rendering
+  unstable_setRequestLocale(locale);
+
+  const messages = await getMessages();
 
   return (
-    // The lang attribute will be set in the [locale]/layout.tsx file.
-    <html>
+    <html lang={locale}>
       <head>
         <ThemeStyleInjector theme={activeTheme} />
         <link rel="manifest" href="/manifest.json" />
@@ -95,8 +109,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Lobster&family=Pacifico&family=Roboto+Slab&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-          {/* We remove the Providers from here as they will be in the locale-specific layout */}
-          {children}
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <AuthProvider>
+            <CurrencyProvider>
+              <AppLayout>
+                {children}
+              </AppLayout>
+              <Toaster />
+            </CurrencyProvider>
+          </AuthProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );
