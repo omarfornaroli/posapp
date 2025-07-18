@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieThemes.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -45,14 +46,12 @@ export function useDexieThemes() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addTheme = async (newTheme: Omit<Theme, 'id' | 'createdAt' | 'updatedAt' | 'isDefault'>) => {
+  const addTheme = async (newTheme: Omit<Theme, 'id' | 'isDefault'>) => {
     const tempId = generateId();
     const themeWithId: Theme = {
       ...newTheme,
       id: tempId,
       isDefault: false, // New themes are never default initially
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     await db.themes.add(themeWithId);
     await syncService.addToQueue({ entity: 'theme', operation: 'create', data: themeWithId });
@@ -67,7 +66,7 @@ export function useDexieThemes() {
             await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...oldDefault, isDefault: false } });
         }
     }
-    await db.themes.put({ ...updatedTheme, updatedAt: new Date().toISOString() });
+    await db.themes.put(updatedTheme);
     await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
   };
   

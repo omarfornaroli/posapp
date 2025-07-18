@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieSuppliers.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -49,13 +50,11 @@ export function useDexieSuppliers() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addSupplier = async (newSupplier: Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addSupplier = async (newSupplier: Omit<Supplier, 'id'>) => {
     const tempId = generateSupplierId();
     const supplierWithId: Supplier = {
       ...newSupplier,
       id: tempId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     
     try {
@@ -69,10 +68,7 @@ export function useDexieSuppliers() {
 
   const updateSupplier = async (updatedSupplier: Supplier) => {
      try {
-      await db.suppliers.put({
-          ...updatedSupplier,
-          updatedAt: new Date().toISOString(),
-      });
+      await db.suppliers.put(updatedSupplier);
       await syncService.addToQueue({ entity: 'supplier', operation: 'update', data: updatedSupplier });
     } catch (error) {
       console.error("Failed to update supplier in Dexie:", error);

@@ -1,3 +1,4 @@
+
 // src/hooks/useDexiePaymentMethods.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -45,20 +46,18 @@ export function useDexiePaymentMethods() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addPaymentMethod = async (newMethod: Omit<PaymentMethod, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addPaymentMethod = async (newMethod: Omit<PaymentMethod, 'id'>) => {
     const tempId = generateId();
     const methodWithId: PaymentMethod = {
       ...newMethod,
       id: tempId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     await db.paymentMethods.add(methodWithId);
     await syncService.addToQueue({ entity: 'paymentMethod', operation: 'create', data: methodWithId });
   };
 
   const updatePaymentMethod = async (updatedMethod: PaymentMethod) => {
-    await db.paymentMethods.put({ ...updatedMethod, updatedAt: new Date().toISOString() });
+    await db.paymentMethods.put(updatedMethod);
     await syncService.addToQueue({ entity: 'paymentMethod', operation: 'update', data: updatedMethod });
   };
 

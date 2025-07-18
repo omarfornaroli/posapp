@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieCurrencies.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -45,13 +46,11 @@ export function useDexieCurrencies() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addCurrency = async (newCurrency: Omit<Currency, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addCurrency = async (newCurrency: Omit<Currency, 'id'>) => {
     const tempId = generateId();
     const currencyWithId: Currency = {
       ...newCurrency,
       id: tempId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     await db.currencies.add(currencyWithId);
     await syncService.addToQueue({ entity: 'currency', operation: 'create', data: currencyWithId });
@@ -65,7 +64,7 @@ export function useDexieCurrencies() {
         await syncService.addToQueue({ entity: 'currency', operation: 'update', data: { ...oldDefault, isDefault: false } });
       }
     }
-    await db.currencies.put({ ...updatedCurrency, updatedAt: new Date().toISOString() });
+    await db.currencies.put(updatedCurrency);
     await syncService.addToQueue({ entity: 'currency', operation: 'update', data: updatedCurrency });
   };
 

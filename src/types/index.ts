@@ -55,8 +55,6 @@ export interface Product {
   imageUrl?: string;
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface CartItem extends Product {
@@ -75,8 +73,6 @@ export interface Tax {
   description?: string;
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface AppliedTaxEntry {
@@ -117,8 +113,6 @@ export interface Promotion {
   applicationMethod?: 'cart' | 'lowestPriceItem';
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface AppliedPromotionEntry {
@@ -137,8 +131,6 @@ export interface PaymentMethod {
   isDefault?: boolean;
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface AppliedPayment {
@@ -185,8 +177,6 @@ export interface SaleTransaction {
 
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PendingCart {
@@ -228,8 +218,6 @@ export interface Client {
   registrationDate: string; 
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface Supplier {
@@ -244,8 +232,6 @@ export interface Supplier {
   isEnabled: boolean;
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export type UserRole = 'Admin' | 'Editor' | 'Viewer';
@@ -263,8 +249,6 @@ export interface User {
   permissions: Permission[];
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface ThemeColors {
@@ -298,8 +282,6 @@ export interface Theme {
   fontHeadline: string;
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export type ReceiptMargin = 'none' | 'small' | 'medium' | 'large';
@@ -405,8 +387,6 @@ export interface AppLanguage {
   isEnabled: boolean;
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export type NotificationEnumType = 'info' | 'success' | 'warning' | 'error' | 'system';
@@ -439,8 +419,6 @@ export interface Country {
   isDefault?: boolean;
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface Currency {
@@ -454,8 +432,6 @@ export interface Currency {
   exchangeRate?: number; // Optional: rate against a base currency
   createdBy?: string;
   updatedBy?: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface RolePermission {
@@ -508,8 +484,6 @@ export interface Report {
     headers: string[];
     rows: (string | number)[][];
   };
-  createdAt: string;
-  updatedAt: string;
   createdBy?: string;
   updatedBy?: string;
 }

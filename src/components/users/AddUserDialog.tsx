@@ -44,7 +44,7 @@ type UserFormData = z.infer<ReturnType<typeof userFormSchema>>;
 interface AddUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddUser: (newUserData: Omit<User, 'id' | 'joinDate'>) => void;
+  onAddUser: (newUserData: Omit<User, 'id' | 'joinDate' | 'status' | 'permissions'>) => void;
 }
 
 export default function AddUserDialog({ open, onOpenChange, onAddUser }: AddUserDialogProps) {

@@ -1,3 +1,4 @@
+
 // src/hooks/useDexiePromotions.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -51,13 +52,11 @@ export function useDexiePromotions() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addPromotion = async (newPromotion: Omit<Promotion, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addPromotion = async (newPromotion: Omit<Promotion, 'id'>) => {
     const tempId = generatePromotionId();
     const promotionWithId: Promotion = {
       ...newPromotion,
       id: tempId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     
     try {
@@ -71,10 +70,7 @@ export function useDexiePromotions() {
 
   const updatePromotion = async (updatedPromotion: Promotion) => {
      try {
-      await db.promotions.put({
-          ...updatedPromotion,
-          updatedAt: new Date().toISOString(),
-      });
+      await db.promotions.put(updatedPromotion);
       await syncService.addToQueue({ entity: 'promotion', operation: 'update', data: updatedPromotion });
     } catch (error) {
       console.error("Failed to update promotion in Dexie:", error);

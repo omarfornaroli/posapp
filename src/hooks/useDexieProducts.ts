@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieProducts.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -43,14 +44,12 @@ export function useDexieProducts() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addProduct = async (newProduct: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addProduct = async (newProduct: Omit<Product, 'id'>) => {
     // Generate a temporary client-side ID for immediate UI updates
     const tempId = `temp-${generateClientId()}`;
     const productWithId: Product = {
       ...newProduct,
       id: tempId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     
     try {
@@ -64,10 +63,7 @@ export function useDexieProducts() {
 
   const updateProduct = async (updatedProduct: Product) => {
      try {
-      await db.products.put({
-          ...updatedProduct,
-          updatedAt: new Date().toISOString(),
-      });
+      await db.products.put(updatedProduct);
       await syncService.addToQueue({ entity: 'product', operation: 'update', data: updatedProduct });
     } catch (error) {
       console.error("Failed to update product in Dexie:", error);

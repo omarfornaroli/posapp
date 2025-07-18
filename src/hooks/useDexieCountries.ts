@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieCountries.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -45,13 +46,11 @@ export function useDexieCountries() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addCountry = async (newCountry: Omit<Country, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addCountry = async (newCountry: Omit<Country, 'id'>) => {
     const tempId = generateId();
     const countryWithId: Country = {
       ...newCountry,
       id: tempId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     await db.countries.add(countryWithId);
     await syncService.addToQueue({ entity: 'country', operation: 'create', data: countryWithId });
@@ -65,7 +64,7 @@ export function useDexieCountries() {
         await syncService.addToQueue({ entity: 'country', operation: 'update', data: { ...oldDefault, isDefault: false } });
       }
     }
-    await db.countries.put({ ...updatedCountry, updatedAt: new Date().toISOString() });
+    await db.countries.put(updatedCountry);
     await syncService.addToQueue({ entity: 'country', operation: 'update', data: updatedCountry });
   };
 

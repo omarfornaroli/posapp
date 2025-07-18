@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieTaxes.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -45,20 +46,18 @@ export function useDexieTaxes() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addTax = async (newTax: Omit<Tax, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addTax = async (newTax: Omit<Tax, 'id'>) => {
     const tempId = generateId();
     const taxWithId: Tax = {
       ...newTax,
       id: tempId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     await db.taxes.add(taxWithId);
     await syncService.addToQueue({ entity: 'tax', operation: 'create', data: taxWithId });
   };
 
   const updateTax = async (updatedTax: Tax) => {
-    await db.taxes.put({ ...updatedTax, updatedAt: new Date().toISOString() });
+    await db.taxes.put(updatedTax);
     await syncService.addToQueue({ entity: 'tax', operation: 'update', data: updatedTax });
   };
 

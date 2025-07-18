@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieAppLanguages.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -45,13 +46,11 @@ export function useDexieAppLanguages() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addLanguage = async (newLang: Omit<AppLanguage, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addLanguage = async (newLang: Omit<AppLanguage, 'id'>) => {
     const tempId = generateId();
     const langWithId: AppLanguage = {
       ...newLang,
       id: tempId,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     await db.appLanguages.add(langWithId);
     await syncService.addToQueue({ entity: 'appLanguage', operation: 'create', data: langWithId });
@@ -65,7 +64,7 @@ export function useDexieAppLanguages() {
             await db.appLanguages.update(oldDefault.id, { isDefault: false });
         }
     }
-    await db.appLanguages.put({ ...updatedLang, updatedAt: new Date().toISOString() });
+    await db.appLanguages.put(updatedLang);
     await syncService.addToQueue({ entity: 'appLanguage', operation: 'update', data: updatedLang });
   };
 

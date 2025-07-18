@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieUsers.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -45,7 +46,7 @@ export function useDexieUsers() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addUser = async (newUserData: Omit<User, 'id' | 'joinDate' | 'createdAt' | 'updatedAt' | 'permissions'>) => {
+  const addUser = async (newUserData: Omit<User, 'id' | 'joinDate' | 'status' | 'permissions'>) => {
     // Adding a user requires online action to get tokens, etc.
     // The hook will call the API, then add the result to Dexie.
     // This makes the 'add' action online-only for this specific entity.
@@ -72,7 +73,7 @@ export function useDexieUsers() {
   };
 
   const updateUser = async (updatedUser: User) => {
-    await db.users.put({ ...updatedUser, updatedAt: new Date().toISOString() });
+    await db.users.put(updatedUser);
     await syncService.addToQueue({ entity: 'user', operation: 'update', data: updatedUser });
   };
 
