@@ -4,13 +4,12 @@
 import type React from 'react';
 import { useEffect, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import Header from './Header';
-import Sidebar from './Sidebar';
-import { Toaster } from '@/components/ui/toaster';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from '@/context/AuthContext';
-import SessionExpirationDialog from './SessionExpirationDialog';
 import { syncService } from '@/services/sync.service';
+import SessionExpirationDialog from '@/components/layout/SessionExpirationDialog';
+import { Header } from '@radix-ui/react-accordion';
+import { Loader2, Sidebar } from 'lucide-react';
 
 const SIDEBAR_STORAGE_KEY = 'sidebarOpen';
 const SESSION_WARNING_MS = 60 * 1000; // 60 seconds before expiration
