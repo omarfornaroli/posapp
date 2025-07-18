@@ -79,7 +79,6 @@ export interface Tax {
 }
 
 export interface AppliedTaxEntry {
-  id: string; 
   taxId: string;
   name: string;
   rate: number;
@@ -214,8 +213,8 @@ export interface PendingCart {
     id: string;
     name: string;
   };
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Client {
@@ -512,3 +511,5 @@ export interface Report {
   createdAt?: string;
   updatedAt?: string;
 }
+
+    

@@ -196,3 +196,5 @@ export default function AddProductDialog({ open, onOpenChange, onAddProduct }: A
     </Dialog>
   );
 }
+
+    

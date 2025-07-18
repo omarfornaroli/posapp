@@ -1,3 +1,4 @@
+
 import type { Product, SaleTransaction, Client, Tax, AppliedTaxEntry, User, Promotion, Theme, ThemeColors, PaymentMethod, AppliedPayment, ReceiptSetting, CartItem, ReceiptMargin, PromotionCondition, Country, Currency, Supplier } from '@/types';
 
 export const mockProducts: Omit<Product, 'id'>[] = [
@@ -161,9 +162,9 @@ export const mockTaxes: Omit<Tax, 'id'>[] = [
 ];
 
 export const mockUsers: Omit<User, 'id' | 'permissions'>[] = [
-  { name: 'Admin User', email: 'admin@example.com', role: 'Admin', joinDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(), imageUrl: 'https://placehold.co/128x128.png?text=AU' },
-  { name: 'Editor Dave', email: 'dave@example.com', role: 'Editor', joinDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(), imageUrl: 'https://placehold.co/128x128.png?text=ED' },
-  { name: 'Eve Viewer', email: 'eve@example.com', role: 'Viewer', joinDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), imageUrl: 'https://placehold.co/128x128.png?text=VE' },
+  { name: 'Admin User', email: 'admin@example.com', role: 'Admin', joinDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(), imageUrl: 'https://placehold.co/128x128.png?text=AU', status: 'active' },
+  { name: 'Editor Dave', email: 'dave@example.com', role: 'Editor', joinDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(), imageUrl: 'https://placehold.co/128x128.png?text=ED', status: 'pending' },
+  { name: 'Eve Viewer', email: 'eve@example.com', role: 'Viewer', joinDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(), imageUrl: 'https://placehold.co/128x128.png?text=VE', status: 'pending' },
 ];
 
 export const mockPaymentMethods: Omit<PaymentMethod, 'id'>[] = [
@@ -444,7 +445,7 @@ export const mockCurrencies: Omit<Currency, 'id'>[] = [
   { name: "Brunei Dollar", code: "BND", symbol: "$", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 1.35 },
   { name: "Bulgarian Lev", code: "BGN", symbol: "лв", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 1.81 },
   { name: "Burundian Franc", code: "BIF", symbol: "FBu", decimalPlaces: 0, isEnabled: true, isDefault: false, exchangeRate: 2850.00 },
-  { name: "Cabo Verdean Escudo", code: "CVE", symbol: "$", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 102.50 },
+  { name: 'Cabo Verdean Escudo', code: 'CVE', symbol: 'Esc', decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 102.50 },
   { name: "Cambodian Riel", code: "KHR", symbol: "៛", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 4100.00 },
   { name: "Canadian Dollar", code: "CAD", symbol: "C$", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 1.37 },
   { name: "Cayman Islands Dollar", code: "KYD", symbol: "$", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 0.83 },
@@ -705,7 +706,7 @@ export const mockPreviewTransaction: SaleTransaction = {
     appliedPayments: [{ methodId: 'pm_cash', methodName: 'Cash', amount: ((((oneProduct.price * 2) + anotherProduct.price) -5.00) * 1.10) }],
     clientId: `MOCK-CLIENT-${mockClients[0].email.split('@')[0]}`,
     clientName: mockClients[0].name,
-    appliedTaxes: [{ id: 'mock-tax-1', taxId: 'mock-tax-1', name: 'Sales Tax', rate: 0.10, amount: ((((oneProduct.price * 2) + anotherProduct.price) -5.00) * 0.10) }] as any, // Cast to any to include both id fields
+    appliedTaxes: [{ taxId: 'mock-tax-1', name: 'Sales Tax', rate: 0.10, amount: ((((oneProduct.price * 2) + anotherProduct.price) -5.00) * 0.10) }],
     appliedPromotions: [{ promotionId: 'promo-1', name: '$5 Off Preview', discountType: 'fixedAmount', discountValue: 5, amountDeducted: 5.00 }],
     currencyCode: "USD",
     currencySymbol: "$",
@@ -713,6 +714,7 @@ export const mockPreviewTransaction: SaleTransaction = {
     baseCurrencyCode: "USD",
     totalInBaseCurrency: ((((oneProduct.price * 2) + anotherProduct.price) - 5.00) * 1.10),
     exchangeRate: 1,
+    dispatchStatus: 'Pending',
 };
 
 const generateMockSales = (count: number): Omit<SaleTransaction, 'id'>[] => {
@@ -746,12 +748,11 @@ const generateMockSales = (count: number): Omit<SaleTransaction, 'id'>[] => {
         const taxAmountForThis = subtotal * tax.rate;
         const taxId = `MOCK-TAX-${tax.name.replace(/\s+/g, '-')}`;
         appliedTaxesForSale.push({
-            id: taxId, // For TS type compatibility
-            taxId: taxId, // For Mongoose schema validation
+            taxId: taxId,
             name: tax.name,
             rate: tax.rate,
             amount: parseFloat(taxAmountForThis.toFixed(2))
-        } as any); // Cast to any to include both id fields
+        });
         totalTaxAmount += taxAmountForThis;
     }
 
@@ -786,6 +787,7 @@ const generateMockSales = (count: number): Omit<SaleTransaction, 'id'>[] => {
       baseCurrencyCode: 'USD',
       totalInBaseCurrency: parseFloat(totalAmount.toFixed(2)),
       exchangeRate: 1,
+      dispatchStatus: 'Pending',
     };
 
     if (mockClients.length > 0 && Math.random() > 0.5) {
@@ -887,4 +889,5 @@ export const mockSuppliers: Omit<Supplier, 'id'>[] = [
   { name: 'SunPower Tech', contactPerson: 'Leo Solar', email: 'info@sunpower.tech', phone: '555-0104', address: '400 Watt St, Electri-city', isEnabled: false },
   { name: 'The Coffee Roasters', contactPerson: 'Barry Bean', email: 'barry@thecoffeeroasters.com', phone: '555-0105', address: '500 Aroma Blvd, Javaville', isEnabled: true },
 ];
+
     

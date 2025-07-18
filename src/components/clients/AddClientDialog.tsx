@@ -70,7 +70,7 @@ export default function AddClientDialog({ open, onOpenChange, onAddClient }: Add
 
 
   function onSubmit(values: ClientFormData) {
-    onAddClient(values);
+    onAddClient(values as Omit<Client, 'id' | 'registrationDate'>);
     form.reset(); 
   }
 
@@ -119,3 +119,5 @@ export default function AddClientDialog({ open, onOpenChange, onAddClient }: Add
     </Dialog>
   );
 }
+
+    

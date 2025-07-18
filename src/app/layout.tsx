@@ -1,12 +1,12 @@
 
 import type { ReactNode } from 'react';
-import { NextIntlClientProvider, useMessages } from 'next-intl';
-import { getLocale, unstable_setRequestLocale } from 'next-intl/server';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
 import ThemeModel from '@/models/Theme';
-import './globals.css';
+import '@/app/globals.css';
 import { AuthProvider } from '@/context/AuthContext';
 import { CurrencyProvider } from '@/context/CurrencyContext';
 
@@ -75,16 +75,16 @@ export const metadata = {
   description: 'Modern Point of Sale application',
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const locale = getLocale();
-  unstable_setRequestLocale(locale); // Enable static rendering
-  const messages = useMessages();
-  const activeTheme = getDefaultTheme(); // This will be a promise
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+  unstable_setRequestLocale(locale);
+  const messages = await getMessages();
+  const activeTheme = await getDefaultTheme();
 
   return (
     <html lang={locale}>
       <head>
-        <ThemeStyleInjector theme={minimalFallbackTheme} /> 
+        <ThemeStyleInjector theme={activeTheme} /> 
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#8a2be2" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -109,3 +109,5 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
+    

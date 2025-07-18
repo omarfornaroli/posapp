@@ -264,3 +264,5 @@ export default function AddPromotionDialog({ open, onOpenChange, onAddPromotion 
     </Dialog>
   );
 }
+
+    

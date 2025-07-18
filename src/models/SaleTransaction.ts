@@ -2,7 +2,7 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { SaleTransaction as SaleTransactionType, CartItem as CartItemType, AppliedTaxEntry, AppliedPromotionEntry, AppliedPayment, DispatchStatus } from '@/types';
 
-export const CartItemSchema = new Schema<Omit<CartItemType, 'id' | 'stock' | 'description' | 'effectivePrice' | 'totalPriceAfterItemDiscount'>>({
+export const CartItemSchema = new Schema<Omit<CartItemType, 'id'>>({
   productId: { type: String, required: true }, 
   name: { type: String, required: true },
   price: { type: Number, required: true },
@@ -11,11 +11,12 @@ export const CartItemSchema = new Schema<Omit<CartItemType, 'id' | 'stock' | 'de
   category: { type: String },
   imageUrl: { type: String },
   barcode: { type: String },
+  isService: { type: Boolean, default: false },
   itemDiscountType: { type: String, enum: ['percentage', 'fixedAmount'] },
   itemDiscountValue: { type: Number, min: 0 },
 }, { _id: false });
 
-export const AppliedTaxEntrySchema = new Schema<Omit<AppliedTaxEntry, 'id'>>({
+export const AppliedTaxEntrySchema = new Schema<AppliedTaxEntry>({
   taxId: { type: String, required: true }, 
   name: { type: String, required: true },
   rate: { type: Number, required: true }, 
@@ -91,3 +92,5 @@ const SaleTransaction: Model<SaleTransactionDocument> =
   models.SaleTransaction || mongoose.model<SaleTransactionDocument>('SaleTransaction', SaleTransactionSchema);
 
 export default SaleTransaction;
+
+    

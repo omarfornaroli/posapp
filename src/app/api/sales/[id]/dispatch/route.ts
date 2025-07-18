@@ -74,20 +74,26 @@ export async function POST(request: Request, { params }: any) {
       }
 
       if (!saleItem.barcode) {
-        throw new Error(`Product "${saleItem.name}" in this sale is missing a barcode and cannot be dispatched.`);
+        // Services might not have a barcode, skip stock deduction for them.
+        if (!saleItem.isService) {
+           throw new Error(`Product "${saleItem.name}" in this sale is missing a barcode and cannot be dispatched.`);
+        }
       }
 
-      const product = await Product.findOne({ barcode: saleItem.barcode }).session(session);
-      if (!product) {
-        throw new Error(`Product with barcode ${saleItem.barcode} (${saleItem.name}) not found in inventory.`);
-      }
+      // Only deduct stock for non-service items
+      if (!saleItem.isService && saleItem.barcode) {
+        const product = await Product.findOne({ barcode: saleItem.barcode }).session(session);
+        if (!product) {
+          throw new Error(`Product with barcode ${saleItem.barcode} (${saleItem.name}) not found in inventory.`);
+        }
 
-      if (product.quantity < dispatchItem.quantity) {
-        throw new Error(`Insufficient stock for product: ${product.name}. Required: ${dispatchItem.quantity}, Available: ${product.quantity}.`);
+        if (product.quantity < dispatchItem.quantity) {
+          throw new Error(`Insufficient stock for product: ${product.name}. Required: ${dispatchItem.quantity}, Available: ${product.quantity}.`);
+        }
+        
+        product.quantity -= dispatchItem.quantity;
+        await product.save({ session });
       }
-      
-      product.quantity -= dispatchItem.quantity;
-      await product.save({ session });
       
       saleItem.dispatchedQuantity = (saleItem.dispatchedQuantity || 0) + dispatchItem.quantity;
     }
@@ -131,3 +137,5 @@ export async function POST(request: Request, { params }: any) {
     session.endSession();
   }
 }
+
+    

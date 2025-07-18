@@ -15,10 +15,12 @@ export default function LocaleLayout({
   children: React.ReactNode;
   params: {locale: string};
 }) {
-  // This validates the locale and enables static rendering
+  // This validates the locale and enables static rendering for this page
   unstable_setRequestLocale(locale);
 
   // The AuthProvider and NextIntlProvider are now in the root layout,
   // so we just render children here.
   return <>{children}</>;
 }
+
+    

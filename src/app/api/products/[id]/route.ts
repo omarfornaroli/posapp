@@ -46,30 +46,21 @@ export async function PUT(request: Request, { params }: any) {
     
     const updateData: Partial<ProductType> = {};
 
-    if (body.name !== undefined) updateData.name = body.name.trim();
-    if (body.productGroup !== undefined) updateData.productGroup = body.productGroup?.trim();
-    if (body.sku !== undefined) updateData.sku = body.sku?.trim();
-    if (body.barcode !== undefined) updateData.barcode = body.barcode.trim();
-    if (body.measurementUnit !== undefined) updateData.measurementUnit = body.measurementUnit?.trim();
-    if (body.cost !== undefined) updateData.cost = body.cost === null ? undefined : Number(body.cost);
-    if (body.markup !== undefined) updateData.markup = body.markup === null ? undefined : Number(body.markup);
-    if (body.price !== undefined) updateData.price = Number(body.price);
-    if (body.tax !== undefined) updateData.tax = body.tax === null ? undefined : Number(body.tax);
-    if (body.isTaxInclusivePrice !== undefined) updateData.isTaxInclusivePrice = !!body.isTaxInclusivePrice;
-    if (body.isPriceChangeAllowed !== undefined) updateData.isPriceChangeAllowed = !!body.isPriceChangeAllowed;
-    if (body.isUsingDefaultQuantity !== undefined) updateData.isUsingDefaultQuantity = !!body.isUsingDefaultQuantity;
-    if (body.isService !== undefined) updateData.isService = !!body.isService;
-    if (body.isEnabled !== undefined) updateData.isEnabled = !!body.isEnabled;
-    if (body.description !== undefined) updateData.description = body.description?.trim();
-    if (body.quantity !== undefined) updateData.quantity = Number(body.quantity);
-    if (body.supplier !== undefined) updateData.supplier = body.supplier?.trim();
-    if (body.reorderPoint !== undefined) updateData.reorderPoint = body.reorderPoint === null ? undefined : Number(body.reorderPoint);
-    if (body.preferredQuantity !== undefined) updateData.preferredQuantity = body.preferredQuantity === null ? undefined : Number(body.preferredQuantity);
-    if (body.lowStockWarning !== undefined) updateData.lowStockWarning = !!body.lowStockWarning;
-    if (body.warningQuantity !== undefined) updateData.warningQuantity = body.warningQuantity === null ? undefined : Number(body.warningQuantity);
-    if (body.category !== undefined) updateData.category = body.category.trim();
-    if (body.imageUrl !== undefined) updateData.imageUrl = body.imageUrl?.trim() || undefined;
+    // This ensures only fields present in the body are added to the update object
+    Object.keys(body).forEach(key => {
+        const typedKey = key as keyof ProductType;
+        if (body[typedKey] !== undefined) {
+             (updateData as any)[typedKey] = body[typedKey];
+        }
+    });
 
+    if (body.imageUrl === '') updateData.imageUrl = undefined;
+    if (body.cost === null) updateData.cost = undefined;
+    if (body.markup === null) updateData.markup = undefined;
+    if (body.tax === null) updateData.tax = undefined;
+    if (body.reorderPoint === null) updateData.reorderPoint = undefined;
+    if (body.preferredQuantity === null) updateData.preferredQuantity = undefined;
+    if (body.warningQuantity === null) updateData.warningQuantity = undefined;
 
     const product = await Product.findByIdAndUpdate(id, { $set: updateData }, {
       new: true,
@@ -141,3 +132,5 @@ export async function DELETE(request: Request, { params }: any) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
+
+    

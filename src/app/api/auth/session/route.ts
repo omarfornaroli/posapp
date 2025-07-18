@@ -37,12 +37,8 @@ export async function GET(request: NextRequest) {
       joinDate: user.joinDate.toISOString(),
       imageUrl: user.imageUrl,
       permissions: permissions,
-      status: user.status,
-      // The createdAt and updatedAt fields are optional in the type, so we don't need to add them here
-      // if they are not strictly needed on the client-side user object.
-      // If they were needed, you would add:
-      // createdAt: user.createdAt.toISOString(),
-      // updatedAt: user.updatedAt.toISOString(),
+      status: user.status as UserType['status'],
+      authorizationCode: user.authorizationCode
     };
 
     return NextResponse.json({ success: true, data: userWithPermissions });
@@ -52,3 +48,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }
+
+    

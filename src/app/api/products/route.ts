@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as Omit<ProductType, 'id'>;
     
-    const productData: Partial<ProductType> = {
+    const productData: Omit<ProductType, 'id'> = {
       ...body,
       name: body.name.trim(),
       barcode: body.barcode.trim(),
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       sku: body.sku?.trim(),
       productGroup: body.productGroup?.trim(),
       measurementUnit: body.measurementUnit?.trim(),
-      supplier: body.supplier?.trim(),
+      supplier: body.supplier,
       cost: body.cost !== undefined && body.cost !== null ? Number(body.cost) : undefined,
       markup: body.markup !== undefined && body.markup !== null ? Number(body.markup) : undefined,
       price: Number(body.price),
@@ -91,3 +91,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
+
+    

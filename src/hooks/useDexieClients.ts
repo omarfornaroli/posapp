@@ -89,5 +89,7 @@ export function useDexieClients() {
     }
   };
   
-  return { clients: clients || [], isLoading: isLoading || clients === undefined, refetch: populateInitialData, addClient, updateClient, deleteClient };
+  return { clients: clients || [], isLoading: isLoading || clients === undefined, addClient, updateClient, deleteClient };
 }
+
+    

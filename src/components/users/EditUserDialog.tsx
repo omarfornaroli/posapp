@@ -30,6 +30,7 @@ import type { User, UserRole } from '@/types';
 import { Loader2, RefreshCw, Send } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '../ui/scroll-area';
 
 const userRoles: UserRole[] = ['Admin', 'Editor', 'Viewer'];
 
@@ -198,8 +199,8 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <div className="flex-grow overflow-y-auto pr-4">
-              <div className="space-y-4">
+            <ScrollArea className="flex-grow pr-4 -mr-4">
+              <div className="space-y-4 pr-2">
                   <FormField
                   control={form.control}
                   name="name"
@@ -297,7 +298,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
                   </Button>
                 </div>
               )}
-            </div>
+            </ScrollArea>
             <DialogFooter className="pt-4 mt-4 border-t shrink-0">
                 <DialogClose asChild>
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddUserDialog.cancelButton')}</Button>
@@ -310,3 +311,5 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
     </Dialog>
   );
 }
+
+    

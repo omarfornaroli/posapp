@@ -37,7 +37,7 @@ type AddThemeFormData = z.infer<ReturnType<typeof addThemeFormSchema>>;
 interface AddThemeDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSaveTheme: (newThemeData: Omit<Theme, 'id' | 'isDefault'>) => void;
+  onSaveTheme: (newThemeData: Omit<Theme, 'id' | 'isDefault' | 'createdAt' | 'updatedAt'>) => void;
 }
 
 const availableBodyFonts = ['Inter', 'Roboto', 'Open Sans', 'Lato', 'Noto Sans', 'Verdana', 'Arial'];
@@ -101,7 +101,7 @@ export default function AddThemeDialog({ open, onOpenChange, onSaveTheme }: AddT
   }, [isLoadingTranslations, open, form, t]);
 
   function onSubmit(values: AddThemeFormData) {
-    const newThemeData: Omit<Theme, 'id' | 'isDefault'> = {
+    const newThemeData: Omit<Theme, 'id' | 'isDefault' | 'createdAt' | 'updatedAt'> = {
       name: values.name,
       fontBody: getRandomFont(availableBodyFonts),
       fontHeadline: getRandomFont(availableHeadlineFonts),
@@ -162,3 +162,5 @@ export default function AddThemeDialog({ open, onOpenChange, onSaveTheme }: AddT
     </Dialog>
   );
 }
+
+    
