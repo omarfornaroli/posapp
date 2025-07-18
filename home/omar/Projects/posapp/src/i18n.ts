@@ -1,7 +1,7 @@
 
 import {getRequestConfig} from 'next-intl/server';
 import {notFound} from 'next/navigation';
-import {locales} from './i18n-config';
+import {locales} from '@/i18n-config'; // Use path alias
 
 // This function is called for every request that needs translations.
 // By loading messages from static JSON files, we avoid slow and error-prone
@@ -16,6 +16,6 @@ export default getRequestConfig(async ({locale}) => {
     locale,
     // Messages are loaded dynamically based on the locale.
     // This requires a `[locale]` folder structure in `src/messages`.
-    messages: (await import(`./messages/${locale}.json`)).default
+    messages: (await import(`@/messages/${locale}.json`)).default // Use path alias
   };
 });

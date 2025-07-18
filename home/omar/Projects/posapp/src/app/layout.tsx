@@ -1,12 +1,12 @@
 
 import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
 import ThemeModel from '@/models/Theme';
-import './globals.css'; // Ensure global styles are imported
+import '@/app/globals.css'; // Ensure global styles are imported
 
 const minimalFallbackTheme: Theme = {
   id: 'fallback-light',
@@ -27,7 +27,6 @@ const minimalFallbackTheme: Theme = {
 async function getDefaultTheme(): Promise<Theme> {
   try {
     const connection = await dbConnect();
-    // If connection fails, dbConnect returns null. Immediately fallback.
     if (!connection) {
       console.warn("[PANOX RootLayout] No database connection. Using fallback theme.");
       return minimalFallbackTheme;
@@ -69,15 +68,17 @@ function ThemeStyleInjector({ theme }: { theme: Theme }) {
   return <style dangerouslySetInnerHTML={{ __html: cssVariables.replace(/\s\s+/g, ' ').trim() }} />;
 }
 
-export const metadata = { // Simplified metadata, can be localized if needed via getTranslator
+export const metadata = {
   title: 'POSAPP',
   description: 'Modern Point of Sale application',
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children, params }: { children: React.ReactNode; params: { locale: string } }) {
+  const locale = await getLocale();
+  unstable_setRequestLocale(locale);
+  const messages = await getMessages();
+
   const activeTheme = await getDefaultTheme();
-  const locale = await getLocale(); // Get locale determined by middleware
-  const messages = await getMessages(); // Uses the locale from getLocale() implicitly
 
   return (
     <html lang={locale}>
