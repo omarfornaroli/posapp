@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieClients.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -51,14 +52,12 @@ export function useDexieClients() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addClient = async (newClient: Omit<Client, 'id' | 'registrationDate' | 'createdAt' | 'updatedAt'>) => {
+  const addClient = async (newClient: Omit<Client, 'id' | 'registrationDate'>) => {
     const tempId = generateClientId();
     const clientWithId: Client = {
       ...newClient,
       id: tempId,
       registrationDate: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
     
     try {
@@ -72,10 +71,7 @@ export function useDexieClients() {
 
   const updateClient = async (updatedClient: Client) => {
      try {
-      await db.clients.put({
-          ...updatedClient,
-          updatedAt: new Date().toISOString(),
-      });
+      await db.clients.put(updatedClient);
       await syncService.addToQueue({ entity: 'client', operation: 'update', data: updatedClient });
     } catch (error) {
       console.error("Failed to update client in Dexie:", error);

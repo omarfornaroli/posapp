@@ -38,6 +38,11 @@ export async function GET(request: NextRequest) {
       imageUrl: user.imageUrl,
       permissions: permissions,
       status: user.status,
+      // The createdAt and updatedAt fields are optional in the type, so we don't need to add them here
+      // if they are not strictly needed on the client-side user object.
+      // If they were needed, you would add:
+      // createdAt: user.createdAt.toISOString(),
+      // updatedAt: user.updatedAt.toISOString(),
     };
 
     return NextResponse.json({ success: true, data: userWithPermissions });
