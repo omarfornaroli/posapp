@@ -382,8 +382,8 @@ export default function EditPromotionDialog({ open, onOpenChange, promotion, onS
                   
                   <FormField control={form.control} name="isActive" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>{t('AddPromotionDialog.isActiveLabel')}</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                 </div>
-            </div>
-            <DialogFooter className="pt-4 shrink-0">
+            </ScrollArea>
+            <DialogFooter className="pt-4 mt-4 border-t shrink-0">
               <DialogClose asChild><Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddPromotionDialog.cancelButton')}</Button></DialogClose>
               <Button type="submit" className="bg-primary hover:bg-primary/90">{t('EditPromotionDialog.saveButton')}</Button>
             </DialogFooter>
@@ -393,5 +393,3 @@ export default function EditPromotionDialog({ open, onOpenChange, promotion, onS
     </Dialog>
   );
 }
-
-    
