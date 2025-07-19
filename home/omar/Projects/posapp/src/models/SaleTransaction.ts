@@ -92,5 +92,3 @@ const SaleTransaction: Model<SaleTransactionDocument> =
   models.SaleTransaction || mongoose.model<SaleTransactionDocument>('SaleTransaction', SaleTransactionSchema);
 
 export default SaleTransaction;
-
-    

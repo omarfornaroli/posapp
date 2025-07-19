@@ -2,7 +2,9 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Notification as NotificationType, NotificationEnumType } from '@/types';
 
-export interface NotificationDocument extends Omit<NotificationType, 'id'>, Document {}
+export interface NotificationDocument extends Omit<NotificationType, 'id' | 'createdAt'>, Document {
+    createdAt: Date;
+}
 
 const NotificationSchema: Schema<NotificationDocument> = new Schema({
   messageKey: { type: String, required: true },
@@ -32,7 +34,7 @@ NotificationSchema.virtual('id').get(function(this: NotificationDocument) {
 
 // Ensure createdAt is explicitly available if needed beyond timestamps
 NotificationSchema.virtual('createdAtString').get(function(this: NotificationDocument) {
-  return (this as any).createdAt.toISOString();
+  return this.createdAt.toISOString();
 });
 
 

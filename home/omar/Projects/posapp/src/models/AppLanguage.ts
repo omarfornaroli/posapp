@@ -40,7 +40,7 @@ AppLanguageSchema.virtual('id').get(function(this: AppLanguageDocument) {
 });
 
 // Ensure only one language can be default
-AppLanguageSchema.pre('save', async function(next) {
+AppLanguageSchema.pre('save', async function(this: AppLanguageDocument, next) {
   if (this.isModified('isDefault') && this.isDefault) {
     const model = this.constructor as Model<AppLanguageDocument>;
     await model.updateMany({ _id: { $ne: this._id }, isDefault: true }, { isDefault: false });

@@ -39,7 +39,7 @@ UserSchema.virtual('id').get(function(this: UserDocument) {
 });
 
 // Hash password before saving
-UserSchema.pre<UserDocument>('save', async function(next) {
+UserSchema.pre<UserDocument>('save', async function(next: mongoose.CallbackWithoutResult) {
   if (!this.isModified('password') || !this.password) {
     return next();
   }
@@ -53,7 +53,7 @@ UserSchema.pre<UserDocument>('save', async function(next) {
 });
 
 // Method to compare password for login
-UserSchema.methods.comparePassword = function(candidatePassword: string): Promise<boolean> {
+UserSchema.methods.comparePassword = function(this: UserDocument, candidatePassword: string): Promise<boolean> {
   if (!this.password) {
     return Promise.resolve(false);
   }

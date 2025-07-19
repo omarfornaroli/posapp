@@ -26,7 +26,7 @@ CountrySchema.virtual('id').get(function(this: CountryDocument) {
   return this._id.toHexString();
 });
 
-CountrySchema.pre('save', async function(next) {
+CountrySchema.pre('save', async function(this: CountryDocument, next) {
   if (this.isModified('isDefault') && this.isDefault) {
     const model = this.constructor as Model<CountryDocument>;
     await model.updateMany({ _id: { $ne: this._id }, isDefault: true }, { isDefault: false });
