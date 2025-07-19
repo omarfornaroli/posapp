@@ -1,10 +1,11 @@
 
+
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { runSeedOperations } from '../lib/seedCore'; 
 import dbConnect from '../lib/dbConnect';
 
-dotenv.config({ path: process.cwd() + '/.env.local' });
+dotenv.config({ path: '.env.local' });
 
 async function seedDatabase() {
   try {

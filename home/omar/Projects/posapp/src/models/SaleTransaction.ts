@@ -16,7 +16,7 @@ export const CartItemSchema = new Schema<Omit<CartItemType, 'id'>>({
   itemDiscountValue: { type: Number, min: 0 },
 }, { _id: false });
 
-export const AppliedTaxEntrySchema = new Schema<AppliedTaxEntry>({
+export const AppliedTaxEntrySchema = new Schema<Omit<AppliedTaxEntry, 'id'>>({
   taxId: { type: String, required: true }, 
   name: { type: String, required: true },
   rate: { type: Number, required: true }, 
@@ -41,7 +41,7 @@ export const AppliedPaymentSchema = new Schema<AppliedPayment>({
 export interface SaleTransactionDocument extends Omit<SaleTransactionType, 'id'>, Document {}
 
 const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
-  date: { type: Date, required: true, default: Date.now },
+  date: { type: Schema.Types.Date, required: true, default: Date.now },
   items: [CartItemSchema],
   
   subtotal: { type: Number, required: true }, 

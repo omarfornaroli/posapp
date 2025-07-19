@@ -18,9 +18,9 @@ const UserSchema: Schema<UserDocument> = new Schema({
   password: { type: String, select: false },
   status: { type: String, enum: ['pending', 'active'] as UserStatus[], default: 'pending', required: true },
   setupToken: { type: String, select: false },
-  setupTokenExpires: { type: Date, select: false },
+  setupTokenExpires: { type: Schema.Types.Date, select: false },
   passwordResetToken: { type: String, select: false },
-  passwordResetExpires: { type: Date, select: false },
+  passwordResetExpires: { type: Schema.Types.Date, select: false },
   role: { type: String, enum: ['Admin', 'Editor', 'Viewer'], required: true },
   joinDate: { type: Schema.Types.Date, required: true, default: Date.now },
   imageUrl: { type: String },
@@ -39,7 +39,7 @@ UserSchema.virtual('id').get(function(this: UserDocument) {
 });
 
 // Hash password before saving
-UserSchema.pre<UserDocument>('save', async function(next: mongoose.CallbackWithoutResult) {
+UserSchema.pre<UserDocument>('save', async function(next) {
   if (!this.isModified('password') || !this.password) {
     return next();
   }
