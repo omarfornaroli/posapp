@@ -26,5 +26,3 @@ ClientSchema.virtual('id').get(function(this: ClientDocument) {
 const Client: Model<ClientDocument> = models.Client || mongoose.model<ClientDocument>('Client', ClientSchema);
 
 export default Client;
-
-    

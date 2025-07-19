@@ -53,7 +53,7 @@ UserSchema.pre<UserDocument>('save', async function(next) {
 });
 
 // Method to compare password for login
-UserSchema.methods.comparePassword = function(candidatePassword: string): Promise<boolean> {
+UserSchema.methods.comparePassword = function(this: UserDocument, candidatePassword: string): Promise<boolean> {
   if (!this.password) {
     return Promise.resolve(false);
   }

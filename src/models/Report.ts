@@ -42,5 +42,3 @@ ReportSchema.virtual('id').get(function(this: ReportDocument) {
 const Report: Model<ReportDocument> = models.Report || mongoose.model<ReportDocument>('Report', ReportSchema);
 
 export default Report;
-
-    

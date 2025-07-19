@@ -16,7 +16,7 @@ export const CartItemSchema = new Schema<Omit<CartItemType, 'id'>>({
   itemDiscountValue: { type: Number, min: 0 },
 }, { _id: false });
 
-export const AppliedTaxEntrySchema = new Schema<AppliedTaxEntry>({
+export const AppliedTaxEntrySchema = new Schema<Omit<AppliedTaxEntry, 'id'>>({
   taxId: { type: String, required: true }, 
   name: { type: String, required: true },
   rate: { type: Number, required: true }, 
@@ -92,5 +92,3 @@ const SaleTransaction: Model<SaleTransactionDocument> =
   models.SaleTransaction || mongoose.model<SaleTransactionDocument>('SaleTransaction', SaleTransactionSchema);
 
 export default SaleTransaction;
-
-    

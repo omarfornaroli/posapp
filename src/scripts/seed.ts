@@ -1,7 +1,7 @@
 
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { runSeedOperations } from '../src/lib/seedCore'; 
+import { runSeedOperations } from '../lib/seedCore'; 
 // We don't import dbConnect from lib because this is a standalone script
 // that needs to manage its own connection lifecycle.
 
@@ -31,5 +31,3 @@ async function seedDatabase() {
 }
 
 seedDatabase();
-
-    

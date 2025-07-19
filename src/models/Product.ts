@@ -26,6 +26,7 @@ const ProductSchema: Schema<ProductDocument> = new Schema({
   lowStockWarning: { type: Boolean, default: false },
   warningQuantity: { type: Number, min: 0 },
   category: { type: String, required: true, trim: true },
+  productGroup: { type: String, trim: true },
   imageUrl: { type: String, trim: true },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },

@@ -1,3 +1,4 @@
+
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { ReceiptSetting as ReceiptSettingType, ReceiptMargin } from '@/types';
 
@@ -27,7 +28,7 @@ const ReceiptSettingSchema: Schema<ReceiptSettingDocument> = new Schema({
   showCompanyPhone: { type: Boolean, default: true },
   showClientInfo: { type: Boolean, default: true },
   showItemBarcodes: { type: Boolean, default: false },
-  showDiscountSummary: { type: Boolean, default: true },
+  showDiscountSummary: { type: Boolean, default: true }, 
   showPromotionsApplied: { type: Boolean, default: true },
   showPaymentMethodsDetails: { type: Boolean, default: true },
 }, {
