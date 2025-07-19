@@ -39,7 +39,7 @@ const ReceiptSettingSchema: Schema<ReceiptSettingDocument> = new Schema({
   collection: 'pos_receipt_settings'
 });
 
-ReceiptSettingSchema.virtual('id').get(function(this: Document) {
+ReceiptSettingSchema.virtual('id').get(function(this: ReceiptSettingDocument) {
   return this._id.toHexString();
 });
 
@@ -47,5 +47,3 @@ const ReceiptSetting: Model<ReceiptSettingDocument> =
   models.ReceiptSetting || mongoose.model<ReceiptSettingDocument>('ReceiptSetting', ReceiptSettingSchema);
 
 export default ReceiptSetting;
-
-    

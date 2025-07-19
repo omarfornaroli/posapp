@@ -96,24 +96,22 @@ export async function runSeedOperations() {
   const hashedPassword = await bcrypt.hash(adminPassword, salt);
   const adminUser = await User.findOneAndUpdate(
     { email: adminUserData.email },
-    { ...adminUserData, password: hashedPassword, status: 'active', createdBy: undefined, updatedBy: undefined },
+    { ...adminUserData, password: hashedPassword, status: 'active' },
     { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
   );
 
   const adminId = adminUser._id;
-  // Make the admin user self-audited
-  await User.updateOne({ _id: adminId }, { $set: { createdBy: adminId, updatedBy: adminId } });
   
   // Seed other users without a password (status will default to 'pending')
   const otherUsers = mockUsers.filter(u => u.email !== 'admin@example.com');
   await Promise.all(
-    otherUsers.map(data => User.findOneAndUpdate({ email: data.email }, { ...data, status: 'pending', createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true }))
+    otherUsers.map(data => User.findOneAndUpdate({ email: data.email }, { ...data, status: 'pending' }, { upsert: true, new: true, runValidators: true }))
   );
   console.log('Users seeded/updated.');
 
   // Seed Suppliers first to get their ObjectIds
   const seededSuppliers = await Promise.all(
-    mockSuppliers.map(data => Supplier.findOneAndUpdate({ name: data.name }, { ...data, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true }))
+    mockSuppliers.map(data => Supplier.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true }))
   );
   const supplierMap = new Map(seededSuppliers.map(s => [s.name, s._id]));
   console.log('Suppliers seeded/updated.');
@@ -124,26 +122,24 @@ export async function runSeedOperations() {
     return {
       ...productData,
       supplier: supplierId, // This is now an ObjectId or undefined
-      createdBy: adminId,
-      updatedBy: adminId,
     };
   });
 
   // Use Promise.all for other idempotent seeding operations
   await Promise.all([
     ...productsWithSupplierIds.map((data: Partial<ProductType>) => Product.findOneAndUpdate({ barcode: data.barcode }, data, { upsert: true, new: true, runValidators: true })),
-    ...mockClients.map(data => Client.findOneAndUpdate({ email: data.email }, { ...data, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true })),
-    ...mockTaxes.map(data => Tax.findOneAndUpdate({ name: data.name }, { ...data, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true })),
-    ...mockPromotions.map(data => Promotion.findOneAndUpdate({ name: data.name }, { ...data, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true })),
-    ...mockThemes.map(data => Theme.findOneAndUpdate({ name: data.name }, { ...data, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true })),
-    ...mockPaymentMethods.map(data => PaymentMethod.findOneAndUpdate({ name: data.name }, { ...data, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true })),
-    ...mockCountries.map(data => Country.findOneAndUpdate({ codeAlpha2: data.codeAlpha2 }, { ...data, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true })),
-    ...mockCurrencies.map(data => Currency.findOneAndUpdate({ code: data.code }, { ...data, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true })),
-    ReceiptSetting.findOneAndUpdate({ key: ReceiptSettingSingletonKey }, { key: ReceiptSettingSingletonKey, ...mockReceiptSettings, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true }),
-    POSSetting.findOneAndUpdate({ key: POSSettingSingletonKey }, { key: POSSettingSingletonKey, requireAuthForCartItemRemoval: true, dispatchAtSaleDefault: true, separateCartAndPayment: false, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true }),
-    SmtpSetting.findOneAndUpdate({ key: SmtpSettingSingletonKey }, { key: SmtpSettingSingletonKey, createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true }),
+    ...mockClients.map(data => Client.findOneAndUpdate({ email: data.email }, data, { upsert: true, new: true, runValidators: true })),
+    ...mockTaxes.map(data => Tax.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
+    ...mockPromotions.map(data => Promotion.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
+    ...mockThemes.map(data => Theme.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
+    ...mockPaymentMethods.map(data => PaymentMethod.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
+    ...mockCountries.map(data => Country.findOneAndUpdate({ codeAlpha2: data.codeAlpha2 }, data, { upsert: true, new: true, runValidators: true })),
+    ...mockCurrencies.map(data => Currency.findOneAndUpdate({ code: data.code }, data, { upsert: true, new: true, runValidators: true })),
+    ReceiptSetting.findOneAndUpdate({ key: ReceiptSettingSingletonKey }, { key: ReceiptSettingSingletonKey, ...mockReceiptSettings }, { upsert: true, new: true, runValidators: true }),
+    POSSetting.findOneAndUpdate({ key: POSSettingSingletonKey }, { key: POSSettingSingletonKey, requireAuthForCartItemRemoval: true, dispatchAtSaleDefault: true, separateCartAndPayment: false }, { upsert: true, new: true, runValidators: true }),
+    SmtpSetting.findOneAndUpdate({ key: SmtpSettingSingletonKey }, { key: SmtpSettingSingletonKey }, { upsert: true, new: true, runValidators: true }),
     ...(Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]).map(role => 
-        RolePermissionModel.findOneAndUpdate({ role }, { role, permissions: DEFAULT_ROLE_PERMISSIONS[role], createdBy: adminId, updatedBy: adminId }, { upsert: true, new: true, runValidators: true })
+        RolePermissionModel.findOneAndUpdate({ role }, { role, permissions: DEFAULT_ROLE_PERMISSIONS[role] }, { upsert: true, new: true, runValidators: true })
     )
   ]);
   console.log('Core data (Products, Clients, etc.) seeded/updated.');
@@ -154,8 +150,8 @@ export async function runSeedOperations() {
   // Languages - to ensure default settings are correct
   await AppLanguage.deleteMany({});
   await AppLanguage.insertMany([
-    { code: 'en', name: 'English', isDefault: false, isEnabled: true, createdBy: adminId, updatedBy: adminId },
-    { code: 'es', name: 'Español', isDefault: true, isEnabled: true, createdBy: adminId, updatedBy: adminId },
+    { code: 'en', name: 'English', isDefault: false, isEnabled: true },
+    { code: 'es', name: 'Español', isDefault: true, isEnabled: true },
   ]);
   console.log('App Languages seeded.');
 
@@ -178,9 +174,7 @@ export async function runSeedOperations() {
   await SaleTransaction.deleteMany({});
   const salesToSeed = mockSalesTransactions.map(sale => ({
     ...sale,
-    date: new Date(sale.date),
-    createdBy: adminId, // All sales created by admin for mock purposes
-    updatedBy: adminId
+    date: new Date(sale.date)
   }));
   await SaleTransaction.insertMany(salesToSeed);
   console.log(`${salesToSeed.length} Sale Transactions seeded.`);

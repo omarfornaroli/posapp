@@ -19,12 +19,10 @@ const TaxSchema: Schema<TaxDocument> = new Schema({
   collection: 'pos_taxes'
 });
 
-TaxSchema.virtual('id').get(function(this: Document) {
+TaxSchema.virtual('id').get(function(this: TaxDocument) {
   return this._id.toHexString();
 });
 
 const Tax: Model<TaxDocument> = models.Tax || mongoose.model<TaxDocument>('Tax', TaxSchema);
 
 export default Tax;
-
-    

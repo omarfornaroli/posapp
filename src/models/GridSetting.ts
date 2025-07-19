@@ -28,7 +28,7 @@ const GridSettingSchema: Schema<GridSettingDocument> = new Schema({
   collection: 'pos_grid_settings'
 });
 
-GridSettingSchema.virtual('id').get(function(this: Document) {
+GridSettingSchema.virtual('id').get(function(this: GridSettingDocument) {
   return this._id.toHexString();
 });
 
@@ -36,5 +36,3 @@ const GridSetting: Model<GridSettingDocument> =
   models.GridSetting || mongoose.model<GridSettingDocument>('GridSetting', GridSettingSchema);
 
 export default GridSetting;
-
-    

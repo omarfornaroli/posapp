@@ -58,7 +58,7 @@ const PendingCartSchema = new Schema<PendingCartDocument>({
   collection: 'pos_pending_carts'
 });
 
-PendingCartSchema.virtual('id').get(function(this: Document) {
+PendingCartSchema.virtual('id').get(function(this: PendingCartDocument) {
   return this._id.toHexString();
 });
 
@@ -66,5 +66,3 @@ const PendingCart: Model<PendingCartDocument> =
   models.PendingCart || mongoose.model<PendingCartDocument>('PendingCart', PendingCartSchema);
 
 export default PendingCart;
-
-    

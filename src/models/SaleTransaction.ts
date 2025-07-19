@@ -43,7 +43,7 @@ export interface SaleTransactionDocument extends SaleTransactionType, Document {
 }
 
 const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
-  date: { type: Schema.Types.Date, required: true, default: Date.now },
+  date: { type: Date, required: true, default: Date.now },
   items: [CartItemSchema],
   
   subtotal: { type: Number, required: true }, 
@@ -86,7 +86,7 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   collection: 'pos_sale_transactions'
 });
 
-SaleTransactionSchema.virtual('id').get(function(this: Document) {
+SaleTransactionSchema.virtual('id').get(function(this: SaleTransactionDocument) {
   return this._id.toHexString();
 });
 
@@ -94,5 +94,3 @@ const SaleTransaction: Model<SaleTransactionDocument> =
   models.SaleTransaction || mongoose.model<SaleTransactionDocument>('SaleTransaction', SaleTransactionSchema);
 
 export default SaleTransaction;
-
-    

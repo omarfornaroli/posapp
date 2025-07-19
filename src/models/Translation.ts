@@ -25,7 +25,7 @@ const TranslationSchema: Schema<TranslationDocument> = new Schema({
   collection: 'pos_translations'
 });
 
-TranslationSchema.virtual('id').get(function(this: Document) {
+TranslationSchema.virtual('id').get(function(this: TranslationDocument) {
   return this._id.toHexString();
 });
 
@@ -33,5 +33,3 @@ const Translation: Model<TranslationDocument> =
   models.Translation || mongoose.model<TranslationDocument>('Translation', TranslationSchema);
 
 export default Translation;
-
-    

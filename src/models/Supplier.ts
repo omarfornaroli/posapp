@@ -24,7 +24,7 @@ const SupplierSchema: Schema<SupplierDocument> = new Schema({
   collection: 'pos_suppliers'
 });
 
-SupplierSchema.virtual('id').get(function(this: Document) {
+SupplierSchema.virtual('id').get(function(this: SupplierDocument) {
   return this._id.toHexString();
 });
 
@@ -32,5 +32,3 @@ const Supplier: Model<SupplierDocument> =
   models.Supplier || mongoose.model<SupplierDocument>('Supplier', SupplierSchema);
 
 export default Supplier;
-
-    

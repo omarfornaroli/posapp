@@ -39,7 +39,7 @@ const ProductSchema: Schema<ProductDocument> = new Schema({
   collection: 'pos_products'
 });
 
-ProductSchema.virtual('id').get(function(this: Document) {
+ProductSchema.virtual('id').get(function(this: ProductDocument) {
   return this._id.toHexString();
 });
 
@@ -49,5 +49,3 @@ ProductSchema.index({ name: 'text', description: 'text', category: 1, sku: 1 });
 const Product: Model<ProductDocument> = models.Product || mongoose.model<ProductDocument>('Product', ProductSchema);
 
 export default Product;
-
-    

@@ -27,7 +27,7 @@ const RolePermissionSchema: Schema<RolePermissionDocument> = new Schema({
   collection: 'pos_role_permissions'
 });
 
-RolePermissionSchema.virtual('id').get(function(this: Document) {
+RolePermissionSchema.virtual('id').get(function(this: RolePermissionDocument) {
   return this._id.toHexString();
 });
 
@@ -35,5 +35,3 @@ const RolePermission: Model<RolePermissionDocument> =
   models.RolePermission || mongoose.model<RolePermissionDocument>('RolePermission', RolePermissionSchema);
 
 export default RolePermission;
-
-    

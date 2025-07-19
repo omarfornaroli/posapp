@@ -2,13 +2,14 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { runSeedOperations } from '../lib/seedCore'; 
+import dbConnect from '../lib/dbConnect';
 
 dotenv.config({ path: '.env.local' });
 
 async function seedDatabase() {
   try {
     console.log('Connecting to database for manual seed...');
-    await mongoose.connect(process.env.MONGODB_URI!);
+    await dbConnect(); 
     console.log('Database connected. Starting manual seed via script...');
     
     // Now run the seed operations explicitly
@@ -24,5 +25,3 @@ async function seedDatabase() {
 }
 
 seedDatabase();
-
-    

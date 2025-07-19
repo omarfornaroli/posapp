@@ -28,7 +28,7 @@ const NotificationSchema: Schema<NotificationDocument> = new Schema({
   collection: 'pos_notifications'
 });
 
-NotificationSchema.virtual('id').get(function(this: Document) {
+NotificationSchema.virtual('id').get(function(this: NotificationDocument) {
   return this._id.toHexString();
 });
 
@@ -36,5 +36,3 @@ const Notification: Model<NotificationDocument> =
   models.Notification || mongoose.model<NotificationDocument>('Notification', NotificationSchema);
 
 export default Notification;
-
-    

@@ -28,12 +28,10 @@ const ReportSchema = new Schema<ReportDocument>({
   collection: 'pos_reports'
 });
 
-ReportSchema.virtual('id').get(function(this: Document) {
+ReportSchema.virtual('id').get(function(this: ReportDocument) {
   return this._id.toHexString();
 });
 
 const Report: Model<ReportDocument> = models.Report || mongoose.model<ReportDocument>('Report', ReportSchema);
 
 export default Report;
-
-    

@@ -21,7 +21,7 @@ const POSSettingSchema: Schema<POSSettingDocument> = new Schema({
   collection: 'pos_pos_settings'
 });
 
-POSSettingSchema.virtual('id').get(function(this: Document) {
+POSSettingSchema.virtual('id').get(function(this: POSSettingDocument) {
   return this._id.toHexString();
 });
 
@@ -29,5 +29,3 @@ const POSSetting: Model<POSSettingDocument> =
   models.POSSetting || mongoose.model<POSSettingDocument>('POSSetting', POSSettingSchema);
 
 export default POSSetting;
-
-    

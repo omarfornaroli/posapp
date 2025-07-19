@@ -20,7 +20,7 @@ const PaymentMethodSchema: Schema<PaymentMethodDocument> = new Schema({
   collection: 'pos_payment_methods'
 });
 
-PaymentMethodSchema.virtual('id').get(function(this: Document) {
+PaymentMethodSchema.virtual('id').get(function(this: PaymentMethodDocument) {
   return this._id.toHexString();
 });
 
@@ -28,5 +28,3 @@ const PaymentMethod: Model<PaymentMethodDocument> =
   models.PaymentMethod || mongoose.model<PaymentMethodDocument>('PaymentMethod', PaymentMethodSchema);
 
 export default PaymentMethod;
-
-    

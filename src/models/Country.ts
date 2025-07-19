@@ -24,7 +24,7 @@ const CountrySchema: Schema<CountryDocument> = new Schema({
   collection: 'pos_countries'
 });
 
-CountrySchema.virtual('id').get(function(this: Document) {
+CountrySchema.virtual('id').get(function(this: CountryDocument) {
   return this._id.toHexString();
 });
 
@@ -41,5 +41,3 @@ const Country: Model<CountryDocument> =
   models.Country || mongoose.model<CountryDocument>('Country', CountrySchema);
 
 export default Country;
-
-    

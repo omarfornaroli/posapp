@@ -23,7 +23,7 @@ const CurrencySchema: Schema<CurrencyDocument> = new Schema({
   collection: 'pos_currencies'
 });
 
-CurrencySchema.virtual('id').get(function(this: Document) {
+CurrencySchema.virtual('id').get(function(this: CurrencyDocument) {
   return this._id.toHexString();
 });
 
@@ -40,5 +40,3 @@ const Currency: Model<CurrencyDocument> =
   models.Currency || mongoose.model<CurrencyDocument>('Currency', CurrencySchema);
 
 export default Currency;
-
-    

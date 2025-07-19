@@ -23,7 +23,7 @@ const SmtpSettingSchema: Schema<SmtpSettingDocument> = new Schema({
   collection: 'pos_smtp_settings'
 });
 
-SmtpSettingSchema.virtual('id').get(function(this: Document) {
+SmtpSettingSchema.virtual('id').get(function(this: SmtpSettingDocument) {
   return this._id.toHexString();
 });
 
@@ -31,5 +31,3 @@ const SmtpSetting: Model<SmtpSettingDocument> =
   models.SmtpSetting || mongoose.model<SmtpSettingDocument>('SmtpSetting', SmtpSettingSchema);
 
 export default SmtpSetting;
-
-    

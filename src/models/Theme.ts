@@ -43,12 +43,10 @@ const ThemeSchema: Schema<ThemeDocument> = new Schema({
   collection: 'pos_themes'
 });
 
-ThemeSchema.virtual('id').get(function(this: Document) {
+ThemeSchema.virtual('id').get(function(this: ThemeDocument) {
   return this._id.toHexString();
 });
 
 const Theme: Model<ThemeDocument> = models.Theme || mongoose.model<ThemeDocument>('Theme', ThemeSchema);
 
 export default Theme;
-
-    
