@@ -25,7 +25,7 @@ const TranslationSchema: Schema<TranslationDocument> = new Schema({
   collection: 'pos_translations'
 });
 
-TranslationSchema.virtual('id').get(function(this: TranslationDocument) {
+TranslationSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 
