@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -10,6 +11,7 @@ import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useDexieReceiptSettings } from '@/hooks/useDexieReceiptSettings';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function ReceiptPage() {
   const params = useParams();
@@ -20,7 +22,7 @@ export default function ReceiptPage() {
   const transaction = useLiveQuery(
     () => transactionId ? db.sales.get(transactionId) : Promise.resolve(undefined),
     [transactionId]
-  );
+  ) as SaleTransaction | undefined; // Cast to correct type
   
   const { receiptSettings, isLoading: isLoadingSettings } = useDexieReceiptSettings();
   const { toast } = useToast();

@@ -340,7 +340,7 @@ export interface SmtpSetting {
   host: string;
   port: number;
   user: string;
-  pass: string; // This will likely not be sent to the client
+  pass?: string; // This will likely not be sent to the client
   from: string;
   isConfigured?: boolean;
 }
@@ -512,5 +512,3 @@ export interface Report {
   createdAt?: string;
   updatedAt?: string;
 }
-
-    

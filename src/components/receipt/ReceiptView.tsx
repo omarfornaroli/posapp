@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useEffect } from 'react';
-import type { SaleTransaction, AppliedPayment, ReceiptSetting, ReceiptMargin } from '@/types'; 
+import type { SaleTransaction, AppliedPayment, ReceiptSetting, ReceiptMargin, AppliedTaxEntry } from '@/types'; 
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -260,7 +261,7 @@ export default function ReceiptView({ transaction, settings }: ReceiptViewProps)
 
 
             {transaction.appliedTaxes && transaction.appliedTaxes.map(tax => (
-              <div key={tax.taxId || tax.id || tax.name} className="flex justify-between">
+              <div key={tax.taxId} className="flex justify-between">
                 <span>{tax.name} ({(tax.rate * 100).toFixed(0)}%)</span>
                 <span>+{formatCurrency(tax.amount)}</span>
               </div>

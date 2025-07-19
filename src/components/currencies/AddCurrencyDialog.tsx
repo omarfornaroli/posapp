@@ -30,7 +30,7 @@ import type { Currency } from '@/types';
 import { Loader2 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 
-const currencyFormSchema = (t: Function) => z.object({
+const currencyFormSchema = (t: Function, existingCodes: string[]) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.minLength', {fieldName: t('AddCurrencyDialog.nameLabel'), minLength: 2}) }),
   code: z.string().length(3, { message: t('AddCurrencyDialog.codeLengthError') }).regex(/^[A-Z]{3}$/, { message: t('AddCurrencyDialog.codeFormatError')})
     .refine(code => !existingCodes.includes(code.toUpperCase()), { message: t('AddCurrencyDialog.codeExistsError') }),

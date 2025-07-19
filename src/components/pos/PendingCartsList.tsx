@@ -1,3 +1,4 @@
+
 'use client';
 
 import type { PendingCart } from '@/types';
@@ -63,7 +64,7 @@ export default function PendingCartsList({ carts, isLoading, onSelectCart, activ
                   </div>
                    <div className="text-right shrink-0 ml-2">
                         <p className="font-bold text-base">{cart.currencySymbol}{cart.totalAmount.toFixed(cart.currencyDecimalPlaces)}</p>
-                        <p className="text-xs text-muted-foreground">{new Date(cart.createdAt).toLocaleTimeString()}</p>
+                        <p className="text-xs text-muted-foreground">{cart.createdAt ? new Date(cart.createdAt).toLocaleTimeString() : ''}</p>
                    </div>
                 </Button>
               ))

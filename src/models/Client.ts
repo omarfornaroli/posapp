@@ -6,7 +6,8 @@ export interface ClientDocument extends ClientType, Document {
   id: string;
 }
 
-const ClientSchema: Schema<ClientDocument> = new Schema({
+// The schema should define the structure for Mongoose, not conform to the TS interface directly
+const ClientSchema: Schema = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   phone: { type: String },
@@ -21,7 +22,7 @@ const ClientSchema: Schema<ClientDocument> = new Schema({
   collection: 'pos_clients'
 });
 
-ClientSchema.virtual('id').get(function(this: ClientDocument) {
+ClientSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

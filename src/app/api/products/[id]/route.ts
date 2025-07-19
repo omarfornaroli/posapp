@@ -47,10 +47,10 @@ export async function PUT(request: Request, { params }: any) {
     const updateData: Partial<ProductType> = {};
 
     // This ensures only fields present in the body are added to the update object
-    Object.keys(body).forEach(key => {
-        const typedKey = key as keyof ProductType;
-        if (body[typedKey] !== undefined) {
-             (updateData as any)[typedKey] = body[typedKey];
+    // Corrected typing for object iteration
+    (Object.keys(body) as Array<keyof typeof body>).forEach(key => {
+        if (body[key] !== undefined) {
+             (updateData as any)[key] = body[key];
         }
     });
 
@@ -132,5 +132,3 @@ export async function DELETE(request: Request, { params }: any) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
-
-    

@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { SaleTransaction as SaleTransactionType, CartItem as CartItemType, AppliedTaxEntry, AppliedPromotionEntry, AppliedPayment, DispatchStatus } from '@/types';
 
 export const CartItemSchema = new Schema<CartItemType>({
-  productId: { type: String, required: true }, 
+  productId: { type: String, required: true },
   name: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
@@ -86,7 +86,7 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   collection: 'pos_sale_transactions'
 });
 
-SaleTransactionSchema.virtual('id').get(function(this: SaleTransactionDocument) {
+SaleTransactionSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

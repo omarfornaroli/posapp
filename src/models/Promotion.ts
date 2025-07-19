@@ -21,10 +21,10 @@ export interface PromotionDocument extends PromotionType, Document {
 const PromotionSchema: Schema<PromotionDocument> = new Schema({
   name: { type: String, required: true, unique: true },
   description: { type: String },
-  discountType: { type: String, enum: ['percentage', 'fixedAmount'], required: true },
+  discountType: { type: String, enum: ['percentage', 'fixedAmount'] satisfies PromotionDiscountType[], required: true },
   discountValue: { type: Number, required: true, min: 0 },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date },
+  startDate: { type: Schema.Types.Date, required: true },
+  endDate: { type: Schema.Types.Date },
   conditions: [PromotionConditionSchema], 
   isActive: { type: Boolean, default: true, required: true },
   applicationMethod: { type: String, enum: ['cart', 'lowestPriceItem'], default: 'cart' },
@@ -37,7 +37,7 @@ const PromotionSchema: Schema<PromotionDocument> = new Schema({
   collection: 'pos_promotions'
 });
 
-PromotionSchema.virtual('id').get(function(this: PromotionDocument) {
+PromotionSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

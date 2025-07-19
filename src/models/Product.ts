@@ -1,6 +1,6 @@
 
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
-import type { Product as ProductType } from '@/types';
+import type { Product as ProductType, Supplier } from '@/types';
 
 export interface ProductDocument extends ProductType, Document {
   id: string;
@@ -39,7 +39,7 @@ const ProductSchema: Schema<ProductDocument> = new Schema({
   collection: 'pos_products'
 });
 
-ProductSchema.virtual('id').get(function(this: ProductDocument) {
+ProductSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

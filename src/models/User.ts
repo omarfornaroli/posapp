@@ -35,7 +35,7 @@ const UserSchema: Schema<UserDocument> = new Schema({
   collection: 'pos_users'
 });
 
-UserSchema.virtual('id').get(function(this: UserDocument) {
+UserSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

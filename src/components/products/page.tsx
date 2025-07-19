@@ -237,7 +237,7 @@ export default function ProductsPage() {
       setEditingProduct(productToEdit);
       setIsEditDialogOpen(true);
     } else {
-      toast({ title: t('Common.error'), description: t('ProductManagementPage.errorNotFoundForEditing'), variant: 'destructive' });
+      toast({ title: t('ProductManagementPage.errorNotFoundForEditing'), variant: 'destructive' });
     }
   };
 

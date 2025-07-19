@@ -11,7 +11,7 @@ const NotificationSchema: Schema<NotificationDocument> = new Schema({
   messageParams: { type: Schema.Types.Mixed }, // Store as flexible object
   type: {
     type: String,
-    enum: ['info', 'success', 'warning', 'error', 'system'] as NotificationEnumType[],
+    enum: ['info', 'success', 'warning', 'error', 'system'] satisfies NotificationEnumType[],
     required: true,
     default: 'info',
   },
@@ -28,7 +28,7 @@ const NotificationSchema: Schema<NotificationDocument> = new Schema({
   collection: 'pos_notifications'
 });
 
-NotificationSchema.virtual('id').get(function(this: NotificationDocument) {
+NotificationSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

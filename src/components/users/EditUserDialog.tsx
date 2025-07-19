@@ -32,7 +32,7 @@ import JsBarcode from 'jsbarcode';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '../ui/scroll-area';
 
-const userRoles: UserRole[] = ['Admin', 'Editor', 'Viewer'];
+const userRoles: readonly [UserRole, ...UserRole[]] = ['Admin', 'Editor', 'Viewer'];
 
 const userFormSchema = (t: Function) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.minLength', {fieldName: t('AddUserDialog.nameLabel'), minLength: 2}) }),
@@ -166,7 +166,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
     if (!user) return; 
     onSaveUser({
       ...user, 
-      ...values,   
+      ...values,
     });
   }
 
@@ -290,7 +290,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
                   )}
               </div>
               {user?.status === 'pending' && (
-                <div className="pt-4 mt-4 border-t">
+                <div className="pt-4 mt-4 border-t pr-2">
                   <p className="text-sm text-muted-foreground mb-2">{t('EditUserDialog.pendingUserHelpText')}</p>
                   <Button type="button" variant="secondary" onClick={handleResendInvitation} disabled={isResending} className="w-full">
                     {isResending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
@@ -311,5 +311,3 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
     </Dialog>
   );
 }
-
-    
