@@ -33,3 +33,5 @@ const Translation: Model<TranslationDocument> =
   models.Translation || mongoose.model<TranslationDocument>('Translation', TranslationSchema);
 
 export default Translation;
+
+    

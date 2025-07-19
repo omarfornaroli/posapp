@@ -26,3 +26,5 @@ TaxSchema.virtual('id').get(function(this: Document) {
 const Tax: Model<TaxDocument> = models.Tax || mongoose.model<TaxDocument>('Tax', TaxSchema);
 
 export default Tax;
+
+    

@@ -4,7 +4,6 @@ import type { Notification as NotificationType, NotificationEnumType } from '@/t
 
 export interface NotificationDocument extends NotificationType, Document {
   id: string;
-  createdAt: Date;
 }
 
 const NotificationSchema: Schema<NotificationDocument> = new Schema({
@@ -33,13 +32,9 @@ NotificationSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 
-// Ensure createdAt is explicitly available if needed beyond timestamps
-NotificationSchema.virtual('createdAtString').get(function(this: NotificationDocument) {
-  return this.createdAt.toISOString();
-});
-
-
 const Notification: Model<NotificationDocument> =
   models.Notification || mongoose.model<NotificationDocument>('Notification', NotificationSchema);
 
 export default Notification;
+
+    

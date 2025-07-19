@@ -2,28 +2,21 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { runSeedOperations } from '../lib/seedCore'; 
-// We don't import dbConnect from lib because this is a standalone script
-// that needs to manage its own connection lifecycle.
 
-dotenv.config({ path: process.cwd() + '/.env.local' });
+dotenv.config({ path: '.env.local' });
 
 async function seedDatabase() {
-  const MONGODB_URI = process.env.MONGODB_URI;
-  if (!MONGODB_URI || MONGODB_URI.includes('YOUR_MONGODB_CONNECTION_STRING')) {
-    console.error('\n❌ Cannot run manual seed. MONGODB_URI is not configured in .env.local.');
-    process.exit(1);
-  }
-
-  console.log('Attempting to connect to database for manual seed...');
-  
   try {
-    await mongoose.connect(MONGODB_URI!);
-    console.log('Database connected for manual seed.');
-    console.log('Forcing seed operations...');
+    console.log('Connecting to database for manual seed...');
+    await mongoose.connect(process.env.MONGODB_URI!);
+    console.log('Database connected. Starting manual seed via script...');
+    
+    // Now run the seed operations explicitly
     await runSeedOperations();
-    console.log('✅ Manual seeding completed successfully!');
+    
+    console.log('Database seeding completed successfully via manual script!');
   } catch (error) {
-    console.error('Error during manual database seed:', error);
+    console.error('Error seeding database via manual script:', error);
   } finally {
     await mongoose.disconnect();
     console.log('Database connection closed by manual seed script.');
@@ -31,3 +24,5 @@ async function seedDatabase() {
 }
 
 seedDatabase();
+
+    

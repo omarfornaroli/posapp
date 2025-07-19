@@ -31,3 +31,5 @@ const SmtpSetting: Model<SmtpSettingDocument> =
   models.SmtpSetting || mongoose.model<SmtpSettingDocument>('SmtpSetting', SmtpSettingSchema);
 
 export default SmtpSetting;
+
+    

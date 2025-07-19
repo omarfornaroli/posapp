@@ -59,7 +59,7 @@ export interface Product {
 }
 
 export interface CartItem extends Product {
-  productId?: string; // Add productId to CartItem
+  productId: string; 
   quantity: number; 
   dispatchedQuantity?: number;
   itemDiscountType?: 'percentage' | 'fixedAmount';
@@ -259,7 +259,7 @@ export interface User {
   joinDate: string; 
   imageUrl?: string;
   authorizationCode?: string;
-  permissions: Permission[];
+  permissions?: Permission[]; // Permissions should be optional as they are added at runtime
   createdBy?: string;
   updatedBy?: string;
   createdAt?: string;
@@ -512,3 +512,5 @@ export interface Report {
   createdAt?: string;
   updatedAt?: string;
 }
+
+    

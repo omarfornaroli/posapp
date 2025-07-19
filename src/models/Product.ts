@@ -49,3 +49,5 @@ ProductSchema.index({ name: 'text', description: 'text', category: 1, sku: 1 });
 const Product: Model<ProductDocument> = models.Product || mongoose.model<ProductDocument>('Product', ProductSchema);
 
 export default Product;
+
+    

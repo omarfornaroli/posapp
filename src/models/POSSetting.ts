@@ -29,3 +29,5 @@ const POSSetting: Model<POSSettingDocument> =
   models.POSSetting || mongoose.model<POSSettingDocument>('POSSetting', POSSettingSchema);
 
 export default POSSetting;
+
+    

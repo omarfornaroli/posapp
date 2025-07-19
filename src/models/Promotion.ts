@@ -23,8 +23,8 @@ const PromotionSchema: Schema<PromotionDocument> = new Schema({
   description: { type: String },
   discountType: { type: String, enum: ['percentage', 'fixedAmount'], required: true },
   discountValue: { type: Number, required: true, min: 0 },
-  startDate: { type: Date, required: true },
-  endDate: { type: Date },
+  startDate: { type: Schema.Types.Date, required: true },
+  endDate: { type: Schema.Types.Date },
   conditions: [PromotionConditionSchema], 
   isActive: { type: Boolean, default: true, required: true },
   applicationMethod: { type: String, enum: ['cart', 'lowestPriceItem'], default: 'cart' },
@@ -44,3 +44,5 @@ PromotionSchema.virtual('id').get(function(this: Document) {
 const Promotion: Model<PromotionDocument> = models.Promotion || mongoose.model<PromotionDocument>('Promotion', PromotionSchema);
 
 export default Promotion;
+
+    

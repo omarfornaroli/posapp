@@ -19,11 +19,11 @@ const UserSchema: Schema<UserDocument> = new Schema({
   password: { type: String, select: false },
   status: { type: String, enum: ['pending', 'active'] as UserStatus[], default: 'pending', required: true },
   setupToken: { type: String, select: false },
-  setupTokenExpires: { type: Date, select: false },
+  setupTokenExpires: { type: Schema.Types.Date, select: false },
   passwordResetToken: { type: String, select: false },
-  passwordResetExpires: { type: Date, select: false },
+  passwordResetExpires: { type: Schema.Types.Date, select: false },
   role: { type: String, enum: ['Admin', 'Editor', 'Viewer'], required: true },
-  joinDate: { type: Date, required: true, default: Date.now },
+  joinDate: { type: Schema.Types.Date, required: true, default: Date.now },
   imageUrl: { type: String },
   authorizationCode: { type: String, unique: true, sparse: true, index: true },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -65,3 +65,5 @@ UserSchema.methods.comparePassword = function(this: UserDocument, candidatePassw
 const User: Model<UserDocument> = models.User || mongoose.model<UserDocument>('User', UserSchema);
 
 export default User;
+
+    

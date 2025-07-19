@@ -28,7 +28,7 @@ CurrencySchema.virtual('id').get(function(this: Document) {
 });
 
 // Ensure only one currency can be default
-CurrencySchema.pre('save', async function(next) {
+CurrencySchema.pre('save', async function(this: CurrencyDocument, next) {
   if (this.isModified('isDefault') && this.isDefault) {
     const model = this.constructor as Model<CurrencyDocument>;
     await model.updateMany({ _id: { $ne: this._id }, isDefault: true }, { isDefault: false });
@@ -40,3 +40,5 @@ const Currency: Model<CurrencyDocument> =
   models.Currency || mongoose.model<CurrencyDocument>('Currency', CurrencySchema);
 
 export default Currency;
+
+    

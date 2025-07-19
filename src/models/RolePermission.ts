@@ -35,3 +35,5 @@ const RolePermission: Model<RolePermissionDocument> =
   models.RolePermission || mongoose.model<RolePermissionDocument>('RolePermission', RolePermissionSchema);
 
 export default RolePermission;
+
+    

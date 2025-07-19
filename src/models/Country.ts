@@ -28,7 +28,7 @@ CountrySchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 
-CountrySchema.pre('save', async function(next) {
+CountrySchema.pre('save', async function(this: CountryDocument, next) {
   if (this.isModified('isDefault') && this.isDefault) {
     const model = this.constructor as Model<CountryDocument>;
     await model.updateMany({ _id: { $ne: this._id }, isDefault: true }, { isDefault: false });
@@ -41,3 +41,5 @@ const Country: Model<CountryDocument> =
   models.Country || mongoose.model<CountryDocument>('Country', CountrySchema);
 
 export default Country;
+
+    

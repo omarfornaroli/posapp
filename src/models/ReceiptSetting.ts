@@ -47,3 +47,5 @@ const ReceiptSetting: Model<ReceiptSettingDocument> =
   models.ReceiptSetting || mongoose.model<ReceiptSettingDocument>('ReceiptSetting', ReceiptSettingSchema);
 
 export default ReceiptSetting;
+
+    

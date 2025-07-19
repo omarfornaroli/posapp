@@ -32,3 +32,5 @@ const Supplier: Model<SupplierDocument> =
   models.Supplier || mongoose.model<SupplierDocument>('Supplier', SupplierSchema);
 
 export default Supplier;
+
+    

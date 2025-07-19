@@ -28,3 +28,5 @@ const PaymentMethod: Model<PaymentMethodDocument> =
   models.PaymentMethod || mongoose.model<PaymentMethodDocument>('PaymentMethod', PaymentMethodSchema);
 
 export default PaymentMethod;
+
+    
