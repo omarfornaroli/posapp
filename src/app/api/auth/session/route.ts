@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       name: user.name,
       email: user.email,
       role: user.role as UserType['role'],
-      joinDate: user.joinDate.toISOString(),
+      joinDate: user.joinDate.toString(),
       imageUrl: user.imageUrl,
       permissions: permissions,
       status: user.status as UserType['status'],

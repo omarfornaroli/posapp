@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
     }));
 
      const appliedTaxesForDb = saleData.appliedTaxes.map(tax => ({
-        taxId: tax.id, 
+        taxId: tax.taxId, 
         name: tax.name,
         rate: tax.rate,
         amount: tax.amount,
