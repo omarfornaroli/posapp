@@ -23,7 +23,7 @@ const UserSchema: Schema<UserDocument> = new Schema({
   passwordResetToken: { type: String, select: false },
   passwordResetExpires: { type: Schema.Types.Date, select: false },
   role: { type: String, enum: ['Admin', 'Editor', 'Viewer'], required: true },
-  joinDate: { type: Schema.Types.Date, required: true, default: Date.now },
+  joinDate: { type: Date, required: true, default: Date.now },
   imageUrl: { type: String },
   authorizationCode: { type: String, unique: true, sparse: true, index: true },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -35,7 +35,7 @@ const UserSchema: Schema<UserDocument> = new Schema({
   collection: 'pos_users'
 });
 
-UserSchema.virtual('id').get(function(this: Document) {
+UserSchema.virtual('id').get(function(this: UserDocument) {
   return this._id.toHexString();
 });
 
@@ -65,5 +65,3 @@ UserSchema.methods.comparePassword = function(this: UserDocument, candidatePassw
 const User: Model<UserDocument> = models.User || mongoose.model<UserDocument>('User', UserSchema);
 
 export default User;
-
-    
