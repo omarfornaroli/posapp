@@ -43,7 +43,7 @@ const ThemeSchema: Schema<ThemeDocument> = new Schema({
   collection: 'pos_themes'
 });
 
-ThemeSchema.virtual('id').get(function(this: ThemeDocument) {
+ThemeSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

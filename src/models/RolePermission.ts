@@ -27,7 +27,7 @@ const RolePermissionSchema: Schema<RolePermissionDocument> = new Schema({
   collection: 'pos_role_permissions'
 });
 
-RolePermissionSchema.virtual('id').get(function(this: RolePermissionDocument) {
+RolePermissionSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

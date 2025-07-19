@@ -30,7 +30,7 @@ import type { User, UserRole } from '@/types';
 import { Loader2 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 
-const userRoles: readonly [UserRole, ...UserRole[]] = ['Admin', 'Editor', 'Viewer'];
+const userRoles: [UserRole, ...UserRole[]] = ['Admin', 'Editor', 'Viewer'];
 
 const userFormSchema = (t: Function) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.minLength', {fieldName: t('AddUserDialog.nameLabel'), minLength: 2}) }),

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useRxTranslate } from '@/hooks/use-rx-translate';
@@ -37,7 +38,7 @@ const ReportCard = ({ report, onViewReport, onDeleteReport, onEditReport, t, cur
             </DropdownMenu>
         </CardHeader>
         <CardFooter className="px-4 pb-4 text-xs text-muted-foreground">
-            {t('ReportsPage.tableCreatedHeader')}: {formatDistanceToNow(new Date(report.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS })}
+            {t('ReportsPage.tableCreatedHeader')}: {report.createdAt ? formatDistanceToNow(new Date(report.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS }) : ''}
         </CardFooter>
     </Card>
 );
@@ -97,7 +98,7 @@ export default function ReportListTable({ reports, onViewReport, onDeleteReport 
                 <TableCell className="font-medium">{report.name}</TableCell>
                 <TableCell className="text-muted-foreground">{report.description || '...'}</TableCell>
                 <TableCell className="text-center text-sm">
-                    {formatDistanceToNow(new Date(report.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS })}
+                    {report.createdAt ? formatDistanceToNow(new Date(report.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS }) : ''}
                 </TableCell>
                 <TableCell className="text-center">
                     <div className="flex justify-center gap-2">

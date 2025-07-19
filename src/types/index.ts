@@ -400,8 +400,8 @@ export interface AppLanguage {
   id: string;
   code: string; 
   name: string; 
-  isDefault: boolean;
-  isEnabled: boolean;
+  isDefault?: boolean;
+  isEnabled?: boolean;
   createdBy?: string;
   updatedBy?: string;
   createdAt?: string;
@@ -416,7 +416,7 @@ export interface Notification {
   messageParams?: Record<string, string | number>; 
   type: NotificationEnumType;
   isRead: boolean;
-  createdAt: string; 
+  createdAt?: string; 
   link?: string; 
   userId?: string; 
   actorId?: string;
@@ -430,7 +430,7 @@ export interface Country {
   id: string;
   name: string;
   codeAlpha2: string; 
-  codeAlpha3: string; 
+  codeAlpha3?: string; 
   numericCode?: string; 
   currencyCode?: string; 
   flagImageUrl?: string; 

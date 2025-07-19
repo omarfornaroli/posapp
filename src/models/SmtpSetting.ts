@@ -23,7 +23,7 @@ const SmtpSettingSchema: Schema<SmtpSettingDocument> = new Schema({
   collection: 'pos_smtp_settings'
 });
 
-SmtpSettingSchema.virtual('id').get(function(this: SmtpSettingDocument) {
+SmtpSettingSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

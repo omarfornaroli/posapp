@@ -24,7 +24,7 @@ const CountrySchema: Schema<CountryDocument> = new Schema({
   collection: 'pos_countries'
 });
 
-CountrySchema.virtual('id').get(function(this: CountryDocument) {
+CountrySchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

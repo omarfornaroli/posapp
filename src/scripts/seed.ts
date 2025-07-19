@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { runSeedOperations } from '../lib/seedCore'; 
 import dbConnect from '../lib/dbConnect';
 
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: process.cwd() + '/.env.local' });
 
 async function seedDatabase() {
   try {

@@ -73,7 +73,7 @@ export default function EditCurrencyDialog({ open, onOpenChange, currency, onSav
         decimalPlaces: currency.decimalPlaces,
         isEnabled: currency.isEnabled,
         isDefault: currency.isDefault || false,
-        exchangeRate: currency.exchangeRate,
+        exchangeRate: currency.exchangeRate !== undefined ? String(currency.exchangeRate) : '',
       });
     } else if (!open) {
       form.reset({ name: '', code: '', symbol: '', decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: ''});

@@ -24,7 +24,7 @@ import { mockPreviewTransaction } from '@/lib/mock-data';
 import { useDexieReceiptSettings } from '@/hooks/useDexieReceiptSettings';
 
 const receiptWidthOptions = ['auto', '80mm', '58mm'] as const;
-const receiptMarginOptions: ReceiptMargin[] = ['none', 'small', 'medium', 'large'];
+const receiptMarginOptions: [ReceiptMargin, ...ReceiptMargin[]] = ['none', 'small', 'medium', 'large'];
 
 const receiptSettingsFormSchema = (t: Function) => z.object({
   logoUrl: z.string().url({ message: t('Common.formErrors.invalidUrl', {fieldName: t('ReceiptSettingsForm.logoUrlLabel')}) }).optional().or(z.literal('')),
@@ -86,9 +86,7 @@ export default function ReceiptSettingsForm() {
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       if (typeof window !== 'undefined') {
         const userEmail = localStorage.getItem('loggedInUserEmail');
-        if (userEmail) {
-          headers['X-User-Email'] = userEmail;
-        }
+        if (userEmail) headers['X-User-Email'] = userEmail;
       }
       const response = await fetch('/api/receipt-settings', {
         method: 'POST',
@@ -97,7 +95,7 @@ export default function ReceiptSettingsForm() {
       });
       const result = await response.json();
       if (!response.ok || !result.success) {
-        throw new Error(result.error || t('ReceiptSettingsForm.errorSavingSettings'));
+        throw new Error(result.error || 'Failed to save receipt settings');
       }
       refetchSettings(); // Refetch after saving
       toast({

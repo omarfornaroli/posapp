@@ -19,7 +19,7 @@ const TaxSchema: Schema<TaxDocument> = new Schema({
   collection: 'pos_taxes'
 });
 
-TaxSchema.virtual('id').get(function(this: TaxDocument) {
+TaxSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

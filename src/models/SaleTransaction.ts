@@ -3,6 +3,7 @@ import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { SaleTransaction as SaleTransactionType, CartItem as CartItemType, AppliedTaxEntry, AppliedPromotionEntry, AppliedPayment, DispatchStatus } from '@/types';
 
 export const CartItemSchema = new Schema<CartItemType>({
+  id: { type: String, required: true },
   productId: { type: String, required: true },
   name: { type: String, required: true },
   price: { type: Number, required: true },

@@ -47,7 +47,6 @@ export async function PUT(request: Request, { params }: any) {
     const updateData: Partial<ProductType> = {};
 
     // This ensures only fields present in the body are added to the update object
-    // Corrected typing for object iteration
     (Object.keys(body) as Array<keyof typeof body>).forEach(key => {
         if (body[key] !== undefined) {
              (updateData as any)[key] = body[key];

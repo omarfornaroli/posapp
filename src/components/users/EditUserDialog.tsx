@@ -32,7 +32,7 @@ import JsBarcode from 'jsbarcode';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '../ui/scroll-area';
 
-const userRoles: readonly [UserRole, ...UserRole[]] = ['Admin', 'Editor', 'Viewer'];
+const userRoles: [UserRole, ...UserRole[]] = ['Admin', 'Editor', 'Viewer'];
 
 const userFormSchema = (t: Function) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.minLength', {fieldName: t('AddUserDialog.nameLabel'), minLength: 2}) }),

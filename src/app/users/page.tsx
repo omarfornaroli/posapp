@@ -53,7 +53,7 @@ export default function UsersManagerPage() {
     });
   };
 
-  const handleAddUser = async (newUserData: Omit<User, 'id' | 'joinDate' | 'permissions'>) => {
+  const handleAddUser = async (newUserData: Omit<User, 'id' | 'joinDate' | 'status' | 'permissions'>) => {
     try {
       const result = await addUser(newUserData);
       toast({

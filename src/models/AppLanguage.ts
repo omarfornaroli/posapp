@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { AppLanguage as AppLanguageType } from '@/types';
 
 export interface AppLanguageDocument extends AppLanguageType, Document {
-    id: string;
+  id: string;
 }
 
 const AppLanguageSchema: Schema<AppLanguageDocument> = new Schema({
@@ -37,7 +37,7 @@ const AppLanguageSchema: Schema<AppLanguageDocument> = new Schema({
   collection: 'pos_app_languages'
 });
 
-AppLanguageSchema.virtual('id').get(function(this: AppLanguageDocument) {
+AppLanguageSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

@@ -28,7 +28,7 @@ const ReportSchema = new Schema<ReportDocument>({
   collection: 'pos_reports'
 });
 
-ReportSchema.virtual('id').get(function(this: ReportDocument) {
+ReportSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

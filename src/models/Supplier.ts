@@ -24,7 +24,7 @@ const SupplierSchema: Schema<SupplierDocument> = new Schema({
   collection: 'pos_suppliers'
 });
 
-SupplierSchema.virtual('id').get(function(this: SupplierDocument) {
+SupplierSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 
