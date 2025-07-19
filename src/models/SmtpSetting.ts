@@ -4,8 +4,9 @@ import type { SmtpSetting as SmtpSettingType } from '@/types';
 
 export const SINGLETON_KEY = 'global_smtp_settings';
 
-export interface SmtpSettingDocument extends Omit<SmtpSettingType, 'id'>, Document {
+export interface SmtpSettingDocument extends SmtpSettingType, Document {
   key: string;
+  id: string;
 }
 
 const SmtpSettingSchema: Schema<SmtpSettingDocument> = new Schema({
@@ -22,7 +23,7 @@ const SmtpSettingSchema: Schema<SmtpSettingDocument> = new Schema({
   collection: 'pos_smtp_settings'
 });
 
-SmtpSettingSchema.virtual('id').get(function(this: SmtpSettingDocument) {
+SmtpSettingSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

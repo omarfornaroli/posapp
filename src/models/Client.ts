@@ -2,7 +2,9 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Client as ClientType } from '@/types';
 
-export interface ClientDocument extends Omit<ClientType, 'id'>, Document {}
+export interface ClientDocument extends ClientType, Document {
+  id: string;
+}
 
 const ClientSchema: Schema<ClientDocument> = new Schema({
   name: { type: String, required: true },
@@ -19,7 +21,7 @@ const ClientSchema: Schema<ClientDocument> = new Schema({
   collection: 'pos_clients'
 });
 
-ClientSchema.virtual('id').get(function(this: ClientDocument) {
+ClientSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

@@ -2,7 +2,10 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Notification as NotificationType, NotificationEnumType } from '@/types';
 
-export interface NotificationDocument extends Omit<NotificationType, 'id'>, Document {}
+export interface NotificationDocument extends NotificationType, Document {
+  id: string;
+  createdAt: Date;
+}
 
 const NotificationSchema: Schema<NotificationDocument> = new Schema({
   messageKey: { type: String, required: true },
@@ -26,7 +29,7 @@ const NotificationSchema: Schema<NotificationDocument> = new Schema({
   collection: 'pos_notifications'
 });
 
-NotificationSchema.virtual('id').get(function(this: NotificationDocument) {
+NotificationSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

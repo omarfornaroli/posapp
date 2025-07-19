@@ -15,39 +15,39 @@ import {
   mockCountries,
   mockCurrencies,
   mockSuppliers,
-} from '@/lib/mock-data'; 
+} from './mock-data'; 
 
 // Translation messages
-import enMessages from '@/messages/en.json';
-import esMessages from '@/messages/es.json';
+import enMessages from '../messages/en.json';
+import esMessages from '../messages/es.json';
 // Type and specific key imports
-import type { TranslationRecord } from '@/models/Translation';
-import { SINGLETON_KEY as ReceiptSettingSingletonKey } from '@/models/ReceiptSetting';
-import { SINGLETON_KEY as POSSettingSingletonKey } from '@/models/POSSetting';
-import { SINGLETON_KEY as SmtpSettingSingletonKey } from '@/models/SmtpSetting';
-import { DEFAULT_ROLE_PERMISSIONS } from '@/lib/permissions'; 
-import type { UserRole, Product as ProductType } from '@/types';
+import type { TranslationRecord } from '../models/Translation';
+import { SINGLETON_KEY as ReceiptSettingSingletonKey } from '../models/ReceiptSetting';
+import { SINGLETON_KEY as POSSettingSingletonKey } from '../models/POSSetting';
+import { SINGLETON_KEY as SmtpSettingSingletonKey } from '../models/SmtpSetting';
+import { DEFAULT_ROLE_PERMISSIONS } from './permissions'; 
+import type { UserRole, Product as ProductType } from '../types';
 
 // Ensure all models are imported so they are registered with Mongoose.
-import '@/models/Product';
-import '@/models/Client';
-import '@/models/User';
-import '@/models/Tax';
-import '@/models/Promotion';
-import '@/models/SaleTransaction';
-import '@/models/Translation';
-import '@/models/Theme';
-import '@/models/PaymentMethod';
-import '@/models/ReceiptSetting';
-import '@/models/POSSetting';
-import '@/models/SmtpSetting';
-import '@/models/AppLanguage';
-import '@/models/Notification'; 
-import '@/models/RolePermission'; 
-import '@/models/Country';
-import '@/models/Currency'; 
-import '@/models/Supplier';
-import '@/models/Report';
+import '../models/Product';
+import '../models/Client';
+import '../models/User';
+import '../models/Tax';
+import '../models/Promotion';
+import '../models/SaleTransaction';
+import '../models/Translation';
+import '../models/Theme';
+import '../models/PaymentMethod';
+import '../models/ReceiptSetting';
+import '../models/POSSetting';
+import '../models/SmtpSetting';
+import '../models/AppLanguage';
+import '../models/Notification'; 
+import '../models/RolePermission'; 
+import '../models/Country';
+import '../models/Currency'; 
+import '../models/Supplier';
+import '../models/Report';
 
 
 type NestedMessages = { [key: string]: string | NestedMessages };

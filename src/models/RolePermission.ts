@@ -3,7 +3,9 @@ import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { UserRole, Permission, RolePermission as RolePermissionType } from '@/types';
 import { ALL_PERMISSIONS } from '@/lib/permissionKeys'; // Import from new location
 
-export interface RolePermissionDocument extends Omit<RolePermissionType, 'id'>, Document {}
+export interface RolePermissionDocument extends RolePermissionType, Document {
+  id: string;
+}
 
 const RolePermissionSchema: Schema<RolePermissionDocument> = new Schema({
   role: {
@@ -25,7 +27,7 @@ const RolePermissionSchema: Schema<RolePermissionDocument> = new Schema({
   collection: 'pos_role_permissions'
 });
 
-RolePermissionSchema.virtual('id').get(function(this: RolePermissionDocument) {
+RolePermissionSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

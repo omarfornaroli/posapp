@@ -5,8 +5,9 @@ import type { ReceiptSetting as ReceiptSettingType, ReceiptMargin } from '@/type
 // Using a fixed key to ensure only one document for global settings
 export const SINGLETON_KEY = 'global_receipt_settings';
 
-export interface ReceiptSettingDocument extends Omit<ReceiptSettingType, 'id'>, Document {
-  key: string; // To enforce singleton
+export interface ReceiptSettingDocument extends ReceiptSettingType, Document {
+  key: string; 
+  id: string;
 }
 
 const receiptMarginOptions: ReceiptMargin[] = ['none', 'small', 'medium', 'large'];
@@ -38,7 +39,7 @@ const ReceiptSettingSchema: Schema<ReceiptSettingDocument> = new Schema({
   collection: 'pos_receipt_settings'
 });
 
-ReceiptSettingSchema.virtual('id').get(function(this: ReceiptSettingDocument) {
+ReceiptSettingSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

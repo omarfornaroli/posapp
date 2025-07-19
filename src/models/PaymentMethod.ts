@@ -2,7 +2,9 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { PaymentMethod as PaymentMethodType } from '@/types';
 
-export interface PaymentMethodDocument extends Omit<PaymentMethodType, 'id'>, Document {}
+export interface PaymentMethodDocument extends PaymentMethodType, Document {
+  id: string;
+}
 
 const PaymentMethodSchema: Schema<PaymentMethodDocument> = new Schema({
   name: { type: String, required: true, unique: true, trim: true },
@@ -18,7 +20,7 @@ const PaymentMethodSchema: Schema<PaymentMethodDocument> = new Schema({
   collection: 'pos_payment_methods'
 });
 
-PaymentMethodSchema.virtual('id').get(function(this: PaymentMethodDocument) {
+PaymentMethodSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

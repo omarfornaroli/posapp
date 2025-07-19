@@ -2,7 +2,9 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Country as CountryType } from '@/types';
 
-export interface CountryDocument extends Omit<CountryType, 'id'>, Document {}
+export interface CountryDocument extends CountryType, Document {
+  id: string;
+}
 
 const CountrySchema: Schema<CountryDocument> = new Schema({
   name: { type: String, required: true, trim: true, index: true },
@@ -22,7 +24,7 @@ const CountrySchema: Schema<CountryDocument> = new Schema({
   collection: 'pos_countries'
 });
 
-CountrySchema.virtual('id').get(function(this: CountryDocument) {
+CountrySchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

@@ -3,7 +3,8 @@ import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import type { User as UserType, UserRole, UserStatus } from '@/types';
 
-export interface UserDocument extends Omit<UserType, 'id'>, Document {
+export interface UserDocument extends UserType, Document {
+  id: string;
   password?: string;
   setupToken?: string;
   setupTokenExpires?: Date;
@@ -34,7 +35,7 @@ const UserSchema: Schema<UserDocument> = new Schema({
   collection: 'pos_users'
 });
 
-UserSchema.virtual('id').get(function(this: UserDocument) {
+UserSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 
@@ -47,8 +48,8 @@ UserSchema.pre<UserDocument>('save', async function(next) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (err) {
-    next(err as Error);
+  } catch (err: any) {
+    next(err);
   }
 });
 

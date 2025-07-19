@@ -6,7 +6,9 @@ export interface TranslationRecord {
   values: Map<string, string>; // Key is locale code (e.g., "en", "es"), value is the translation
 }
 
-export interface TranslationDocument extends TranslationRecord, Document {}
+export interface TranslationDocument extends TranslationRecord, Document {
+  id: string;
+}
 
 const TranslationSchema: Schema<TranslationDocument> = new Schema({
   keyPath: { type: String, required: true, unique: true, index: true },
@@ -23,7 +25,7 @@ const TranslationSchema: Schema<TranslationDocument> = new Schema({
   collection: 'pos_translations'
 });
 
-TranslationSchema.virtual('id').get(function(this: TranslationDocument) {
+TranslationSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

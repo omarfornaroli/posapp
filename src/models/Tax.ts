@@ -2,7 +2,9 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Tax as TaxType } from '@/types';
 
-export interface TaxDocument extends Omit<TaxType, 'id'>, Document {}
+export interface TaxDocument extends TaxType, Document {
+  id: string;
+}
 
 const TaxSchema: Schema<TaxDocument> = new Schema({
   name: { type: String, required: true, unique: true },
@@ -17,7 +19,7 @@ const TaxSchema: Schema<TaxDocument> = new Schema({
   collection: 'pos_taxes'
 });
 
-TaxSchema.virtual('id').get(function(this: TaxDocument) {
+TaxSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

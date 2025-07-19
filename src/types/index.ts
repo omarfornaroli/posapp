@@ -59,6 +59,7 @@ export interface Product {
 }
 
 export interface CartItem extends Product {
+  productId?: string; // Add productId to CartItem
   quantity: number; 
   dispatchedQuantity?: number;
   itemDiscountType?: 'percentage' | 'fixedAmount';
@@ -511,5 +512,3 @@ export interface Report {
   createdAt?: string;
   updatedAt?: string;
 }
-
-    

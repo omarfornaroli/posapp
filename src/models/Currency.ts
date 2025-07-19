@@ -2,7 +2,9 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Currency as CurrencyType } from '@/types';
 
-export interface CurrencyDocument extends Omit<CurrencyType, 'id'>, Document {}
+export interface CurrencyDocument extends CurrencyType, Document {
+  id: string;
+}
 
 const CurrencySchema: Schema<CurrencyDocument> = new Schema({
   name: { type: String, required: true, trim: true, index: true },
@@ -21,7 +23,7 @@ const CurrencySchema: Schema<CurrencyDocument> = new Schema({
   collection: 'pos_currencies'
 });
 
-CurrencySchema.virtual('id').get(function(this: CurrencyDocument) {
+CurrencySchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

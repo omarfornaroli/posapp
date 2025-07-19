@@ -14,7 +14,9 @@ const PromotionConditionSchema = new Schema<PromotionCondition>({
 }, { _id: false });
 
 
-export interface PromotionDocument extends Omit<PromotionType, 'id'>, Document {}
+export interface PromotionDocument extends PromotionType, Document {
+  id: string;
+}
 
 const PromotionSchema: Schema<PromotionDocument> = new Schema({
   name: { type: String, required: true, unique: true },
@@ -35,7 +37,7 @@ const PromotionSchema: Schema<PromotionDocument> = new Schema({
   collection: 'pos_promotions'
 });
 
-PromotionSchema.virtual('id').get(function(this: PromotionDocument) {
+PromotionSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

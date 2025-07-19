@@ -2,7 +2,7 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { SaleTransaction as SaleTransactionType, CartItem as CartItemType, AppliedTaxEntry, AppliedPromotionEntry, AppliedPayment, DispatchStatus } from '@/types';
 
-export const CartItemSchema = new Schema<Omit<CartItemType, 'id'>>({
+export const CartItemSchema = new Schema<CartItemType>({
   productId: { type: String, required: true }, 
   name: { type: String, required: true },
   price: { type: Number, required: true },
@@ -16,7 +16,7 @@ export const CartItemSchema = new Schema<Omit<CartItemType, 'id'>>({
   itemDiscountValue: { type: Number, min: 0 },
 }, { _id: false });
 
-export const AppliedTaxEntrySchema = new Schema<Omit<AppliedTaxEntry, 'id'>>({
+export const AppliedTaxEntrySchema = new Schema<AppliedTaxEntry>({
   taxId: { type: String, required: true }, 
   name: { type: String, required: true },
   rate: { type: Number, required: true }, 
@@ -38,7 +38,9 @@ export const AppliedPaymentSchema = new Schema<AppliedPayment>({
 }, { _id: false });
 
 
-export interface SaleTransactionDocument extends Omit<SaleTransactionType, 'id'>, Document {}
+export interface SaleTransactionDocument extends SaleTransactionType, Document {
+  id: string;
+}
 
 const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   date: { type: Date, required: true, default: Date.now },
@@ -54,14 +56,14 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   promotionalDiscountAmount: { type: Number, required: true, default: 0 }, 
   
   taxAmount: { type: Number, required: true },
-  totalAmount: { type: Number, required: true },
+  totalAmount: { type: Number, required: true }, // This is the total in the transaction currency
   dispatchStatus: { type: String, enum: ['Pending', 'Partially Dispatched', 'Dispatched'], default: 'Pending', required: true, index: true },
 
   appliedPayments: [AppliedPaymentSchema], 
   clientId: { type: String }, 
   clientName: { type: String }, 
   appliedTaxes: [AppliedTaxEntrySchema],
-  appliedPromotions: [AppliedPromotionEntrySchema],
+  appliedPromotions: [AppliedPromotionEntrySchema], 
 
   // Transaction Currency Details
   currencyCode: { type: String, required: true },
@@ -84,7 +86,7 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   collection: 'pos_sale_transactions'
 });
 
-SaleTransactionSchema.virtual('id').get(function(this: SaleTransactionDocument) {
+SaleTransactionSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

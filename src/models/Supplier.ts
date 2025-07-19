@@ -2,7 +2,9 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Supplier as SupplierType } from '@/types';
 
-export interface SupplierDocument extends Omit<SupplierType, 'id'>, Document {}
+export interface SupplierDocument extends SupplierType, Document {
+  id: string;
+}
 
 const SupplierSchema: Schema<SupplierDocument> = new Schema({
   name: { type: String, required: true, unique: true, trim: true },
@@ -22,7 +24,7 @@ const SupplierSchema: Schema<SupplierDocument> = new Schema({
   collection: 'pos_suppliers'
 });
 
-SupplierSchema.virtual('id').get(function(this: SupplierDocument) {
+SupplierSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

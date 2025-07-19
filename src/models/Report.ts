@@ -10,15 +10,8 @@ const ReportDataSchema = new Schema({
   rows: { type: [[Schema.Types.Mixed]], required: true }
 }, { _id: false });
 
-export interface ReportDocument extends Omit<ReportType, 'id' | 'createdAt' | 'updatedAt' | 'reportData'>, Document {
-  reportData: {
-    title: string;
-    summary: string;
-    headers: string[];
-    rows: (string | number)[][];
-  };
-  createdAt: Date;
-  updatedAt: Date;
+export interface ReportDocument extends ReportType, Document {
+  id: string;
 }
 
 const ReportSchema = new Schema<ReportDocument>({
@@ -35,7 +28,7 @@ const ReportSchema = new Schema<ReportDocument>({
   collection: 'pos_reports'
 });
 
-ReportSchema.virtual('id').get(function(this: ReportDocument) {
+ReportSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

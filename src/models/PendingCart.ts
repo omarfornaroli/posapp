@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { PendingCart as PendingCartType, AppliedTaxEntry, AppliedPromotionEntry } from '@/types';
 import { CartItemSchema } from './SaleTransaction'; // Re-use sub-schemas
 
-const AppliedTaxEntrySchema = new Schema<Omit<AppliedTaxEntry, 'id'>>({
+const AppliedTaxEntrySchema = new Schema<AppliedTaxEntry>({
   taxId: { type: String, required: true },
   name: { type: String, required: true },
   rate: { type: Number, required: true },
@@ -18,7 +18,9 @@ const AppliedPromotionEntrySchema = new Schema<AppliedPromotionEntry>({
   amountDeducted: { type: Number, required: true },
 }, { _id: false });
 
-export interface PendingCartDocument extends Omit<PendingCartType, 'id'>, Document {}
+export interface PendingCartDocument extends PendingCartType, Document {
+  id: string;
+}
 
 const PendingCartSchema = new Schema<PendingCartDocument>({
   cartName: { type: String, required: true },
@@ -56,7 +58,7 @@ const PendingCartSchema = new Schema<PendingCartDocument>({
   collection: 'pos_pending_carts'
 });
 
-PendingCartSchema.virtual('id').get(function(this: PendingCartDocument) {
+PendingCartSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

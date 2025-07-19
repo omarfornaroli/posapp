@@ -4,8 +4,9 @@ import type { POSSetting as POSSettingType } from '@/types';
 
 export const SINGLETON_KEY = 'global_pos_settings';
 
-export interface POSSettingDocument extends Omit<POSSettingType, 'id'>, Document {
+export interface POSSettingDocument extends POSSettingType, Document {
   key: string;
+  id: string;
 }
 
 const POSSettingSchema: Schema<POSSettingDocument> = new Schema({
@@ -20,7 +21,7 @@ const POSSettingSchema: Schema<POSSettingDocument> = new Schema({
   collection: 'pos_pos_settings'
 });
 
-POSSettingSchema.virtual('id').get(function(this: POSSettingDocument) {
+POSSettingSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

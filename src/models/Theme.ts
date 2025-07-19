@@ -24,7 +24,9 @@ const ThemeColorsSchema = new Schema<ThemeColors>({
   ring: { type: String, required: true },
 }, { _id: false });
 
-export interface ThemeDocument extends Omit<ThemeType, 'id'>, Document {}
+export interface ThemeDocument extends ThemeType, Document {
+  id: string;
+}
 
 const ThemeSchema: Schema<ThemeDocument> = new Schema({
   name: { type: String, required: true, unique: true },
@@ -41,7 +43,7 @@ const ThemeSchema: Schema<ThemeDocument> = new Schema({
   collection: 'pos_themes'
 });
 
-ThemeSchema.virtual('id').get(function(this: ThemeDocument) {
+ThemeSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

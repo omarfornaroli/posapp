@@ -2,7 +2,9 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { GridSetting as GridSettingType, PersistedColumnSetting, SortConfig } from '@/types';
 
-export interface GridSettingDocument extends Omit<GridSettingType, 'id'>, Document {}
+export interface GridSettingDocument extends GridSettingType, Document {
+  id: string;
+}
 
 const PersistedColumnSettingSchema = new Schema<PersistedColumnSetting>({
   key: { type: String, required: true },
@@ -26,7 +28,7 @@ const GridSettingSchema: Schema<GridSettingDocument> = new Schema({
   collection: 'pos_grid_settings'
 });
 
-GridSettingSchema.virtual('id').get(function(this: GridSettingDocument) {
+GridSettingSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 
