@@ -38,7 +38,7 @@ const MIN_CHARS_FOR_LIVE_SEARCH = 2;
 const POS_APP_PERSISTED_STATE_KEY = 'posAppPersistedState_v2'; 
 
 interface AppliedTaxDefinition {
-  id: string;
+  taxId: string;
   name: string;
   rate: number;
 }
@@ -101,6 +101,7 @@ export default function POSPage() {
   const [isLiveSearchVisible, setIsLiveSearchVisible] = useState(false);
 
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isSavingCart, setIsSavingCart] = useState(false);
 
   const [availablePaymentMethods, setAvailablePaymentMethods] = useState<PaymentMethod[]>([]);
   const [isLoadingPaymentMethods, setIsLoadingPaymentMethods] = useState(true);
@@ -437,7 +438,7 @@ export default function POSPage() {
     const currentTaxBreakdownForDisplay: AppliedTaxEntry[] = appliedTaxDefinitions.map(taxDef => {
       const taxForThis = currentTaxableAmount * taxDef.rate;
       currentTotalTax += taxForThis;
-      return { ...taxDef, amount: parseFloat(taxForThis.toFixed(baseCurrency.decimalPlaces)) };
+      return { ...taxDef, taxId: taxDef.taxId, amount: parseFloat(taxForThis.toFixed(baseCurrency.decimalPlaces)) };
     });
 
     const currentFinalTotalInBase = currentTaxableAmount + currentTotalTax;
@@ -473,11 +474,19 @@ export default function POSPage() {
         }
         return prevCart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + quantity } : item);
       } else {
+        const productToAdd: CartItem = {
+          ...product,
+          id: product.id,
+          productId: product.id,
+          quantity: quantity,
+          itemDiscountType: undefined,
+          itemDiscountValue: undefined
+        };
         if (quantity > product.quantity) {
            toast({ title: t('Toasts.stockLimitReachedTitle'), description: t('Toasts.stockLimitReachedDescription', { productName: product.name, maxStock: product.quantity }), variant: "destructive" });
-          return [...prevCart, { ...product, id: product.id || product.barcode, quantity: product.quantity, itemDiscountType: undefined, itemDiscountValue: undefined }];
+           productToAdd.quantity = product.quantity;
         }
-        return [...prevCart, { ...product, id: product.id || product.barcode, quantity, itemDiscountType: undefined, itemDiscountValue: undefined }];
+        return [...prevCart, productToAdd];
       }
     });
   };
@@ -646,14 +655,14 @@ export default function POSPage() {
       return;
     }
 
-    const isAlreadyApplied = appliedTaxDefinitions.some(appliedTaxDef => appliedTaxDef.id === taxInfo.id);
+    const isAlreadyApplied = appliedTaxDefinitions.some(appliedTaxDef => appliedTaxDef.taxId === taxInfo.id);
     if (isAlreadyApplied) {
       toast({ title: t('Common.error'), description: t('POSPage.taxAlreadyAppliedError'), variant: 'destructive' });
       return;
     }
 
     const newTaxDefinition: AppliedTaxDefinition = {
-      id: taxInfo.id,
+      taxId: taxInfo.id,
       name: taxInfo.name,
       rate: taxInfo.rate,
     };
@@ -663,8 +672,8 @@ export default function POSPage() {
   };
 
   const handleRemoveAppliedTax = (taxIdToRemove: string) => {
-    const removedTaxDef = appliedTaxDefinitions.find(t => t.id === taxIdToRemove);
-    setAppliedTaxDefinitions(prev => prev.filter(taxDef => taxDef.id !== taxIdToRemove));
+    const removedTaxDef = appliedTaxDefinitions.find(t => t.taxId === taxIdToRemove);
+    setAppliedTaxDefinitions(prev => prev.filter(taxDef => taxDef.taxId !== taxIdToRemove));
     if (removedTaxDef) {
       toast({
         title: t('Toasts.taxRemovedTitle'),
@@ -686,7 +695,8 @@ export default function POSPage() {
     cartName += ` - ${new Date().toLocaleTimeString()}`;
 
     const itemsForDb = cart.map(item => ({
-        productId: item.id,
+        id: item.id,
+        productId: item.productId,
         name: item.name,
         price: item.price,
         quantity: item.quantity,
@@ -869,7 +879,7 @@ export default function POSPage() {
     setCart(cartItemsForState);
 
     setSelectedClientId(cartToLoad.clientId);
-    setAppliedTaxDefinitions(cartToLoad.appliedTaxes.map(t => ({id: t.taxId, name: t.name, rate: t.rate })));
+    setAppliedTaxDefinitions(cartToLoad.appliedTaxes.map(t => ({taxId: t.taxId, name: t.name, rate: t.rate })));
     setOverallDiscountType(cartToLoad.overallDiscountType);
     setOverallDiscountValue(cartToLoad.overallDiscountValue?.toString() || '');
     const newPaymentCurrency = currencies.find(c => c.code === cartToLoad.currencyCode);
@@ -886,7 +896,7 @@ export default function POSPage() {
   const currencyOptions = useMemo(() => 
     currencies.filter(c => c.isEnabled).map(c => ({
       value: c.code,
-      label: `${c.name} (${c.code})`
+      label: `${c.name} (${c.symbol})`
     })), [currencies]);
 
   if (!hasPermission('access_pos_page')) {
@@ -1072,9 +1082,9 @@ export default function POSPage() {
                     {taxBreakdownForDisplay.length > 0 && (
                       <div className="space-y-1 pt-1">
                         {taxBreakdownForDisplay.map(taxEntry => (
-                          <Badge key={taxEntry.id} variant="outline" className="flex justify-between items-center py-1 px-2 w-full text-xs">
+                          <Badge key={taxEntry.taxId} variant="outline" className="flex justify-between items-center py-1 px-2 w-full text-xs">
                             <span>{taxEntry.name} ({(taxEntry.rate * 100).toFixed(0)}%): {formatCurrency(taxEntry.amount * exchangeRate, paymentCurrency)}</span>
-                            <Button variant="ghost" size="icon" onClick={() => handleRemoveAppliedTax(taxEntry.id)} className="h-4 w-4 p-0.5 hover:bg-destructive/10">
+                            <Button variant="ghost" size="icon" onClick={() => handleRemoveAppliedTax(taxEntry.taxId)} className="h-4 w-4 p-0.5 hover:bg-destructive/10">
                               <X className="h-3 w-3 text-destructive" />
                             </Button>
                           </Badge>

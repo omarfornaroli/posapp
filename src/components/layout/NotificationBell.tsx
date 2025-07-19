@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect } from 'react';
@@ -81,7 +82,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({ notification, onMar
           {translatedMessage}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS })}
+          {notification.createdAt ? formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS }) : ''}
         </p>
       </div>
     </div>

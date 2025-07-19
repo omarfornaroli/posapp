@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -19,10 +20,10 @@ export default function ReceiptPage() {
   
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
-  const transaction = useLiveQuery(
+  const transaction: SaleTransaction | undefined = useLiveQuery(
     () => transactionId ? db.sales.get(transactionId) : Promise.resolve(undefined),
     [transactionId]
-  ) as SaleTransaction | undefined; // Cast to correct type
+  );
   
   const { receiptSettings, isLoading: isLoadingSettings } = useDexieReceiptSettings();
   const { toast } = useToast();

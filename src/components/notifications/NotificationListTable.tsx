@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -27,7 +28,7 @@ const NotificationIcon: React.FC<{ type: NotificationType['type'], className?: s
   }
 };
 
-const NotificationCard = ({ notification, onToggleRead, onDelete, t, formatDate }: { notification: NotificationType, onToggleRead: (id: string) => void, onDelete: (id: string) => void, t: Function, formatDate: (d: string) => string }) => (
+const NotificationCard = ({ notification, onToggleRead, onDelete, t, formatDate }: { notification: NotificationType, onToggleRead: (id: string) => void, onDelete: (id: string) => void, t: Function, formatDate: (d: string | undefined) => string }) => (
   <Card className={cn("mb-2", notification.isRead && "opacity-70 bg-muted/50")}>
     <CardHeader className="p-3 flex flex-row items-start justify-between">
       <div className="flex items-center gap-3">
@@ -96,11 +97,12 @@ export default function NotificationListTable({ notifications, onToggleRead, onD
     return <p className="text-center text-muted-foreground py-8">{t('NotificationsManagerPage.noNotificationsFound')}</p>;
   }
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
     try {
+      if (!dateString) return '';
       return format(new Date(dateString), 'PPpp', { locale: currentLocale === 'es' ? es : enUS });
     } catch (e) {
-      return dateString;
+      return dateString || '';
     }
   };
 

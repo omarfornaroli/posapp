@@ -1,4 +1,5 @@
 
+
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import type { User as UserType, UserRole, UserStatus } from '@/types';
@@ -35,7 +36,7 @@ const UserSchema: Schema<UserDocument> = new Schema({
   collection: 'pos_users'
 });
 
-UserSchema.virtual('id').get(function(this: Document) {
+UserSchema.virtual('id').get(function(this: UserDocument) {
   return this._id.toHexString();
 });
 

@@ -1,4 +1,5 @@
 
+
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Promotion as PromotionType, PromotionDiscountType, PromotionCondition } from '@/types';
 
@@ -21,7 +22,7 @@ export interface PromotionDocument extends PromotionType, Document {
 const PromotionSchema: Schema<PromotionDocument> = new Schema({
   name: { type: String, required: true, unique: true },
   description: { type: String },
-  discountType: { type: String, enum: ['percentage', 'fixedAmount'] satisfies PromotionDiscountType[], required: true },
+  discountType: { type: String, enum: ['percentage', 'fixedAmount'] as PromotionDiscountType[], required: true },
   discountValue: { type: Number, required: true, min: 0 },
   startDate: { type: Date, required: true },
   endDate: { type: Date },

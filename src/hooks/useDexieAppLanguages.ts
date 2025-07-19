@@ -1,4 +1,5 @@
 
+
 // src/hooks/useDexieAppLanguages.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -59,7 +60,7 @@ export function useDexieAppLanguages() {
   const updateLanguage = async (updatedLang: AppLanguage) => {
     // If setting a new default, unset the old one locally first.
     if (updatedLang.isDefault) {
-        const oldDefault = await db.appLanguages.filter(lang => lang.isDefault).first();
+        const oldDefault = await db.appLanguages.filter(lang => !!lang.isDefault).first();
         if (oldDefault && oldDefault.id !== updatedLang.id) {
             await db.appLanguages.update(oldDefault.id, { isDefault: false });
         }
