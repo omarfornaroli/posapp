@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useEffect } from 'react';
@@ -85,6 +86,15 @@ export default function NotificationListTable({ notifications, onToggleRead, onD
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
 
+  const formatDate = (dateString?: string): string => {
+    if (!dateString) return '';
+    try {
+      return format(new Date(dateString), 'PPpp', { locale: currentLocale === 'es' ? es : enUS });
+    } catch (e) {
+      return dateString || '';
+    }
+  };
+
   if (isLoadingTranslations && (!notifications || notifications.length === 0)) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -96,15 +106,6 @@ export default function NotificationListTable({ notifications, onToggleRead, onD
   if (!notifications || notifications.length === 0) {
     return <p className="text-center text-muted-foreground py-8">{t('NotificationsManagerPage.noNotificationsFound')}</p>;
   }
-
-  const formatDate = (dateString: string | undefined) => {
-    try {
-      if (!dateString) return '';
-      return format(new Date(dateString), 'PPpp', { locale: currentLocale === 'es' ? es : enUS });
-    } catch (e) {
-      return dateString || '';
-    }
-  };
 
   return (
     <>

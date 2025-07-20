@@ -438,7 +438,7 @@ export default function POSPage() {
     const currentTaxBreakdownForDisplay: AppliedTaxEntry[] = appliedTaxDefinitions.map(taxDef => {
       const taxForThis = currentTaxableAmount * taxDef.rate;
       currentTotalTax += taxForThis;
-      return { ...taxDef, taxId: taxDef.taxId, amount: parseFloat(taxForThis.toFixed(baseCurrency.decimalPlaces)) };
+      return { ...taxDef, amount: parseFloat(taxForThis.toFixed(baseCurrency.decimalPlaces)) };
     });
 
     const currentFinalTotalInBase = currentTaxableAmount + currentTotalTax;
