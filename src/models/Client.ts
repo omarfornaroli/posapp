@@ -1,10 +1,9 @@
 
-
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Client as ClientType } from '@/types';
 
-export interface ClientDocument extends ClientType, Document {
-  id: string;
+export interface ClientDocument extends Document, Omit<ClientType, 'id'> {
+  // No need for id: string here, virtual will handle it
 }
 
 const ClientSchema: Schema<ClientDocument> = new Schema({

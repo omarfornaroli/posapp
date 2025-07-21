@@ -1,5 +1,4 @@
 
-
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { SaleTransaction as SaleTransactionType, CartItem as CartItemType, AppliedTaxEntry, AppliedPromotionEntry, AppliedPayment, DispatchStatus } from '@/types';
 

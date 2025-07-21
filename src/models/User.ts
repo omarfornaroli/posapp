@@ -1,5 +1,4 @@
 
-
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import type { User as UserType, UserRole, UserStatus } from '@/types';

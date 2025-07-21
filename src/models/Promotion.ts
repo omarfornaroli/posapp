@@ -1,5 +1,4 @@
 
-
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Promotion as PromotionType, PromotionDiscountType, PromotionCondition } from '@/types';
 
