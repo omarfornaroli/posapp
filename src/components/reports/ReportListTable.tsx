@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Eye, Trash2, Edit, MoreVertical } from 'lucide-react';
 import type { Report } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, isValid, parseISO } from 'date-fns';
 import { es, enUS } from 'date-fns/locale';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
@@ -39,7 +39,7 @@ const ReportCard = ({ report, onViewReport, onDeleteReport, onEditReport, t, cur
             </DropdownMenu>
         </CardHeader>
         <CardFooter className="px-4 pb-4 text-xs text-muted-foreground">
-            {t('ReportsPage.tableCreatedHeader')}: {report.createdAt ? formatDistanceToNow(new Date(report.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS }) : ''}
+            {t('ReportsPage.tableCreatedHeader')}: {report.createdAt && isValid(parseISO(report.createdAt)) ? formatDistanceToNow(parseISO(report.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS }) : 'N/A'}
         </CardFooter>
     </Card>
 );
@@ -99,7 +99,7 @@ export default function ReportListTable({ reports, onViewReport, onDeleteReport 
                 <TableCell className="font-medium">{report.name}</TableCell>
                 <TableCell className="text-muted-foreground">{report.description || '...'}</TableCell>
                 <TableCell className="text-center text-sm">
-                    {report.createdAt ? formatDistanceToNow(new Date(report.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS }) : ''}
+                    {report.createdAt && isValid(parseISO(report.createdAt)) ? formatDistanceToNow(parseISO(report.createdAt), { addSuffix: true, locale: currentLocale === 'es' ? es : enUS }) : 'N/A'}
                 </TableCell>
                 <TableCell className="text-center">
                     <div className="flex justify-center gap-2">

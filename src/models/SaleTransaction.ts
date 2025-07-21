@@ -88,7 +88,7 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   collection: 'pos_sale_transactions'
 });
 
-SaleTransactionSchema.virtual('id').get(function(this: SaleTransactionDocument) {
+SaleTransactionSchema.virtual('id').get(function(this: Document) {
   return this._id.toHexString();
 });
 

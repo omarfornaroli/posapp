@@ -29,7 +29,7 @@ const NotificationIcon: React.FC<{ type: NotificationType['type'], className?: s
   }
 };
 
-const NotificationCard = ({ notification, onToggleRead, onDelete, t, formatDate }: { notification: NotificationType, onToggleRead: (id: string) => void, onDelete: (id: string) => void, t: Function, formatDate: (d: string | undefined) => string }) => (
+const NotificationCard = ({ notification, onToggleRead, onDelete, t, formatDate }: { notification: NotificationType, onToggleRead: (id: string) => void, onDelete: (id: string) => void, t: Function, formatDate: (d: string) => string }) => (
   <Card className={cn("mb-2", notification.isRead && "opacity-70 bg-muted/50")}>
     <CardHeader className="p-3 flex flex-row items-start justify-between">
       <div className="flex items-center gap-3">
@@ -43,7 +43,7 @@ const NotificationCard = ({ notification, onToggleRead, onDelete, t, formatDate 
         )}
         <div>
           <CardTitle className="text-sm font-semibold">{notification.actorName || t('NotificationsManagerPage.actorSystem')}</CardTitle>
-          <CardDescription className="text-xs">{formatDate(notification.createdAt)}</CardDescription>
+          <CardDescription className="text-xs">{formatDate(notification.createdAt || '')}</CardDescription>
         </div>
       </div>
       <DropdownMenu>
@@ -86,7 +86,7 @@ export default function NotificationListTable({ notifications, onToggleRead, onD
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
 
-  const formatDate = (dateString?: string): string => {
+  const formatDate = (dateString: string): string => {
     if (!dateString) return '';
     try {
       return format(new Date(dateString), 'PPpp', { locale: currentLocale === 'es' ? es : enUS });
@@ -169,7 +169,7 @@ export default function NotificationListTable({ notifications, onToggleRead, onD
                     </Link>
                   )}
                 </TableCell>
-                <TableCell className="text-xs">{formatDate(notification.createdAt)}</TableCell>
+                <TableCell className="text-xs">{formatDate(notification.createdAt || '')}</TableCell>
                 <TableCell className="text-center">
                   <div className="flex justify-center gap-1">
                     <Button variant="ghost" size="sm" onClick={() => onToggleRead(notification.id)} aria-label={notification.isRead ? t('NotificationsManagerPage.markAsUnreadAria') : t('NotificationsManagerPage.markAsReadAria')}>

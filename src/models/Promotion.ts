@@ -24,7 +24,7 @@ const PromotionSchema: Schema<PromotionDocument> = new Schema({
   description: { type: String },
   discountType: { type: String, enum: ['percentage', 'fixedAmount'] as PromotionDiscountType[], required: true },
   discountValue: { type: Number, required: true, min: 0 },
-  startDate: { type: Date, required: true },
+  startDate: { type: Schema.Types.Date, required: true },
   endDate: { type: Date },
   conditions: [PromotionConditionSchema], 
   isActive: { type: Boolean, default: true, required: true },

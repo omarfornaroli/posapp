@@ -113,7 +113,7 @@ export default function ReceiptView({ transaction, settings }: ReceiptViewProps)
     }
   };
   
-  const subtotalAfterItemDiscounts = transaction.subtotal - transaction.totalItemDiscountAmount;
+  const subtotalAfterItemDiscounts = transaction.subtotal - (transaction.totalItemDiscountAmount || 0);
   const subtotalAfterOverallDiscount = subtotalAfterItemDiscounts - (transaction.overallDiscountAmountApplied || 0);
   const taxableAmount = subtotalAfterOverallDiscount - (transaction.promotionalDiscountAmount || 0);
 

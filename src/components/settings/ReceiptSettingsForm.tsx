@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -24,7 +25,7 @@ import { mockPreviewTransaction } from '@/lib/mock-data';
 import { useDexieReceiptSettings } from '@/hooks/useDexieReceiptSettings';
 
 const receiptWidthOptions = ['auto', '80mm', '58mm'] as const;
-const receiptMarginOptions: [ReceiptMargin, ...ReceiptMargin[]] = ['none', 'small', 'medium', 'large'];
+const receiptMarginOptions: readonly [ReceiptMargin, ...ReceiptMargin[]] = ['none', 'small', 'medium', 'large'];
 
 const receiptSettingsFormSchema = (t: Function) => z.object({
   logoUrl: z.string().url({ message: t('Common.formErrors.invalidUrl', {fieldName: t('ReceiptSettingsForm.logoUrlLabel')}) }).optional().or(z.literal('')),
