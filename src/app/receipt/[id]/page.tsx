@@ -20,7 +20,7 @@ export default function ReceiptPage() {
   
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
-  const transaction = useLiveQuery<SaleTransaction | undefined>(
+  const transaction: SaleTransaction | undefined = useLiveQuery(
     () => transactionId ? db.sales.get(transactionId) : Promise.resolve(undefined),
     [transactionId]
   );

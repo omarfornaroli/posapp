@@ -25,7 +25,7 @@ const PromotionSchema: Schema<PromotionDocument> = new Schema({
   discountType: { type: String, enum: ['percentage', 'fixedAmount'] as PromotionDiscountType[], required: true },
   discountValue: { type: Number, required: true, min: 0 },
   startDate: { type: Schema.Types.Date, required: true },
-  endDate: { type: Date },
+  endDate: { type: Schema.Types.Date },
   conditions: [PromotionConditionSchema], 
   isActive: { type: Boolean, default: true, required: true },
   applicationMethod: { type: String, enum: ['cart', 'lowestPriceItem'], default: 'cart' },

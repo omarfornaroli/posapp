@@ -15,7 +15,7 @@ export function useDexieNotifications() {
 
   // Live queries for reactive data from Dexie
   const notifications = useLiveQuery(() => db.notifications.orderBy('createdAt').reverse().toArray(), []);
-  const unreadCount = useLiveQuery(() => db.notifications.where('isRead').equals(0).count(), [0]);
+  const unreadCount = useLiveQuery(() => db.notifications.where('isRead').equals(0).count(), []);
 
   const populateAndPoll = useCallback(async (isInitialLoad = false) => {
     if (isInitialLoad) {
