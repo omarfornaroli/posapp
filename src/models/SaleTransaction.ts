@@ -44,7 +44,7 @@ export interface SaleTransactionDocument extends SaleTransactionType, Document {
 }
 
 const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
-  date: { type: Schema.Types.String, required: true, default: Date.now.toString() },
+  date: { type: Schema.Types.Date, required: true, default: Date.now },
   items: [CartItemSchema],
 
   subtotal: { type: Number, required: true },

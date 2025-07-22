@@ -30,6 +30,7 @@ import type { Product } from '@/types';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useLocale } from 'next-intl';
 import { Loader2 } from 'lucide-react';
+import { ScrollArea } from '../ui/scroll-area';
 
 const getProductFormSchema = (t: Function) => z.object({
   name: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('AddProductDialog.nameLabel')}) }),
@@ -107,7 +108,7 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
         isEnabled: product.isEnabled === undefined ? true : product.isEnabled,
         description: product.description || '',
         quantity: product.quantity,
-        supplier: product.supplier as string || '',
+        supplier: (product.supplier as any)?.name || (product.supplier as string) || '',
         reorderPoint: product.reorderPoint,
         preferredQuantity: product.preferredQuantity,
         lowStockWarning: product.lowStockWarning || false,
@@ -181,8 +182,8 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <div className="flex-grow overflow-y-auto pr-6">
-              <div className="space-y-4">
+            <ScrollArea className="flex-grow pr-6 -mr-6">
+              <div className="space-y-4 py-4 pr-6">
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="category" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.categoryLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.categoryPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -211,7 +212,7 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
                   <FormField control={form.control} name="reorderPoint" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.reorderPointLabel')}</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="preferredQuantity" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.preferredQuantityLabel')}</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                    <FormField control={form.control} name="warningQuantity" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.warningQuantityLabel')}</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="lowStockWarning" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4"><div className="space-y-0.5"><FormLabel>{t('AddProductDialog.lowStockWarningLabel')}</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                 </div>
@@ -229,7 +230,7 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
                 <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.descriptionLabel')}</FormLabel><FormControl><Textarea placeholder={t('AddProductDialog.descriptionPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.imageUrlLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.imageUrlPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
-            </div>
+            </ScrollArea>
             <DialogFooter className="pt-6 border-t shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddProductDialog.cancelButton')}</Button>

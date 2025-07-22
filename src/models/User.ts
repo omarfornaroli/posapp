@@ -23,7 +23,7 @@ const UserSchema: Schema<UserDocument> = new Schema({
   passwordResetToken: { type: String, select: false },
   passwordResetExpires: { type: Schema.Types.Date, select: false },
   role: { type: String, enum: ['Admin', 'Editor', 'Viewer'] as UserRole[], required: true },
-  joinDate: { type: Schema.Types.String, required: true, default: Date.now.toString() },
+  joinDate: { type: Schema.Types.Date, required: true, default: Date.now },
   imageUrl: { type: String },
   authorizationCode: { type: String, unique: true, sparse: true, index: true },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },

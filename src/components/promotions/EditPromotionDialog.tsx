@@ -38,7 +38,7 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Separator } from '../ui/separator';
 import { ScrollArea } from '../ui/scroll-area';
 
-const promotionDiscountTypes: PromotionDiscountType[] = ['percentage', 'fixedAmount'];
+const promotionDiscountTypes = ['percentage', 'fixedAmount'] as const;
 
 const getPromotionFormSchema = (t: Function) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.requiredField', {fieldName: t('AddPromotionDialog.nameLabel')}) }),
@@ -151,12 +151,12 @@ export default function EditPromotionDialog({ open, onOpenChange, promotion, onS
         startDate: promotion.startDate ? parseISO(promotion.startDate) : undefined,
         endDate: promotion.endDate ? parseISO(promotion.endDate) : undefined,
         applicationMethod: promotion.applicationMethod || 'cart',
-        itemQuantity: promotion.conditions.find(c => c.type === 'itemQuantity')?.value?.toString() || '',
+        itemQuantity: promotion.conditions.find(c => c.type === 'itemQuantity')?.value,
         applicableCategoryIds: promotion.conditions.find(c => c.type === 'productCategories')?.values || [],
         applicableProductIds: promotion.conditions.find(c => c.type === 'productIds')?.values || [],
         applicableClientIds: promotion.conditions.find(c => c.type === 'clientIds')?.values || [],
         applicablePaymentMethodIds: promotion.conditions.find(c => c.type === 'paymentMethods')?.values || [],
-        minimumSellAmount: promotion.conditions.find(c => c.type === 'minSellAmount')?.value?.toString() || '',
+        minimumSellAmount: promotion.conditions.find(c => c.type === 'minSellAmount')?.value,
         isActive: promotion.isActive,
       });
     } else if (!open) {
@@ -293,7 +293,7 @@ export default function EditPromotionDialog({ open, onOpenChange, promotion, onS
                           <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-60 overflow-y-auto">
                             <DropdownMenuLabel>{t('AddPromotionDialog.availableCategoriesHint')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            {categories.length === 0 ? (<DropdownMenuItem disabled>{t('AddPromotionDialog.noCategoriesAvailable')}</DropdownMenuItem>) :
+                            {categories.length === 0 ? (<DropdownMenuCheckboxItem disabled>{t('AddPromotionDialog.noCategoriesAvailable')}</DropdownMenuCheckboxItem>) :
                               categories.map((cat) => (<DropdownMenuCheckboxItem key={cat} checked={field.value?.includes(cat)} onCheckedChange={(checked) => field.onChange(checked ? [...(field.value || []), cat] : (field.value || []).filter(id => id !== cat))}>{cat}</DropdownMenuCheckboxItem>))}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -319,7 +319,7 @@ export default function EditPromotionDialog({ open, onOpenChange, promotion, onS
                           <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-60 overflow-y-auto">
                             <DropdownMenuLabel>{t('AddPromotionDialog.availableProductsHint')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            {products.length === 0 ? (<DropdownMenuItem disabled>{t('AddPromotionDialog.noProductsAvailable')}</DropdownMenuItem>) :
+                            {products.length === 0 ? (<DropdownMenuCheckboxItem disabled>{t('AddPromotionDialog.noProductsAvailable')}</DropdownMenuCheckboxItem>) :
                               products.map((prod) => (<DropdownMenuCheckboxItem key={prod.id} checked={field.value?.includes(prod.id)} onCheckedChange={(checked) => field.onChange(checked ? [...(field.value || []), prod.id] : (field.value || []).filter(id => id !== prod.id))}>{prod.name} ({prod.barcode})</DropdownMenuCheckboxItem>))}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -345,7 +345,7 @@ export default function EditPromotionDialog({ open, onOpenChange, promotion, onS
                           <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-60 overflow-y-auto">
                              <DropdownMenuLabel>{t('AddPromotionDialog.availableClientsHint')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            {clients.length === 0 ? (<DropdownMenuItem disabled>{t('AddPromotionDialog.noClientsAvailable')}</DropdownMenuItem>) :
+                            {clients.length === 0 ? (<DropdownMenuCheckboxItem disabled>{t('AddPromotionDialog.noClientsAvailable')}</DropdownMenuCheckboxItem>) :
                               clients.map((client) => (<DropdownMenuCheckboxItem key={client.id} checked={field.value?.includes(client.id)} onCheckedChange={(checked) => field.onChange(checked ? [...(field.value || []), client.id] : (field.value || []).filter(id => id !== client.id))}>{client.name} ({client.email})</DropdownMenuCheckboxItem>))}
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -371,7 +371,7 @@ export default function EditPromotionDialog({ open, onOpenChange, promotion, onS
                           <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-60 overflow-y-auto">
                             <DropdownMenuLabel>{t('AddPromotionDialog.availablePaymentMethodsHint')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                             {paymentMethods.length === 0 ? (<DropdownMenuItem disabled>{t('AddPromotionDialog.noPaymentMethodsAvailable')}</DropdownMenuItem>) :
+                             {paymentMethods.length === 0 ? (<DropdownMenuCheckboxItem disabled>{t('AddPromotionDialog.noPaymentMethodsAvailable')}</DropdownMenuCheckboxItem>) :
                               paymentMethods.map((method) => (<DropdownMenuCheckboxItem key={method.id} checked={field.value?.includes(method.id)} onCheckedChange={(checked) => field.onChange(checked ? [...(field.value || []), method.id] : (field.value || []).filter(id => id !== method.id))}>{method.name}</DropdownMenuCheckboxItem>))}
                           </DropdownMenuContent>
                         </DropdownMenu>

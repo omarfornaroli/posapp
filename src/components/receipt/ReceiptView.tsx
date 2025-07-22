@@ -314,7 +314,7 @@ export default function ReceiptView({ transaction, settings }: ReceiptViewProps)
           <Button variant="outline" onClick={handlePrint} className="w-full">
             <Printer className="mr-2 h-4 w-4" /> {t('ReceiptView.printButton')}
           </Button>
-          {typeof navigator !== 'undefined' && navigator.share && (
+          {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
              <Button onClick={handleShare} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
                <Share2 className="mr-2 h-4 w-4" /> {t('ReceiptView.shareButton')}
              </Button>

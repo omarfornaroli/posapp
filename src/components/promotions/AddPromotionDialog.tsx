@@ -38,7 +38,7 @@ import { RadioGroup, RadioGroupItem } from '../ui/radio-group';
 import { Separator } from '../ui/separator';
 import { ScrollArea } from '../ui/scroll-area';
 
-const promotionDiscountTypes: PromotionDiscountType[] = ['percentage', 'fixedAmount'];
+const promotionDiscountTypes = ['percentage', 'fixedAmount'] as const;
 
 const getPromotionFormSchema = (t: Function) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.requiredField', {fieldName: t('AddPromotionDialog.nameLabel')}) }),
@@ -264,5 +264,3 @@ export default function AddPromotionDialog({ open, onOpenChange, onAddPromotion 
     </Dialog>
   );
 }
-
-    

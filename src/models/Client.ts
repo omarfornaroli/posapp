@@ -7,11 +7,11 @@ export interface ClientDocument extends ClientType, Document {
 }
 
 const ClientSchema: Schema<ClientDocument> = new Schema({
-  name: { type: Schema.Types.String, required: true },
-  email: { type: Schema.Types.String, required: true, unique: true, lowercase: true, trim: true },
-  phone:  { type: Schema.Types.String},
-  address:  { type: Schema.Types.String},
-  registrationDate: { type: Date, required: true, default: Date.now },
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true, lowercase: true, trim: true },
+  phone:  { type: String },
+  address:  { type: String },
+  registrationDate: { type: Schema.Types.Date, required: true, default: Date.now },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, {
