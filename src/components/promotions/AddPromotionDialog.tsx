@@ -30,7 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Switch } from '@/components/ui/switch';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { CalendarIcon, Loader2, ChevronDown } from 'lucide-react';
 import type { Promotion, PromotionDiscountType, PromotionCondition, PaymentMethod, Product, Client } from '@/types';
 import { cn } from '@/lib/utils';

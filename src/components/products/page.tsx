@@ -173,19 +173,16 @@ export default function ProductsPage() {
             const savedSettings = result.data as GridSetting;
             const defaultCols = getDefaultColumnDefinitions(t); 
             
-            const reconciledColumns: PersistedColumnSetting[] = (savedSettings.columns || []).map((savedCol: any) => {
-              const def = defaultCols.find(d => d.key === savedCol.key);
-              return {
-                key: savedCol.key,
-                visible: def ? savedCol.visible : (def?.visible !== false), 
-              };
+            const savedColsMap = new Map((savedSettings.columns || []).map((col) => [col.key, col]));
+            
+            const reconciledColumns: PersistedColumnSetting[] = defaultCols.map(def => {
+                const savedCol = savedColsMap.get(String(def.key));
+                return {
+                    key: String(def.key),
+                    visible: savedCol ? savedCol.visible : (def.visible !== false),
+                };
             });
 
-            defaultCols.forEach(def => {
-                if (!reconciledColumns.find(rc => rc.key === def.key)) {
-                    reconciledColumns.push({ key: String(def.key), visible: def.visible !== false });
-                }
-            });
             setPersistedColumnSettings(reconciledColumns);
             setSortConfig(savedSettings.sortConfig || null);
             setGroupingKeys(Array.isArray(savedSettings.groupingKeys) ? savedSettings.groupingKeys : []);

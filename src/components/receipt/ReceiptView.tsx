@@ -79,7 +79,7 @@ export default function ReceiptView({ transaction, settings }: ReceiptViewProps)
   };
 
   const handleShare = async () => {
-    if (typeof navigator !== 'undefined' && navigator.share && transaction) {
+    if (typeof navigator !== 'undefined' && typeof navigator.share === 'function' && transaction) {
       try {
         await navigator.share({
           title: `${t('ReceiptView.transactionIdLabel')} ${transaction.id}`,
