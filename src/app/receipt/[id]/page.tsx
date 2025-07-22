@@ -20,10 +20,10 @@ export default function ReceiptPage() {
   
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
-  const transaction: SaleTransaction | undefined = useLiveQuery(
+  const transaction = useLiveQuery(
     () => transactionId ? db.sales.get(transactionId) : Promise.resolve(undefined),
     [transactionId]
-  );
+  ) as SaleTransaction | undefined;
   
   const { receiptSettings, isLoading: isLoadingSettings } = useDexieReceiptSettings();
   const { toast } = useToast();

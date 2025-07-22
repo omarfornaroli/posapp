@@ -173,7 +173,7 @@ export default function ProductsPage() {
             const savedSettings = result.data as GridSetting;
             const defaultCols = getDefaultColumnDefinitions(t); 
             
-            const reconciledColumns: PersistedColumnSetting[] = (savedSettings.columns || []).map((savedCol: any) => {
+            const reconciledColumns: PersistedColumnSetting[] = (savedSettings.columns || []).map((savedCol: PersistedColumnSetting) => {
               const def = defaultCols.find(d => d.key === savedCol.key);
               return {
                 key: savedCol.key,
