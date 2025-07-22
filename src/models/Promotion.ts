@@ -3,12 +3,12 @@ import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Promotion as PromotionType, PromotionDiscountType, PromotionCondition } from '@/types';
 
 const PromotionConditionSchema = new Schema<PromotionCondition>({
-  type: { 
-    type: String, 
+  type: {
+    type: String,
     enum: ['minSellAmount', 'clientIds', 'productIds', 'productCategories', 'paymentMethods', 'itemQuantity'],
-    required: true 
+    required: true
   },
-  value: { type: Schema.Types.Mixed }, 
+  value: { type: Schema.Types.Mixed },
   values: [{ type: String }],
   operator: { type: String, enum: ['gte', 'in'] },
 }, { _id: false });
@@ -23,9 +23,9 @@ const PromotionSchema: Schema<PromotionDocument> = new Schema({
   description: { type: String },
   discountType: { type: String, enum: ['percentage', 'fixedAmount'] as PromotionDiscountType[], required: true },
   discountValue: { type: Number, required: true, min: 0 },
-  startDate: { type: Schema.Types.Date, required: true },
+  startDate: { type: Schema.Types.String, required: true },
   endDate: { type: Schema.Types.Date },
-  conditions: [PromotionConditionSchema], 
+  conditions: [PromotionConditionSchema],
   isActive: { type: Boolean, default: true, required: true },
   applicationMethod: { type: String, enum: ['cart', 'lowestPriceItem'], default: 'cart' },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
@@ -37,7 +37,7 @@ const PromotionSchema: Schema<PromotionDocument> = new Schema({
   collection: 'pos_promotions'
 });
 
-PromotionSchema.virtual('id').get(function(this: Document) {
+PromotionSchema.virtual('id').get(function (this: Document) {
   return this._id.toHexString();
 });
 

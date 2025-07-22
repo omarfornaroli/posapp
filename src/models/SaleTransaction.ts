@@ -18,10 +18,10 @@ export const CartItemSchema = new Schema<CartItemType>({
 }, { _id: false });
 
 export const AppliedTaxEntrySchema = new Schema<AppliedTaxEntry>({
-  taxId: { type: String, required: true }, 
+  taxId: { type: String, required: true },
   name: { type: String, required: true },
-  rate: { type: Number, required: true }, 
-  amount: { type: Number, required: true }, 
+  rate: { type: Number, required: true },
+  amount: { type: Number, required: true },
 }, { _id: false });
 
 export const AppliedPromotionEntrySchema = new Schema<AppliedPromotionEntry>({
@@ -44,33 +44,33 @@ export interface SaleTransactionDocument extends SaleTransactionType, Document {
 }
 
 const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
-  date: { type: Schema.Types.Date, required: true, default: Date.now },
+  date: { type: Schema.Types.String, required: true, default: Date.now.toString() },
   items: [CartItemSchema],
-  
-  subtotal: { type: Number, required: true }, 
+
+  subtotal: { type: Number, required: true },
   totalItemDiscountAmount: { type: Number, required: true, default: 0 },
 
   overallDiscountType: { type: String, enum: ['percentage', 'fixedAmount'] },
   overallDiscountValue: { type: Number, min: 0 },
-  overallDiscountAmountApplied: { type: Number, default: 0 }, 
-  
-  promotionalDiscountAmount: { type: Number, required: true, default: 0 }, 
-  
+  overallDiscountAmountApplied: { type: Number, default: 0 },
+
+  promotionalDiscountAmount: { type: Number, required: true, default: 0 },
+
   taxAmount: { type: Number, required: true },
   totalAmount: { type: Number, required: true }, // This is the total in the transaction currency
   dispatchStatus: { type: String, enum: ['Pending', 'Partially Dispatched', 'Dispatched'], default: 'Pending', required: true, index: true },
 
-  appliedPayments: [AppliedPaymentSchema], 
-  clientId: { type: String }, 
-  clientName: { type: String }, 
+  appliedPayments: [AppliedPaymentSchema],
+  clientId: { type: String },
+  clientName: { type: String },
   appliedTaxes: [AppliedTaxEntrySchema],
-  appliedPromotions: [AppliedPromotionEntrySchema], 
+  appliedPromotions: [AppliedPromotionEntrySchema],
 
   // Transaction Currency Details
   currencyCode: { type: String, required: true },
   currencySymbol: { type: String, required: true },
   currencyDecimalPlaces: { type: Number, required: true },
-  
+
   // Base Currency Details
   baseCurrencyCode: { type: String, required: true },
   totalInBaseCurrency: { type: Number, required: true },
@@ -79,19 +79,19 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   // Audit Fields
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
-  
+
 }, {
-  timestamps: true, 
+  timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
   collection: 'pos_sale_transactions'
 });
 
-SaleTransactionSchema.virtual('id').get(function(this: Document) {
+SaleTransactionSchema.virtual('id').get(function (this: Document) {
   return this._id.toHexString();
 });
 
-const SaleTransaction: Model<SaleTransactionDocument> = 
+const SaleTransaction: Model<SaleTransactionDocument> =
   models.SaleTransaction || mongoose.model<SaleTransactionDocument>('SaleTransaction', SaleTransactionSchema);
 
 export default SaleTransaction;
