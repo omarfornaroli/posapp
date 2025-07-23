@@ -6,7 +6,7 @@ export interface ClientDocument extends ClientType, Document {
   id: string;
 }
 
-const ClientSchema: Schema = new Schema({
+const ClientSchema: Schema<ClientDocument> = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   phone:  { type: String },

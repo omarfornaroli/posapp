@@ -70,7 +70,7 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   currencyCode: { type: String, required: true },
   currencySymbol: { type: String, required: true },
   currencyDecimalPlaces: { type: Number, required: true },
-
+  
   // Base Currency Details
   baseCurrencyCode: { type: String, required: true },
   totalInBaseCurrency: { type: Number, required: true },

@@ -17,7 +17,7 @@ function Calendar({
   ...props
 }: CalendarProps) {
   const components: Partial<CustomComponents> = {
-    IconRight: () => <ChevronRight className="h-4 w-4" />,
+    IconLeft: () => <ChevronLeft className="h-4 w-4" />,
     ...props.components,
   }
 
@@ -59,7 +59,11 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={components}
+      components={{
+        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
+        IconRight: () => <ChevronRight className="h-4 w-4" />,
+        ...props.components,
+      }}
       {...props}
     />
   )
