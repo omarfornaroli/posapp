@@ -22,5 +22,3 @@ export default function LocaleLayout({
   // so we just render children here.
   return <>{children}</>;
 }
-
-    

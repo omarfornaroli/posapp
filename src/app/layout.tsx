@@ -1,7 +1,7 @@
 
 import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
+import { getLocale, getMessages } from 'next-intl/server';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
@@ -77,7 +77,6 @@ export const metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
-  unstable_setRequestLocale(locale);
   const messages = await getMessages();
   const activeTheme = await getDefaultTheme();
 
@@ -109,5 +108,3 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     </html>
   );
 }
-
-    
