@@ -17,9 +17,9 @@ import type { Currency } from '@/types';
 import {unstable_setRequestLocale} from 'next-intl/server';
 
 export default function DashboardPage({params}: {params: {locale: string}}) {
-  // Since this is the root page, we don't get the locale via params
-  // but we keep the structure for consistency in case this page moves
-  // next-intl will handle the locale from the context providers in the layout.
+  // Although the locale is not directly used in this component,
+  // calling this function is necessary to opt into static rendering.
+  unstable_setRequestLocale(params.locale);
   
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { hasPermission } = useAuth();
