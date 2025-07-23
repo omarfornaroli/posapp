@@ -14,15 +14,8 @@ import LowStockProducts from '@/components/dashboard/LowStockProducts';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 import type { Currency } from '@/types';
-import {unstable_setRequestLocale} from 'next-intl/server';
 
-export default function DashboardPage({params}: {params: {locale: string}}) {
-  // Although the locale is not directly used in this component,
-  // calling this function is necessary to opt into static rendering.
-  if (params.locale) {
-    unstable_setRequestLocale(params.locale);
-  }
-  
+export default function DashboardPage() {
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { hasPermission } = useAuth();
   
