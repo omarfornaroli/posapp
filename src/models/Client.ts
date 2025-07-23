@@ -11,7 +11,7 @@ const ClientSchema: Schema<ClientDocument> = new Schema({
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   phone:  { type: String },
   address:  { type: String },
-  registrationDate: { type: Date, required: true, default: Date.now },
+  registrationDate: { type: String, required: true, default: () => new Date().toISOString() },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, {
