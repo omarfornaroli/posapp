@@ -34,14 +34,12 @@ const UserSchema: Schema<UserDocument> = new Schema({
     virtuals: true,
     transform: (doc, ret) => {
         delete ret._id;
-        delete ret.__v;
     }
   },
   toObject: { 
     virtuals: true,
     transform: (doc, ret) => {
         delete ret._id;
-        delete ret.__v;
     }
   },
   collection: 'pos_users'
