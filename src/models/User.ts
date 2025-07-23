@@ -3,16 +3,13 @@ import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import type { User as UserType, UserRole, UserStatus } from '@/types';
 
-export interface UserDocument extends Omit<UserType, 'id' | 'joinDate' | 'createdAt' | 'updatedAt'>, Document {
+export interface UserDocument extends UserType, Document {
   id: string;
   password?: string;
   setupToken?: string;
   setupTokenExpires?: Date;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
-  joinDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
   comparePassword: (password: string) => Promise<boolean>;
 }
 
@@ -36,19 +33,15 @@ const UserSchema: Schema<UserDocument> = new Schema({
   toJSON: { 
     virtuals: true,
     transform: (doc, ret) => {
-        ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;
-        if (ret.joinDate) ret.joinDate = ret.joinDate.toISOString();
     }
   },
   toObject: { 
     virtuals: true,
     transform: (doc, ret) => {
-        ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;
-        if (ret.joinDate) ret.joinDate = ret.joinDate.toISOString();
     }
   },
   collection: 'pos_users'

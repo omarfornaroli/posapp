@@ -2,11 +2,8 @@
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Client as ClientType } from '@/types';
 
-export interface ClientDocument extends Omit<ClientType, 'id' | 'registrationDate' | 'createdAt' | 'updatedAt'>, Document { 
+export interface ClientDocument extends ClientType, Document {
   id: string;
-  registrationDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const ClientSchema: Schema<ClientDocument> = new Schema({
@@ -22,20 +19,15 @@ const ClientSchema: Schema<ClientDocument> = new Schema({
   toJSON: { 
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
-      // Convert date to string for consistency with type
-      if (ret.registrationDate) ret.registrationDate = ret.registrationDate.toISOString();
     }
   },
   toObject: { 
     virtuals: true,
     transform: (doc, ret) => {
-      ret.id = ret._id.toString();
       delete ret._id;
       delete ret.__v;
-      if (ret.registrationDate) ret.registrationDate = ret.registrationDate.toISOString();
     }
   },
   collection: 'pos_clients'

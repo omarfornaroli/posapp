@@ -14,12 +14,8 @@ const PromotionConditionSchema = new Schema<PromotionCondition>({
 }, { _id: false });
 
 
-export interface PromotionDocument extends Omit<PromotionType, 'id' | 'startDate' | 'endDate' | 'createdAt' | 'updatedAt'>, Document {
+export interface PromotionDocument extends PromotionType, Document {
   id: string;
-  startDate: Date;
-  endDate?: Date;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const PromotionSchema: Schema<PromotionDocument> = new Schema({
@@ -39,21 +35,15 @@ const PromotionSchema: Schema<PromotionDocument> = new Schema({
   toJSON: { 
     virtuals: true,
     transform: (doc, ret) => {
-        ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;
-        if (ret.startDate) ret.startDate = ret.startDate.toISOString();
-        if (ret.endDate) ret.endDate = ret.endDate.toISOString();
     }
    },
   toObject: { 
     virtuals: true,
     transform: (doc, ret) => {
-        ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;
-        if (ret.startDate) ret.startDate = ret.startDate.toISOString();
-        if (ret.endDate) ret.endDate = ret.endDate.toISOString();
     }
   },
   collection: 'pos_promotions'

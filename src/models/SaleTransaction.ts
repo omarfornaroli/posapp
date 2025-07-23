@@ -39,11 +39,8 @@ export const AppliedPaymentSchema = new Schema<AppliedPayment>({
 }, { _id: false });
 
 
-export interface SaleTransactionDocument extends Omit<SaleTransactionType, 'id' | 'date' | 'createdAt' | 'updatedAt'>, Document {
+export interface SaleTransactionDocument extends SaleTransactionType, Document {
   id: string;
-  date: Date;
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
@@ -88,19 +85,15 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   toJSON: { 
     virtuals: true,
     transform: (doc, ret) => {
-        ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;
-        if (ret.date) ret.date = ret.date.toISOString();
     }
    },
   toObject: { 
     virtuals: true,
     transform: (doc, ret) => {
-        ret.id = ret._id.toString();
         delete ret._id;
         delete ret.__v;
-        if (ret.date) ret.date = ret.date.toISOString();
     }
    },
   collection: 'pos_sale_transactions'
