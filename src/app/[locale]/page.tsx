@@ -15,7 +15,6 @@ import LowStockProducts from '@/components/dashboard/LowStockProducts';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 import type { Currency } from '@/types';
-import { unstable_setRequestLocale } from 'next-intl/server';
 
 interface DashboardPageProps {
   params: {
@@ -24,7 +23,6 @@ interface DashboardPageProps {
 }
 
 export default function DashboardPage({ params }: DashboardPageProps) {
-  unstable_setRequestLocale(params.locale);
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { hasPermission } = useAuth();
   
