@@ -14,12 +14,21 @@ import LowStockProducts from '@/components/dashboard/LowStockProducts';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 import type { Currency } from '@/types';
+import { unstable_setRequestLocale } from 'next-intl/server';
 
-export default function DashboardPage() {
+interface DashboardPageProps {
+  params: {
+    locale: string;
+  };
+}
+
+export default function DashboardPage({ params }: DashboardPageProps) {
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { hasPermission } = useAuth();
   
   useEffect(() => {
+    // No need to call unstable_setRequestLocale here on client, it's for server rendering.
+    // The layout handles setting the locale for the context.
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
 
