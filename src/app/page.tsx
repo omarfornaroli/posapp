@@ -15,7 +15,6 @@ import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 import { useCurrency } from '@/context/CurrencyContext';
 
 export default function DashboardPage() {
-
   const { t } = useRxTranslate();
   const { summary: dashboardSummary, isLoading: isLoadingSummary } = useDexieDashboardSummary();
   const { currencies, isLoading: isLoadingCurrencies } = useDexieCurrencies();
