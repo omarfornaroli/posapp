@@ -1,6 +1,6 @@
 
 import type { ReactNode } from 'react';
-import { getMessages, unstable_setRequestLocale, getLocale } from 'next-intl/server';
+import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import { NextIntlClientProvider } from 'next-intl';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
@@ -77,11 +77,12 @@ export const metadata = {
 
 export default async function RootLayout({
   children,
-  params: {locale}
+  params
 }: {
   children: React.ReactNode;
-  params: {locale: string};
+  params: { locale: string };
 }) {
+  const locale = await getLocale();
   unstable_setRequestLocale(locale);
   const messages = await getMessages();
   const activeTheme = await getDefaultTheme();
@@ -102,13 +103,13 @@ export default async function RootLayout({
       </head>
       <body className="font-body antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
-           <AuthProvider value={{ user: null }}>
-             <CurrencyProvider>
-                <AppLayout>
-                  {children}
-                </AppLayout>
-              </CurrencyProvider>
-           </AuthProvider>
+          <AuthProvider value={{ user: null }}>
+            <CurrencyProvider>
+              <AppLayout>
+                {children}
+              </AppLayout>
+            </CurrencyProvider>
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>
