@@ -1,7 +1,7 @@
 
 import type { ReactNode } from 'react';
 import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
+import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
@@ -75,8 +75,16 @@ export const metadata = {
   description: 'Modern Point of Sale application',
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ 
+  children,
+  params
+}: { 
+  children: React.ReactNode,
+  params: { locale: string } 
+}) {
   const locale = await getLocale();
+  unstable_setRequestLocale(locale);
+
   const messages = await getMessages();
   const activeTheme = await getDefaultTheme();
 
