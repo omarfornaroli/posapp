@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -23,12 +24,11 @@ interface DashboardPageProps {
 }
 
 export default function DashboardPage({ params }: DashboardPageProps) {
+  unstable_setRequestLocale(params.locale);
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { hasPermission } = useAuth();
   
   useEffect(() => {
-    // No need to call unstable_setRequestLocale here on client, it's for server rendering.
-    // The layout handles setting the locale for the context.
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
 
