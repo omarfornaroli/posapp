@@ -1,117 +1,175 @@
-import type { ReactNode } from 'react';
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages, unstable_setRequestLocale } from 'next-intl/server';
-import AppLayout from '@/components/layout/AppLayout';
-import type { Theme } from '@/types';
-import dbConnect from '@/lib/dbConnect';
-import ThemeModel from '@/models/Theme';
-import '@/app/globals.css';
-import { AuthProvider } from '@/context/AuthContext';
-import { CurrencyProvider } from '@/context/CurrencyContext';
 
-const minimalFallbackTheme: Theme = {
-  id: 'fallback-light',
-  name: 'Fallback Light',
-  isDefault: true,
-  colors: { 
-    background: "240 5.3% 94.9%", foreground: "240 10% 3.9%", card: "0 0% 100%", cardForeground: "240 10% 3.9%",
-    popover: "0 0% 100%", popoverForeground: "240 10% 3.9%", primary: "270 100% 50%", primaryForeground: "0 0% 100%", 
-    secondary: "240 4.8% 95.9%", secondaryForeground: "240 5.9% 10%", muted: "240 4.8% 95.9%", mutedForeground: "240 3.8% 46.1%",
-    accent: "300 100% 50%", accentForeground: "0 0% 100%", destructive: "0 84.2% 60.2%", destructiveForeground: "0 0% 98%",
-    border: "240 5.9% 90%", input: "240 5.9% 90%", ring: "270 100% 50%",
-  },
-  fontBody: 'Inter', fontHeadline: 'Poppins',
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
 
-async function getDefaultTheme(): Promise<Theme> {
-  try {
-    const connection = await dbConnect();
-    if (!connection) {
-      console.warn("[PANOX RootLayout] No database connection. Using fallback theme.");
-      return minimalFallbackTheme;
+'use client';
+
+import { useState, useMemo, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useRouter } from 'next/navigation';
+import { useRxTranslate } from '@/hooks/use-rx-translate';
+import { useToast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Loader2 } from 'lucide-react';
+import { translationRxService } from '@/services/translation.rx.service';
+import ForgotPasswordDialog from '@/components/auth/ForgotPasswordDialog';
+
+
+const loginSchema = (t: Function) => z.object({
+  email: z.string().email({ message: t('Common.formErrors.invalidEmail') }),
+  password: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('LoginPage.passwordLabel')}) }),
+  rememberMe: z.boolean().default(false).optional(),
+});
+
+type LoginFormValues = z.infer<ReturnType<typeof loginSchema>>;
+
+export default function LoginPage() {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { t, isLoading, currentLocale } = useRxTranslate();
+  const schema = useMemo(() => loginSchema(t), [t]);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+
+  useEffect(() => {
+    // Re-initialize translations if locale changes.
+    // This could happen if the user changes language on another page and navigates here.
+    translationRxService.initialize(currentLocale);
+  }, [currentLocale]);
+
+
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: '', password: '', rememberMe: false },
+  });
+
+  const { formState: { isSubmitting } } = form;
+
+  async function onSubmit(values: LoginFormValues) {
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || t('LoginPage.loginErrorDescription'));
+      }
+
+      toast({
+        title: t('LoginPage.loginSuccessTitle'),
+        description: t('LoginPage.loginSuccessDescription'),
+      });
+      
+      localStorage.setItem('isLoggedIn', 'true');
+      localStorage.setItem('loggedInUserEmail', values.email);
+      localStorage.setItem('sessionExpiresAt', result.expiresAt);
+
+      router.push('/');
+      router.refresh();
+      
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: t('LoginPage.loginErrorTitle'),
+        description: error instanceof Error ? error.message : String(error),
+      });
     }
-    
-    let defaultThemeDoc = await ThemeModel.findOne({ isDefault: true }).lean();
-    if (!defaultThemeDoc) {
-      defaultThemeDoc = await ThemeModel.findOne({ name: 'Light' }).lean() || await ThemeModel.findOne().sort({ createdAt: 1 }).lean();
-    }
-    if (!defaultThemeDoc) return minimalFallbackTheme;
-    const theme = JSON.parse(JSON.stringify(defaultThemeDoc)) as Theme;
-    if (defaultThemeDoc._id && !theme.id) theme.id = defaultThemeDoc._id.toString();
-    theme.fontBody = theme.fontBody || 'Inter';
-    theme.fontHeadline = theme.fontHeadline || 'Poppins';
-    return theme;
-  } catch (error) {
-    console.error("[PANOX RootLayout] Error fetching default theme. Returning minimal fallback. Error:", error);
-    return minimalFallbackTheme;
   }
-}
 
-function ThemeStyleInjector({ theme }: { theme: Theme }) {
-  const t = theme.colors;
-  const bodyFontFamily = theme.fontBody || 'Inter';
-  const headlineFontFamily = theme.fontHeadline || 'Poppins';
-  const fontBody = bodyFontFamily.includes(' ') ? `'${bodyFontFamily}'` : bodyFontFamily;
-  const fontHeadline = headlineFontFamily.includes(' ') ? `'${headlineFontFamily}'` : headlineFontFamily;
-  
-  const cssVariables = `
-    :root {
-      --background: ${t.background}; --foreground: ${t.foreground}; --card: ${t.card}; --card-foreground: ${t.cardForeground};
-      --popover: ${t.popover}; --popover-foreground: ${t.popoverForeground}; --primary: ${t.primary}; --primary-foreground: ${t.primaryForeground};
-      --secondary: ${t.secondary}; --secondary-foreground: ${t.secondaryForeground}; --muted: ${t.muted}; --muted-foreground: ${t.mutedForeground};
-      --accent: ${t.accent}; --accent-foreground: ${t.accentForeground}; --destructive: ${t.destructive}; --destructive-foreground: ${t.destructiveForeground};
-      --border: ${t.border}; --input: ${t.input}; --ring: ${t.ring};
-      --font-body: ${fontBody}, sans-serif; --font-headline: ${fontHeadline}, sans-serif;
-    }
-  `;
-  return <style dangerouslySetInnerHTML={{ __html: cssVariables.replace(/\s\s+/g, ' ').trim() }} />;
-}
-
-export const metadata = {
-  title: 'POSAPP',
-  description: 'Modern Point of Sale application',
-};
-
-export default async function RootLayout({ 
-  children,
-  params
-}: { 
-  children: React.ReactNode,
-  params: { locale: string } 
-}) {
-  const locale = await getLocale();
-  unstable_setRequestLocale(locale);
-
-  const messages = await getMessages();
-  const activeTheme = await getDefaultTheme();
+  if (isLoading) {
+      return (
+        <div className="flex min-h-screen items-center justify-center bg-background">
+            <Loader2 className="h-16 w-16 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   return (
-    <html lang={locale}>
-      <head>
-        <ThemeStyleInjector theme={activeTheme} /> 
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#8a2be2" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Lobster&family=Pacifico&family=Roboto+Slab&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
-        <NextIntlClientProvider locale={locale} messages={messages}>
-           <AuthProvider value={{ user: null }}>
-             <CurrencyProvider>
-                <AppLayout>
-                  {children}
-                </AppLayout>
-              </CurrencyProvider>
-           </AuthProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <>
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader>
+            <CardTitle className="font-headline text-2xl">{t('LoginPage.title')}</CardTitle>
+            <CardDescription>{t('LoginPage.description')}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('LoginPage.emailLabel')}</FormLabel>
+                      <FormControl>
+                        <Input placeholder={t('LoginPage.emailPlaceholder')} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('LoginPage.passwordLabel')}</FormLabel>
+                      <FormControl>
+                        <Input type="password" placeholder={t('LoginPage.passwordPlaceholder')} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex items-center justify-between">
+                    <FormField
+                    control={form.control}
+                    name="rememberMe"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                            <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                            <FormLabel className="cursor-pointer">
+                            {t('LoginPage.rememberMeLabel')}
+                            </FormLabel>
+                        </div>
+                        </FormItem>
+                    )}
+                    />
+                    <Button
+                        type="button"
+                        variant="link"
+                        className="p-0 h-auto text-sm"
+                        onClick={() => setIsForgotPasswordOpen(true)}
+                    >
+                        {t('LoginPage.forgotPassword')}
+                    </Button>
+                </div>
+                <Button type="submit" className="w-full" disabled={isSubmitting}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isSubmitting ? t('LoginPage.loggingInButton') : t('LoginPage.loginButton')}
+                </Button>
+              </form>
+            </Form>
+          </CardContent>
+        </Card>
+      </div>
+      <ForgotPasswordDialog 
+        open={isForgotPasswordOpen}
+        onOpenChange={setIsForgotPasswordOpen}
+      />
+    </>
   );
 }
