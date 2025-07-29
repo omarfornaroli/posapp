@@ -40,7 +40,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
 
   const publicPaths = ['/login', '/setup-account', '/reset-password'];
-  const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
+  const isPublicPage = publicPaths.some(path => pathname.endsWith(path));
 
   useEffect(() => {
     translationRxService.initialize(initialNextIntlLocale);

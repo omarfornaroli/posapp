@@ -4,4 +4,4 @@
 // A SERVER RESTART IS REQUIRED FOR CHANGES TO TAKE EFFECT.
 
 export const locales = ["en","es"];
-export const defaultLocale = 'en';
+export const defaultLocale = 'es';
