@@ -1,8 +1,8 @@
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
+import { unstable_setRequestLocale } from 'next-intl/server';
 import DashboardStats from '@/components/dashboard/DashboardStats';
 import SalesChart from '@/components/dashboard/SalesChart';
 import RecentSales from '@/components/dashboard/RecentSales';
@@ -14,7 +14,16 @@ import { useDexieDashboardSummary } from '@/hooks/useDexieDashboardSummary';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 import { useCurrency } from '@/context/CurrencyContext';
 
-export default function DashboardPage() {
+interface DashboardPageProps {
+  params: {
+    locale: string;
+  };
+}
+
+export default function DashboardPage({ params: { locale } }: DashboardPageProps) {
+  // Although the component is a client component, this is required for static rendering with next-intl
+  // unstable_setRequestLocale(locale);
+
   const { t } = useRxTranslate();
   const { summary: dashboardSummary, isLoading: isLoadingSummary } = useDexieDashboardSummary();
   const { currencies, isLoading: isLoadingCurrencies } = useDexieCurrencies();
