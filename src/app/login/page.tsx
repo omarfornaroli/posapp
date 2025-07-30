@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -34,10 +33,10 @@ export default function LoginPage() {
   const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   useEffect(() => {
-    // Re-initialize translations if locale changes.
-    // This could happen if the user changes language on another page and navigates here.
-    translationRxService.initialize(currentLocale);
-  }, [currentLocale]);
+    // Determine browser language or use a default
+    const browserLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'en';
+    translationRxService.initialize(browserLang);
+  }, []);
 
 
   const form = useForm<LoginFormValues>({
