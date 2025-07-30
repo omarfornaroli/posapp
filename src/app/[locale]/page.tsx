@@ -11,7 +11,6 @@ import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useDexieDashboardSummary } from '@/hooks/useDexieDashboardSummary';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 import { useCurrency } from '@/context/CurrencyContext';
-import { useLocale } from 'next-intl';
 
 export default function DashboardPage() {
   const { t } = useRxTranslate();

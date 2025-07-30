@@ -1,9 +1,10 @@
-import {NextIntlClientProvider} from 'next-intl';
-import {getMessages} from 'next-intl/server';
+import {NextIntlClientProvider, useMessages} from 'next-intl';
 import AppLayout from '@/components/layout/AppLayout';
 import type { Theme } from '@/types';
 import dbConnect from '@/lib/dbConnect';
 import ThemeModel from '@/models/Theme';
+import { AuthProvider } from '@/context/AuthContext';
+import { CurrencyProvider } from '@/context/CurrencyContext';
  
 const minimalFallbackTheme: Theme = {
   id: 'fallback-light',
@@ -72,16 +73,27 @@ export default async function LocaleLayout({
   children: React.ReactNode;
   params: {locale: string};
 }) {
-  const messages = await getMessages();
+  let messages;
+  try {
+    messages = (await import(`../../messages/${locale}.json`)).default;
+  } catch (error) {
+    console.error(`Could not load messages for locale: ${locale}`, error);
+    // You might want to use a default set of messages or handle this error appropriately
+    messages = (await import(`../../messages/en.json`)).default; 
+  }
   const activeTheme = await getDefaultTheme();
  
   return (
     <>
       <ThemeStyleInjector theme={activeTheme} />
       <NextIntlClientProvider locale={locale} messages={messages}>
-        <AppLayout>
-          {children}
-        </AppLayout>
+        <AuthProvider value={{ user: null }}>
+            <CurrencyProvider>
+                <AppLayout>
+                    {children}
+                </AppLayout>
+            </CurrencyProvider>
+        </AuthProvider>
       </NextIntlClientProvider>
     </>
   );

@@ -1,7 +1,5 @@
 import type { ReactNode } from 'react';
 import '@/app/globals.css';
-import { AuthProvider } from '@/context/AuthContext';
-import { CurrencyProvider } from '@/context/CurrencyContext';
 
 // This is the root layout. It's minimal and wraps all pages.
 // Internationalization and the main app UI are handled in [locale]/layout.tsx.
@@ -30,12 +28,8 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Lobster&family=Pacifico&family=Roboto+Slab&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        {/* AuthProvider and other global providers that do not depend on `next-intl` can be here */}
-        <AuthProvider value={{ user: null }}>
-          <CurrencyProvider>
-            {children}
-          </CurrencyProvider>
-        </AuthProvider>
+        {/* The rest of the app structure, including providers, is in [locale]/layout.tsx */}
+        {children}
       </body>
     </html>
   );
