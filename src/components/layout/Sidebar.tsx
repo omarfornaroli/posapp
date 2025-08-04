@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -7,7 +6,7 @@ import { LayoutGrid, Package, FileText, Users, Percent, Languages, UserCog, Tick
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
-import { usePathname as useNextPathname, useSearchParams } from 'next/navigation'; 
+import { usePathname, useSearchParams } from 'next/navigation'; 
 import { Separator } from '@/components/ui/separator';
 import type { User, Permission } from '@/types';
 import { ScrollArea } from '@/components/ui/scroll-area'; 
@@ -53,7 +52,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
   
-  const nextPathname = useNextPathname(); 
+  const nextPathname = usePathname(); 
   const searchParams = useSearchParams();
 
   const handleLinkClick = () => {

@@ -6,7 +6,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,13 +13,25 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
-import { translationRxService } from '@/services/translation.rx.service';
 import ForgotPasswordDialog from '@/components/auth/ForgotPasswordDialog';
 
+import enMessages from '@/messages/en.json';
+import esMessages from '@/messages/es.json';
 
-const loginSchema = (t: Function) => z.object({
-  email: z.string().email({ message: t('Common.formErrors.invalidEmail') }),
-  password: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('LoginPage.passwordLabel')}) }),
+type Translations = typeof enMessages.LoginPage;
+type CommonErrors = typeof enMessages.Common.formErrors;
+
+const getLoginTranslations = (locale: string): { t: Translations; tErrors: CommonErrors } => {
+  if (locale.startsWith('es')) {
+    return { t: esMessages.LoginPage, tErrors: esMessages.Common.formErrors };
+  }
+  return { t: enMessages.LoginPage, tErrors: enMessages.Common.formErrors };
+};
+
+
+const loginSchema = (t: Translations, tErrors: CommonErrors) => z.object({
+  email: z.string().email({ message: tErrors.invalidEmail }),
+  password: z.string().min(1, { message: tErrors.requiredField.replace('{fieldName}', t.passwordLabel) }),
   rememberMe: z.boolean().default(false).optional(),
 });
 
@@ -29,20 +40,23 @@ type LoginFormValues = z.infer<ReturnType<typeof loginSchema>>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { t, isLoading, currentLocale } = useRxTranslate();
-  const schema = useMemo(() => loginSchema(t), [t]);
-  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  const [{ t, tErrors }, setTranslations] = useState(getLoginTranslations('en'));
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    translationRxService.initialize(currentLocale);
-  }, [currentLocale]);
-
-
+    const locale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
+    setTranslations(getLoginTranslations(locale));
+    setIsLoading(false);
+  }, []);
+  
+  const schema = useMemo(() => loginSchema(t, tErrors), [t, tErrors]);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
+  
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(schema),
     defaultValues: { email: '', password: '', rememberMe: false },
   });
-
+  
   const { formState: { isSubmitting } } = form;
 
   async function onSubmit(values: LoginFormValues) {
@@ -56,12 +70,12 @@ export default function LoginPage() {
       const result = await response.json();
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || t('LoginPage.loginErrorDescription'));
+        throw new Error(result.error || t.loginErrorDescription);
       }
 
       toast({
-        title: t('LoginPage.loginSuccessTitle'),
-        description: t('LoginPage.loginSuccessDescription'),
+        title: t.loginSuccessTitle,
+        description: t.loginSuccessDescription,
       });
       
       localStorage.setItem('isLoggedIn', 'true');
@@ -74,7 +88,7 @@ export default function LoginPage() {
     } catch (error) {
       toast({
         variant: 'destructive',
-        title: t('LoginPage.loginErrorTitle'),
+        title: t.loginErrorTitle,
         description: error instanceof Error ? error.message : String(error),
       });
     }
@@ -93,8 +107,8 @@ export default function LoginPage() {
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-sm">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl">{t('LoginPage.title')}</CardTitle>
-            <CardDescription>{t('LoginPage.description')}</CardDescription>
+            <CardTitle className="font-headline text-2xl">{t.title}</CardTitle>
+            <CardDescription>{t.description}</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -104,9 +118,9 @@ export default function LoginPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('LoginPage.emailLabel')}</FormLabel>
+                      <FormLabel>{t.emailLabel}</FormLabel>
                       <FormControl>
-                        <Input placeholder={t('LoginPage.emailPlaceholder')} {...field} />
+                        <Input placeholder={t.emailPlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -117,9 +131,9 @@ export default function LoginPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('LoginPage.passwordLabel')}</FormLabel>
+                      <FormLabel>{t.passwordLabel}</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder={t('LoginPage.passwordPlaceholder')} {...field} />
+                        <Input type="password" placeholder={t.passwordPlaceholder} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -139,7 +153,7 @@ export default function LoginPage() {
                         </FormControl>
                         <div className="space-y-1 leading-none">
                             <FormLabel className="cursor-pointer">
-                            {t('LoginPage.rememberMeLabel')}
+                            {t.rememberMeLabel}
                             </FormLabel>
                         </div>
                         </FormItem>
@@ -151,12 +165,12 @@ export default function LoginPage() {
                         className="p-0 h-auto text-sm"
                         onClick={() => setIsForgotPasswordOpen(true)}
                     >
-                        {t('LoginPage.forgotPassword')}
+                        {t.forgotPassword}
                     </Button>
                 </div>
                 <Button type="submit" className="w-full" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isSubmitting ? t('LoginPage.loggingInButton') : t('LoginPage.loginButton')}
+                  {isSubmitting ? t.loggingInButton : t.loginButton}
                 </Button>
               </form>
             </Form>

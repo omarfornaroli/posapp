@@ -1,4 +1,3 @@
-// This file was moved from src/app/[locale]/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -6,7 +5,7 @@ import DashboardStats from '@/components/dashboard/DashboardStats';
 import SalesChart from '@/components/dashboard/SalesChart';
 import RecentSales from '@/components/dashboard/RecentSales';
 import LowStockProducts from '@/components/dashboard/LowStockProducts';
-import type { DashboardSummary, Currency } from '@/types';
+import type { Currency } from '@/types';
 import { Loader2 } from 'lucide-react';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useDexieDashboardSummary } from '@/hooks/useDexieDashboardSummary';

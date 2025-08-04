@@ -3,13 +3,11 @@
 
 import { ShieldAlert } from 'lucide-react';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
-import { useLocale } from 'next-intl';
 import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function AccessDeniedMessage() {
-  const currentLocale = useLocale();
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
 
   useEffect(() => {
     initializeTranslations(currentLocale);

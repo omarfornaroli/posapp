@@ -1,10 +1,7 @@
 
 import type {NextConfig} from 'next';
-import createNextIntlPlugin from 'next-intl/plugin';
 import withPWA from 'next-pwa';
 import runtime from 'next-pwa/cache';
-
-const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 const pwaConfig = {
     dest: 'public',
@@ -52,9 +49,4 @@ const nextConfig: NextConfig = {
 
 const pwaPlugin = withPWA(pwaConfig);
 
-// First, apply the next-intl plugin to the base config
-const configWithIntl = withNextIntl(nextConfig);
-
-// Then, apply the PWA plugin to the result of the intl plugin
-// We use `as any` here to resolve a deep type incompatibility between plugins.
-export default pwaPlugin(configWithIntl as any);
+export default pwaPlugin(nextConfig);

@@ -9,6 +9,7 @@ import {
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { format } from 'date-fns';
 import type { Currency } from '@/types';
+import { useEffect } from 'react';
 
 interface SalesChartProps {
   salesData: { date: string; total: number }[];
@@ -17,7 +18,12 @@ interface SalesChartProps {
 }
 
 export default function SalesChart({ salesData, baseCurrencySymbol, selectedCurrency }: SalesChartProps) {
-  const { t } = useRxTranslate();
+  const { t, initializeTranslations, currentLocale } = useRxTranslate();
+
+  useEffect(() => {
+    initializeTranslations(currentLocale);
+  }, [initializeTranslations, currentLocale]);
+
 
   const exchangeRate = selectedCurrency?.exchangeRate || 1;
   const symbol = selectedCurrency?.symbol || baseCurrencySymbol;

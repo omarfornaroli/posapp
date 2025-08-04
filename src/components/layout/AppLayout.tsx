@@ -1,20 +1,17 @@
-
+// src/components/layout/AppLayout.tsx
 'use client';
 
 import type React from 'react';
 import { useEffect, useState, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { useLocale } from 'next-intl';
 import Header from './Header';
 import Sidebar from './Sidebar';
-import { Toaster } from '@/components/ui/toaster';
-import { Skeleton } from "@/components/ui/skeleton";
-import type { User, Permission } from '@/types'; 
-import { AuthProvider } from '@/context/AuthContext';
-import { CurrencyProvider } from '@/context/CurrencyContext';
-import { translationRxService } from '@/services/translation.rx.service';
 import SessionExpirationDialog from './SessionExpirationDialog';
 import { syncService } from '@/services/sync.service';
+import type { User, Permission } from '@/types';
+import { translationRxService } from '@/services/translation.rx.service';
+import { Skeleton } from "@/components/ui/skeleton";
+import { Toaster } from "@/components/ui/toaster";
 
 interface UserWithPermissions extends User {
   permissions: Permission[];
@@ -27,13 +24,12 @@ interface AppLayoutProps {
 const SIDEBAR_STORAGE_KEY = 'sidebarOpen';
 const SESSION_WARNING_MS = 60 * 1000; // 60 seconds before expiration
 
-export default function AppLayout({ children }: AppLayoutProps) {
+export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
-  const initialNextIntlLocale = useLocale();
 
   const [authStatusDetermined, setAuthStatusDetermined] = useState(false);
   const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
-  const [loggedInUser, setLoggedInUser] = useState<UserWithPermissions | null>(null); 
+  const [loggedInUser, setLoggedInUser] = useState<UserWithPermissions | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [isSessionWarningVisible, setIsSessionWarningVisible] = useState(false);
@@ -43,41 +39,32 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
 
   useEffect(() => {
-    translationRxService.initialize(initialNextIntlLocale);
-  }, [initialNextIntlLocale]);
-  
+    const initialLocale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
+    translationRxService.initialize(initialLocale);
+  }, []);
+
   const handleLogout = useCallback(() => {
-      setIsSessionWarningVisible(false);
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('loggedInUserEmail');
-      localStorage.removeItem('sessionExpiresAt');
-      setUserIsLoggedIn(false);
-      setLoggedInUser(null);
-      setSessionExpiresAt(null);
-      window.location.assign(`/login`);
+    setIsSessionWarningVisible(false);
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('loggedInUserEmail');
+    localStorage.removeItem('sessionExpiresAt');
+    setUserIsLoggedIn(false);
+    setLoggedInUser(null);
+    setSessionExpiresAt(null);
+    window.location.assign(`/login`);
   }, []);
 
   const fetchUserSession = useCallback(async (email: string) => {
     try {
       const response = await fetch(`/api/auth/session`, {
-        headers: {
-          'X-User-Email': email
-        }
+        headers: { 'X-User-Email': email }
       });
-      
-      if (!response.ok) {
-        let apiError = 'Failed to fetch user session or user not found';
-        try {
-          const errorResult = await response.json();
-          apiError = errorResult?.error || apiError;
-        } catch (e) { /* Ignore parse error, use default */ }
-        throw new Error(apiError);
-      }
+      if (!response.ok) throw new Error('Failed to fetch user session');
       const result = await response.json();
       if (result.success && result.data) {
         setLoggedInUser(result.data as UserWithPermissions);
       } else {
-        throw new Error(result.error || 'User session data not found in response');
+        throw new Error(result.error || 'User session data not found');
       }
     } catch (error) {
       console.error('Error fetching user session:', error);
@@ -87,11 +74,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   const handleExtendSession = useCallback(() => {
     const wasRemembered = (sessionExpiresAt && sessionExpiresAt - Date.now() > 5 * 60 * 1000);
-    const newExpiresIn = wasRemembered 
-      ? 15 * 24 * 60 * 60 * 1000 // 15 days
-      : 5 * 60 * 1000; // 5 minutes
+    const newExpiresIn = wasRemembered ? 15 * 24 * 60 * 60 * 1000 : 5 * 60 * 1000;
     const newExpiresAt = Date.now() + newExpiresIn;
-    
     localStorage.setItem('sessionExpiresAt', String(newExpiresAt));
     setSessionExpiresAt(newExpiresAt);
     setIsSessionWarningVisible(false);
@@ -101,7 +85,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
     if (typeof window !== 'undefined') {
       const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
       setUserIsLoggedIn(loggedInStatus);
-      
       const storedExpiresAt = localStorage.getItem('sessionExpiresAt');
       setSessionExpiresAt(storedExpiresAt ? parseInt(storedExpiresAt, 10) : null);
 
@@ -115,7 +98,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       } else {
         setLoggedInUser(null);
         if (!isPublicPage) {
-            window.location.assign(`/login`);
+          window.location.assign(`/login`);
         }
       }
       setAuthStatusDetermined(true);
@@ -128,34 +111,24 @@ export default function AppLayout({ children }: AppLayoutProps) {
   useEffect(() => {
     if (userIsLoggedIn) {
       syncService.start();
-      return () => {
-        syncService.stop();
-      };
+      return () => syncService.stop();
     }
   }, [userIsLoggedIn]);
-  
+
   useEffect(() => {
-      if (!userIsLoggedIn || !sessionExpiresAt) {
-          setIsSessionWarningVisible(false);
-          return;
-      };
-
-      const interval = setInterval(() => {
-          const now = Date.now();
-          const timeLeft = sessionExpiresAt - now;
-
-          if (timeLeft <= 0) {
-              handleLogout();
-          } else if (timeLeft <= SESSION_WARNING_MS) {
-              setIsSessionWarningVisible(true);
-          } else {
-              setIsSessionWarningVisible(false);
-          }
-      }, 5000); // Check every 5 seconds
-
-      return () => clearInterval(interval);
+    if (!userIsLoggedIn || !sessionExpiresAt) {
+      setIsSessionWarningVisible(false);
+      return;
+    }
+    const interval = setInterval(() => {
+      const timeLeft = sessionExpiresAt - Date.now();
+      if (timeLeft <= 0) handleLogout();
+      else if (timeLeft <= SESSION_WARNING_MS) setIsSessionWarningVisible(true);
+      else setIsSessionWarningVisible(false);
+    }, 5000);
+    return () => clearInterval(interval);
   }, [userIsLoggedIn, sessionExpiresAt, handleLogout]);
-  
+
   useEffect(() => {
     const handleProfileUpdate = (event: Event) => {
       const customEvent = event as CustomEvent<UserWithPermissions>;
@@ -163,7 +136,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
     };
     window.addEventListener('userProfileUpdated', handleProfileUpdate);
     return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
-  }, []); 
+  }, []);
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen(prev => {
@@ -195,30 +168,25 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </div>
     );
   }
-  
+
   const mainContainerClass = isPublicPage ? "flex-grow" : "flex-grow container mx-auto px-4 py-8";
 
   return (
-    <AuthProvider value={{ user: loggedInUser }}>
-      <CurrencyProvider>
-        <div className="flex min-h-screen bg-background">
-          {showHeaderAndSidebarLogic && isSidebarOpen && <Sidebar toggleSidebar={toggleSidebar} />}
-          <div className="flex-1 flex flex-col overflow-y-auto">
-            {showHeaderAndSidebarLogic && <Header toggleSidebar={toggleSidebar} />}
-            <main className={mainContainerClass}>
-              {children}
-            </main>
-            <Toaster />
-            {isSessionWarningVisible && (
-              <SessionExpirationDialog 
-                open={isSessionWarningVisible}
-                onExtend={handleExtendSession}
-                onLogout={handleLogout}
-              />
-            )}
-          </div>
-        </div>
-      </CurrencyProvider>
-    </AuthProvider>
+    <div className="flex min-h-screen bg-background">
+      {showHeaderAndSidebarLogic && isSidebarOpen && <Sidebar toggleSidebar={toggleSidebar} />}
+      <div className="flex-1 flex flex-col overflow-y-auto">
+        {showHeaderAndSidebarLogic && <Header toggleSidebar={toggleSidebar} />}
+        <main className={mainContainerClass}>
+          {children}
+        </main>
+        {isSessionWarningVisible && (
+          <SessionExpirationDialog 
+            open={isSessionWarningVisible}
+            onExtend={handleExtendSession}
+            onLogout={handleLogout}
+          />
+        )}
+      </div>
+    </div>
   );
 }

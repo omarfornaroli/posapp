@@ -2,13 +2,13 @@
 import { BehaviorSubject, Observable, Subscription, interval, from } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import type { TranslationData } from '@/types';
-import { defaultLocale } from '@/i18n-config';
 import { db, type TranslationDexieRecord } from '@/lib/dexie-db';
 import { liveQuery } from 'dexie';
 
+const defaultLocale = 'en';
 const TRANSLATION_POLLING_INTERVAL = 60000; // 1 minute
 const LOCALE_STORAGE_KEY = 'preferredLocale';
-const NEXT_LOCALE_COOKIE_KEY = 'NEXT_LOCALE';
+
 
 function processTranslations(
   records: TranslationDexieRecord[],
@@ -18,7 +18,6 @@ function processTranslations(
   if (!Array.isArray(records)) return localeTranslations;
   
   records.forEach((entry) => {
-    // Add a guard to prevent this error.
     if (!entry || typeof entry.keyPath !== 'string') {
         return; 
     }
@@ -54,24 +53,22 @@ class TranslationRxServiceController {
 
   constructor() {}
 
-  public initialize(initialServerLocale: string): void {
+  public initialize(initialLocaleHint: string): void {
     if (this.isInitialized) return;
     this.isInitialized = true;
 
     const storedLocale = typeof window !== 'undefined' ? localStorage.getItem(LOCALE_STORAGE_KEY) : null;
-    const localeToUse = storedLocale || initialServerLocale || defaultLocale;
+    const localeToUse = storedLocale || initialLocaleHint || defaultLocale;
     this.currentLocaleSubject.next(localeToUse);
     this.isLoadingSubject.next(true);
 
-    // This liveQuery will automatically re-run whenever the 'translations' table changes in Dexie.
     const liveTranslations$ = from(liveQuery(() => db.translations.toArray()));
     
-    // Subscribe to both locale changes and database changes
     this.currentLocale$.pipe(
       switchMap(locale => 
         liveTranslations$.pipe(
           switchMap(async (records) => {
-            if (!records) { // Handle initial empty state from liveQuery
+            if (!records) {
                  const initialRecords = await db.translations.toArray();
                  return processTranslations(initialRecords, locale);
             }
@@ -81,13 +78,11 @@ class TranslationRxServiceController {
       )
     ).subscribe(processedTranslations => {
       this.translationsSubject.next(processedTranslations);
-      // We are only truly "loading" on the very first hydration
       if (this.isLoadingSubject.value) {
         this.isLoadingSubject.next(false);
       }
     });
 
-    // Populate from API and start polling
     this.populateTranslationsFromApi(true);
     this.initializePolling();
   }
@@ -125,7 +120,6 @@ class TranslationRxServiceController {
     
     if (typeof window !== 'undefined') {
       localStorage.setItem(LOCALE_STORAGE_KEY, newLocale);
-      document.cookie = `${NEXT_LOCALE_COOKIE_KEY}=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
     }
   }
 

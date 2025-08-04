@@ -1,10 +1,9 @@
-
 // src/hooks/useDexieDashboardSummary.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import type { DashboardSummary } from '@/types';
 import { useState, useEffect, useMemo } from 'react';
-import { startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, eachDayOfInterval, format, isValid } from 'date-fns';
+import { startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, eachDayOfInterval, format, isValid, parseISO } from 'date-fns';
 
 export function useDexieDashboardSummary() {
   const [isLoading, setIsLoading] = useState(true);
@@ -28,14 +27,14 @@ export function useDexieDashboardSummary() {
 
     const salesToday = sales
       .filter(s => {
-          const saleDate = new Date(s.date);
+          const saleDate = parseISO(s.date);
           return isValid(saleDate) && saleDate >= todayStart && saleDate <= todayEnd;
        })
       .reduce((sum, s) => sum + s.totalInBaseCurrency, 0);
 
     const salesMonth = sales
       .filter(s => {
-          const saleDate = new Date(s.date);
+          const saleDate = parseISO(s.date);
           return isValid(saleDate) && saleDate >= monthStart && saleDate <= monthEnd;
       })
       .reduce((sum, s) => sum + s.totalInBaseCurrency, 0);
@@ -54,11 +53,11 @@ export function useDexieDashboardSummary() {
 
     const salesByDayData = sales
       .filter(s => {
-          const saleDate = new Date(s.date);
+          const saleDate = parseISO(s.date);
           return isValid(saleDate) && saleDate >= last30DaysStart && saleDate <= todayEnd;
       })
       .reduce((acc, s) => {
-          const day = format(new Date(s.date), 'yyyy-MM-dd');
+          const day = format(parseISO(s.date), 'yyyy-MM-dd');
           acc[day] = (acc[day] || 0) + s.totalInBaseCurrency;
           return acc;
       }, {} as Record<string, number>);

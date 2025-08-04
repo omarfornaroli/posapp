@@ -24,8 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { useLocale } from 'next-intl';
-
 interface SalesTableProps {
   transactions: Array<SaleTransaction | GroupedTableItem<SaleTransaction>>;
   displayColumns: ColumnDefinition<SaleTransaction>[];
@@ -49,8 +47,7 @@ export default function SalesTable({
   onToggleGroup,
   defaultCurrency
 }: SalesTableProps) {
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
-  const currentLocale = useLocale();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
   useEffect(() => {
     initializeTranslations(currentLocale);

@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { FileText } from 'lucide-react';
 import Link from 'next/link';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
+import { useEffect } from 'react';
 
 interface RecentSalesProps {
   sales: SaleTransaction[];
@@ -14,7 +15,11 @@ interface RecentSalesProps {
 }
 
 export default function RecentSales({ sales, baseCurrencySymbol, selectedCurrency }: RecentSalesProps) {
-    const { t } = useRxTranslate();
+    const { t, initializeTranslations, currentLocale } = useRxTranslate();
+
+    useEffect(() => {
+        initializeTranslations(currentLocale);
+    }, [initializeTranslations, currentLocale]);
 
     const exchangeRate = selectedCurrency?.exchangeRate || 1;
     const symbol = selectedCurrency?.symbol || baseCurrencySymbol;

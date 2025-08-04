@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useTranslations } from 'next-intl';
+import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -32,7 +32,7 @@ interface ForgotPasswordDialogProps {
 }
 
 export default function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps) {
-  const t = useTranslations();
+  const { t } = useRxTranslate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 

@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
-import { translationRxService } from '@/services/translation.rx.service';
 import SyncStatusIndicator from './SyncStatusIndicator';
 
 interface HeaderProps {
@@ -73,8 +71,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
         title: t('ThemeManagerPage.themeSetDefaultSuccessTitle'),
         description: t('ThemeManagerPage.themeSetDefaultSuccessDescription', { themeName: result.data.name }),
       });
-      router.refresh(); 
-      refetchThemes();
+      window.location.reload(); 
     } catch (error) {
       toast({
         variant: 'destructive',

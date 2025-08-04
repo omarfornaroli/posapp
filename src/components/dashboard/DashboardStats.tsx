@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { DollarSign, ShoppingCart, Users, Package } from 'lucide-react';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useEffect } from 'react';
-import { useLocale } from 'next-intl';
 import { Skeleton } from '../ui/skeleton';
 
 interface DashboardStatsProps {
@@ -14,8 +13,7 @@ interface DashboardStatsProps {
 }
 
 export default function DashboardStats({ summary, selectedCurrency }: DashboardStatsProps) {
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
-  const currentLocale = useLocale();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
   useEffect(() => {
     initializeTranslations(currentLocale);
