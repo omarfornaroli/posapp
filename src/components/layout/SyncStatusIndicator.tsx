@@ -7,12 +7,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Cloud, CloudUpload, CloudOff, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useEffect } from 'react';
-import { useLocale } from 'next-intl';
 
 export default function SyncStatusIndicator() {
   const status = useSyncStatus();
-  const currentLocale = useLocale();
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
 
   useEffect(() => {
     initializeTranslations(currentLocale);
