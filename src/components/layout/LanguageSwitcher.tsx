@@ -13,11 +13,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Globe, Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { translationRxService } from '@/services/translation.rx.service';
 
 export default function LanguageSwitcher() {
   const router = useRouter();
+  const pathname = usePathname();
   const { t, isLoading: isLoadingTranslations, currentLocale: rxLocale, initializeTranslations } = useRxTranslate();
   
   useEffect(() => {
@@ -27,6 +28,8 @@ export default function LanguageSwitcher() {
   const handleLanguageChange = async (newLocale: string) => {
     if (newLocale === rxLocale) return;
     await translationRxService.setCurrentLocaleAndLoadTranslations(newLocale);
+    // The middleware will handle redirecting to the same path with the new locale if necessary.
+    // For `as-needed` this might just refresh data.
     router.refresh(); 
   };
 

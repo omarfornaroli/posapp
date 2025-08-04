@@ -1,3 +1,4 @@
+// This file was moved from src/app/[locale]/clients/page.tsx
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';

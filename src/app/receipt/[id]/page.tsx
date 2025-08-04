@@ -1,3 +1,4 @@
+// This file was moved from src/app/[locale]/receipt/[id]/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
