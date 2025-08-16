@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -195,7 +196,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
 
   if (isLoadingTranslations && !loggedInUser) { 
     return (
-        <aside className="w-full lg:w-64 bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
+        <aside className="w-64 bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
            <div className="flex flex-col items-center space-y-3 pt-3 pb-1 shrink-0">
              <Skeleton className="h-20 w-20 rounded-full" />
              <Skeleton className="h-5 w-28 rounded" />
@@ -216,7 +217,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
   
   return (
     <TooltipProvider>
-      <aside className="w-full lg:w-64 bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
+      <aside className="bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
         <div className="flex items-center justify-between shrink-0 pt-3 pb-1">
           <div className="flex-grow flex flex-col items-center space-y-3">
             <Avatar className="h-20 w-20 ring-2 ring-primary/50">
