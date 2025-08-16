@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -68,7 +69,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
     const baseConfig: MenuItemConfig[] = [
       { href: '/', labelKey: 'Header.dashboardLink', icon: LayoutDashboard, permission: 'access_dashboard_page', category: 'main' },
       // POS items will be inserted here
-      { href: '/sales', labelKey: 'Header.salesReportsLink', icon: FileText, permission: 'manage_sales_reports_page', category: 'sales' },
+      { href: '/sales-report', labelKey: 'Header.salesReportsLink', icon: FileText, permission: 'manage_sales_reports_page', category: 'sales' },
       { href: '/reports', labelKey: 'Header.reportsLink', icon: BrainCircuit, permission: 'manage_reports_page', category: 'sales' },
       { href: '/dispatches', labelKey: 'Header.dispatchesLink', icon: Truck, permission: 'manage_dispatches_page', category: 'sales' },
       { href: '/products', labelKey: 'Header.productsLink', icon: Package, permission: 'manage_products_page', category: 'catalog' },
