@@ -2,9 +2,8 @@
 'use client';
 
 import type React from 'react';
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo, useState, useEffect, useCallback } from 'react';
 import type { User, Permission } from '@/types';
-// Removed import of checkPermission from '@/lib/permissions' as it's server-side
 
 interface UserWithPermissions extends User {
   permissions: Permission[];
@@ -34,7 +33,7 @@ export function AuthProvider({
     }
     return user.permissions.includes(permissionToCheck);
   }, [user]);
-
+  
   return (
     <AuthContext.Provider value={{ user, isAuthenticated, hasPermission }}>
       {children}

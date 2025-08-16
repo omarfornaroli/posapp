@@ -2,7 +2,6 @@
 import type { ReactNode } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout'; 
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/context/AuthContext';
 import { CurrencyProvider } from '@/context/CurrencyContext';
 
 import '@/app/globals.css';
@@ -31,14 +30,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Lobster&family=Pacifico&family=Roboto+Slab&display=swap" rel="stylesheet" />
       </head>
       <body>
-          <AuthProvider value={{ user: null }}>
-            <CurrencyProvider>
-              <AppLayout>
-                {children}
-              </AppLayout>
-              <Toaster />
-            </CurrencyProvider>
-          </AuthProvider>
+        <CurrencyProvider>
+          <AppLayout>
+            {children}
+          </AppLayout>
+          <Toaster />
+        </CurrencyProvider>
       </body>
     </html>
   );

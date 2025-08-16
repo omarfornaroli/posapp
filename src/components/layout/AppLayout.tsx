@@ -12,6 +12,7 @@ import type { User, Permission } from '@/types';
 import { translationRxService } from '@/services/translation.rx.service';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider, useAuth } from '@/context/AuthContext';
 
 interface UserWithPermissions extends User {
   permissions: Permission[];
@@ -24,12 +25,12 @@ interface AppLayoutProps {
 const SIDEBAR_STORAGE_KEY = 'sidebarOpen';
 const SESSION_WARNING_MS = 60 * 1000; // 60 seconds before expiration
 
-export function AppLayout({ children }: AppLayoutProps) {
+function MainAppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
 
   const [authStatusDetermined, setAuthStatusDetermined] = useState(false);
   const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
-  const [loggedInUser, setLoggedInUser] = useState<UserWithPermissions | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [isSessionWarningVisible, setIsSessionWarningVisible] = useState(false);
@@ -49,28 +50,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     localStorage.removeItem('loggedInUserEmail');
     localStorage.removeItem('sessionExpiresAt');
     setUserIsLoggedIn(false);
-    setLoggedInUser(null);
-    setSessionExpiresAt(null);
+    // Full page reload to login, clearing all state
     window.location.assign(`/login`);
   }, []);
-
-  const fetchUserSession = useCallback(async (email: string) => {
-    try {
-      const response = await fetch(`/api/auth/session`, {
-        headers: { 'X-User-Email': email }
-      });
-      if (!response.ok) throw new Error('Failed to fetch user session');
-      const result = await response.json();
-      if (result.success && result.data) {
-        setLoggedInUser(result.data as UserWithPermissions);
-      } else {
-        throw new Error(result.error || 'User session data not found');
-      }
-    } catch (error) {
-      console.error('Error fetching user session:', error);
-      handleLogout();
-    }
-  }, [handleLogout]);
 
   const handleExtendSession = useCallback(() => {
     const wasRemembered = (sessionExpiresAt && sessionExpiresAt - Date.now() > 5 * 60 * 1000);
@@ -88,25 +70,15 @@ export function AppLayout({ children }: AppLayoutProps) {
       const storedExpiresAt = localStorage.getItem('sessionExpiresAt');
       setSessionExpiresAt(storedExpiresAt ? parseInt(storedExpiresAt, 10) : null);
 
-      if (loggedInStatus) {
-        const userEmail = localStorage.getItem('loggedInUserEmail');
-        if (userEmail) {
-          fetchUserSession(userEmail);
-        } else {
-          handleLogout();
-        }
-      } else {
-        setLoggedInUser(null);
-        if (!isPublicPage) {
-          window.location.assign(`/login`);
-        }
+      if (!loggedInStatus && !isPublicPage) {
+        window.location.assign(`/login`);
       }
       setAuthStatusDetermined(true);
 
       const storedSidebarState = localStorage.getItem(SIDEBAR_STORAGE_KEY);
       if (storedSidebarState !== null) setIsSidebarOpen(JSON.parse(storedSidebarState));
     }
-  }, [pathname, isPublicPage, fetchUserSession, handleLogout]);
+  }, [pathname, isPublicPage]);
 
   useEffect(() => {
     if (userIsLoggedIn) {
@@ -129,15 +101,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     return () => clearInterval(interval);
   }, [userIsLoggedIn, sessionExpiresAt, handleLogout]);
 
-  useEffect(() => {
-    const handleProfileUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent<UserWithPermissions>;
-      if (customEvent.detail) setLoggedInUser(customEvent.detail);
-    };
-    window.addEventListener('userProfileUpdated', handleProfileUpdate);
-    return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
-  }, []);
-
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen(prev => {
       const newState = !prev;
@@ -148,7 +111,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   
   const showHeaderAndSidebarLogic = userIsLoggedIn && !isPublicPage;
 
-  if ((!authStatusDetermined && !isPublicPage) || (userIsLoggedIn && !loggedInUser && !isPublicPage)) {
+  if (!authStatusDetermined || (userIsLoggedIn && !user?.permissions)) {
     return (
       <div className="flex min-h-screen bg-background">
         <aside className="w-64 bg-card p-4 flex flex-col space-y-4 border-r h-screen sticky top-0">
@@ -189,4 +152,57 @@ export function AppLayout({ children }: AppLayoutProps) {
       </div>
     </div>
   );
+}
+
+
+export function AppLayout({ children }: { children: React.ReactNode }) {
+    const [user, setUser] = useState<UserWithPermissions | null>(null);
+
+    const fetchUserSession = useCallback(async (email: string) => {
+        try {
+            const response = await fetch(`/api/auth/session`, {
+                headers: { 'X-User-Email': email }
+            });
+            if (!response.ok) throw new Error('Failed to fetch user session');
+            const result = await response.json();
+            if (result.success && result.data) {
+                setUser(result.data as UserWithPermissions);
+            } else {
+                throw new Error(result.error || 'User session data not found');
+            }
+        } catch (error) {
+            console.error('Error fetching user session:', error);
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('loggedInUserEmail');
+            setUser(null);
+            if (!window.location.pathname.startsWith('/login')) {
+                window.location.assign(`/login`);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const userEmail = localStorage.getItem('loggedInUserEmail');
+            if (userEmail) {
+                fetchUserSession(userEmail);
+            }
+        }
+        
+        const handleProfileUpdate = (event: Event) => {
+          const customEvent = event as CustomEvent<UserWithPermissions>;
+          if (customEvent.detail) setUser(customEvent.detail);
+        };
+        window.addEventListener('userProfileUpdated', handleProfileUpdate);
+        return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
+
+    }, [fetchUserSession]);
+
+    return (
+        <AuthProvider value={{ user }}>
+            <MainAppLayout>
+                {children}
+            </MainAppLayout>
+        </AuthProvider>
+    );
 }
