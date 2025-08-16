@@ -1,3 +1,5 @@
+
+
 'use client';
 
 import React, { useEffect } from "react";
@@ -15,7 +17,6 @@ import { Button } from '@/components/ui/button';
 import { Pencil, Trash2, CheckCircle, XCircle, ArrowUpAZ, ArrowDownAZ, ChevronsUpDown, MoreVertical, Layers, Minus, Plus, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
-import { useLocale } from 'next-intl';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -49,8 +50,7 @@ export default function ProductListTable({
   groupingKeys,
   onToggleGroup
 }: ProductListTableProps) {
-  const currentLocale = useLocale();
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
   useEffect(() => {
     initializeTranslations(currentLocale);

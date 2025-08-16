@@ -1,9 +1,9 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
-import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -18,8 +18,8 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel as RadixSelectLabel } from "@/components/ui/select";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel as RadixDropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { GripVertical, ArrowUp, ArrowDown, Loader2, Save, ChevronDown, Layers, Plus, Minus } from 'lucide-react';
 import type { ColumnDefinition, PersistedColumnSetting, GridTemplate, GridTemplateConfig, SortConfig as GridSortConfigType } from '@/types';
 import { Separator } from '../ui/separator';
@@ -97,8 +97,7 @@ export default function GridSettingsDialog<TData>({
   templates = [],
   onSave,
 }: GridSettingsDialogProps<TData>) {
-  const currentLocale = useLocale();
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { toast } = useToast();
   
   useEffect(() => {
@@ -327,14 +326,14 @@ export default function GridSettingsDialog<TData>({
                 <SelectContent>
                     {templates.length > 0 && (
                     <SelectGroup>
-                        <RadixSelectLabel className="px-2 py-1.5 text-xs font-semibold">{t('GridSettingsDialog.predefinedTemplatesLabel')}</RadixSelectLabel>
+                        <Label className="px-2 py-1.5 text-xs font-semibold">{t('GridSettingsDialog.predefinedTemplatesLabel')}</Label>
                         {templates.map(tpl => (<SelectItem key={tpl.id} value={tpl.id}>{tpl.name}</SelectItem>))}
                     </SelectGroup>
                     )}
                     {userSavedConfigurations.length > 0 && (
                     <SelectGroup>
                         {templates.length > 0 && <Separator className="my-1"/>}
-                        <RadixSelectLabel className="px-2 py-1.5 text-xs font-semibold">{t('GridSettingsDialog.userSavedConfigurationsLabel')}</RadixSelectLabel>
+                        <Label className="px-2 py-1.5 text-xs font-semibold">{t('GridSettingsDialog.userSavedConfigurationsLabel')}</Label>
                         {userSavedConfigurations.map(tpl => (<SelectItem key={tpl.id} value={tpl.id}>{tpl.name}</SelectItem>))}
                     </SelectGroup>
                     )}
@@ -380,7 +379,7 @@ export default function GridSettingsDialog<TData>({
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-60 overflow-y-auto">
-                    <RadixDropdownMenuLabel>{t('GridSettingsDialog.groupableColumnsLabel')}</RadixDropdownMenuLabel>
+                    <Label className="px-2 py-1.5 text-xs font-semibold">{t('GridSettingsDialog.groupableColumnsLabel')}</Label>
                     <DropdownMenuSeparator />
                     {groupableColumns.length === 0 ? (
                     <DropdownMenuCheckboxItem disabled>{t('GridSettingsDialog.noGroupableColumns')}</DropdownMenuCheckboxItem>

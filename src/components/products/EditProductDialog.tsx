@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect } from 'react';
@@ -28,7 +29,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import type { Product } from '@/types';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
-import { useLocale } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
 
@@ -68,8 +68,7 @@ interface EditProductDialogProps {
 }
 
 export default function EditProductDialog({ open, onOpenChange, product, onSaveProduct }: EditProductDialogProps) {
-  const currentLocale = useLocale();
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
   useEffect(() => {
     initializeTranslations(currentLocale);

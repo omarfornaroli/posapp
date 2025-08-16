@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect } from 'react';
@@ -29,7 +30,6 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import type { Product } from '@/types';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
-import { useLocale } from 'next-intl';
 import { Loader2 } from 'lucide-react';
 
 const getProductFormSchema = (t: Function) => z.object({
@@ -67,8 +67,7 @@ interface AddProductDialogProps {
 }
 
 export default function AddProductDialog({ open, onOpenChange, onAddProduct }: AddProductDialogProps) {
-  const currentLocale = useLocale();
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
   useEffect(() => {
     initializeTranslations(currentLocale);
@@ -196,5 +195,3 @@ export default function AddProductDialog({ open, onOpenChange, onAddProduct }: A
     </Dialog>
   );
 }
-
-    

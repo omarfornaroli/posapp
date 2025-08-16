@@ -1,11 +1,12 @@
 
+
 'use client';
 
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useTranslations } from 'next-intl';
+import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -30,8 +31,8 @@ import type { AppLanguage } from '@/types';
 import { ScrollArea } from '../ui/scroll-area';
 
 // Schema allows editing name, isEnabled, isDefault. Code is not editable.
-const appLanguageFormSchema = (t: Function, tCommonErrors: Function) => z.object({
-  name: z.string().min(2, { message: tCommonErrors('formErrors.minLength', {fieldName: t('nameLabel'), minLength: 2}) }),
+const appLanguageFormSchema = (t: Function) => z.object({
+  name: z.string().min(2, { message: t('Common.formErrors.minLength', {fieldName: t('AddAppLanguageDialog.nameLabel'), minLength: 2}) }),
   isEnabled: z.boolean(),
   isDefault: z.boolean(),
 });
@@ -46,10 +47,8 @@ interface EditAppLanguageDialogProps {
 }
 
 export default function EditAppLanguageDialog({ open, onOpenChange, language, onSaveLanguage }: EditAppLanguageDialogProps) {
-  const t = useTranslations('EditAppLanguageDialog');
-  const tAddLabels = useTranslations('AddAppLanguageDialog'); // For reusing labels
-  const tCommonErrors = useTranslations('Common');
-  const currentSchema = appLanguageFormSchema(tAddLabels, tCommonErrors);
+  const { t } = useRxTranslate();
+  const currentSchema = appLanguageFormSchema(t);
 
   const form = useForm<AppLanguageFormData>({
     resolver: zodResolver(currentSchema),
@@ -81,15 +80,15 @@ export default function EditAppLanguageDialog({ open, onOpenChange, language, on
     <Dialog open={open} onOpenChange={(isOpen) => { onOpenChange(isOpen); if (!isOpen) form.reset(); }}>
       <DialogContent className="sm:max-w-md flex flex-col max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle className="font-headline">{t('title', {langName: language?.name || ''})}</DialogTitle>
-          <DialogDescription>{t('description', {langName: language?.name || 'language'})}</DialogDescription>
+          <DialogTitle className="font-headline">{t('EditAppLanguageDialog.title', {langName: language?.name || ''})}</DialogTitle>
+          <DialogDescription>{t('EditAppLanguageDialog.description', {langName: language?.name || 'language'})}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
             <ScrollArea className="flex-grow pr-6 -mr-6">
               <div className="space-y-4 py-4 pr-6">
                 <FormItem>
-                  <FormLabel>{tAddLabels('codeLabel')}</FormLabel>
+                  <FormLabel>{t('AddAppLanguageDialog.codeLabel')}</FormLabel>
                   <FormControl><Input value={language?.code || ''} readOnly disabled className="bg-muted/50 cursor-not-allowed" /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -98,8 +97,8 @@ export default function EditAppLanguageDialog({ open, onOpenChange, language, on
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{tAddLabels('nameLabel')}</FormLabel>
-                      <FormControl><Input placeholder={tAddLabels('namePlaceholder')} {...field} /></FormControl>
+                      <FormLabel>{t('AddAppLanguageDialog.nameLabel')}</FormLabel>
+                      <FormControl><Input placeholder={t('AddAppLanguageDialog.namePlaceholder')} {...field} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -110,7 +109,7 @@ export default function EditAppLanguageDialog({ open, onOpenChange, language, on
                   name="isEnabled"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                      <FormLabel>{tAddLabels('enabledLabel')}</FormLabel>
+                      <FormLabel>{t('AddAppLanguageDialog.enabledLabel')}</FormLabel>
                       <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                     </FormItem>
                   )}
@@ -120,7 +119,7 @@ export default function EditAppLanguageDialog({ open, onOpenChange, language, on
                   name="isDefault"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
-                      <FormLabel>{tAddLabels('defaultLabel')}</FormLabel>
+                      <FormLabel>{t('AddAppLanguageDialog.defaultLabel')}</FormLabel>
                       <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                     </FormItem>
                   )}
@@ -129,8 +128,8 @@ export default function EditAppLanguageDialog({ open, onOpenChange, language, on
               </div>
             </ScrollArea>
             <DialogFooter className="pt-4 mt-4 border-t shrink-0">
-              <DialogClose asChild><Button type="button" variant="outline">{tAddLabels('cancelButton')}</Button></DialogClose>
-              <Button type="submit" className="bg-primary hover:bg-primary/90">{t('saveButton')}</Button>
+              <DialogClose asChild><Button type="button" variant="outline">{t('AddAppLanguageDialog.cancelButton')}</Button></DialogClose>
+              <Button type="submit" className="bg-primary hover:bg-primary/90">{t('EditAppLanguageDialog.saveButton')}</Button>
             </DialogFooter>
           </form>
         </Form>
