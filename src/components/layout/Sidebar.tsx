@@ -102,9 +102,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
     return baseConfig;
   }, [posSettings]);
 
-  const groupedMenuItems = isLoadingTranslations
-  ? {}
-  : menuItemsConfig
+  const groupedMenuItems = useMemo(() => menuItemsConfig
       .filter(item => !item.permission || hasPermission(item.permission))
       .reduce((acc, item) => {
         const category = item.category || 'uncategorized';
@@ -118,7 +116,10 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
         // Sort items within each category
         acc[category].sort((a, b) => a.translatedLabel.localeCompare(b.translatedLabel, currentLocale, { sensitivity: 'base' }));
         return acc;
-      }, {} as Record<string, (MenuItemConfig & { translatedLabel: string })[]>);
+      }, {} as Record<string, (MenuItemConfig & { translatedLabel: string })[]>),
+      [menuItemsConfig, hasPermission, t, currentLocale]
+  );
+
 
   const categoryStyles: Record<string, string> = {
     main: 'bg-primary/10 text-primary hover:bg-primary/20',
@@ -193,28 +194,17 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
       </li>
     );
   };
-
-  if (isLoadingTranslations && !loggedInUser) { 
-    return (
-        <aside className="w-64 bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
-           <div className="flex flex-col items-center space-y-3 pt-3 pb-1 shrink-0">
-             <Skeleton className="h-20 w-20 rounded-full" />
-             <Skeleton className="h-5 w-28 rounded" />
-           </div>
-           <Separator className="shrink-0" />
-           <ScrollArea className="flex-grow min-h-0"> 
-             <nav>
-               <ul className="space-y-1 pr-3"> 
-                 {[...Array(menuItemsConfig.length)].map((_, i) => (
-                   <li key={i}><Skeleton className="h-10 w-full rounded-md" /></li>
-                 ))}
-               </ul>
-             </nav>
-           </ScrollArea>
-         </aside>
-    );
-  }
   
+  const renderLoadingSkeleton = () => (
+    <nav className="pr-2">
+      <div className="space-y-2">
+        {[...Array(6)].map((_, i) => (
+          <Skeleton key={i} className="h-12 w-full rounded-lg" />
+        ))}
+      </div>
+    </nav>
+  );
+
   return (
     <TooltipProvider>
       <aside className="bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
@@ -247,34 +237,36 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
         <Separator className="shrink-0" />
         
         <ScrollArea className="flex-grow min-h-0"> 
-          <nav className="pr-2">
-            {groupedMenuItems['uncategorized'] && (
-              <ul className="space-y-1">
-                {groupedMenuItems['uncategorized'].map(renderMenuItem)}
-              </ul>
-            )}
-            <Accordion type="multiple" defaultValue={['main', 'sales', 'catalog']} className="w-full space-y-1">
-              {categoryOrder.map(categoryKey => {
-                if (categoryKey === 'uncategorized' || !groupedMenuItems[categoryKey]) return null;
-                const categoryStyle = categoryStyles[categoryKey] || 'hover:bg-muted';
-                return (
-                  <AccordionItem value={categoryKey} key={categoryKey} className="border-b-0">
-                    <AccordionTrigger className={cn(
-                      "py-3 px-3 rounded-lg hover:no-underline text-sm font-semibold",
-                      categoryStyle
-                    )}>
-                      {t(`Sidebar.category${categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)}`)}
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-0 pl-2">
-                      <ul className="space-y-1 border-l-2 border-primary/20 pl-4 py-2">
-                        {groupedMenuItems[categoryKey].map(renderMenuItem)}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                )
-              })}
-            </Accordion>
-          </nav>
+          {isLoadingTranslations ? renderLoadingSkeleton() : (
+            <nav className="pr-2">
+              {groupedMenuItems['uncategorized'] && (
+                <ul className="space-y-1">
+                  {groupedMenuItems['uncategorized'].map(renderMenuItem)}
+                </ul>
+              )}
+              <Accordion type="multiple" defaultValue={['main', 'sales', 'catalog']} className="w-full space-y-1">
+                {categoryOrder.map(categoryKey => {
+                  if (categoryKey === 'uncategorized' || !groupedMenuItems[categoryKey]) return null;
+                  const categoryStyle = categoryStyles[categoryKey] || 'hover:bg-muted';
+                  return (
+                    <AccordionItem value={categoryKey} key={categoryKey} className="border-b-0">
+                      <AccordionTrigger className={cn(
+                        "py-3 px-3 rounded-lg hover:no-underline text-sm font-semibold",
+                        categoryStyle
+                      )}>
+                        {t(`Sidebar.category${categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)}`)}
+                      </AccordionTrigger>
+                      <AccordionContent className="pb-0 pl-2">
+                        <ul className="space-y-1 border-l-2 border-primary/20 pl-4 py-2">
+                          {groupedMenuItems[categoryKey].map(renderMenuItem)}
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )
+                })}
+              </Accordion>
+            </nav>
+          )}
         </ScrollArea>
         
         <Separator className="shrink-0" />
