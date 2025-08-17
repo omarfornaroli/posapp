@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -78,8 +79,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
         title: t('Common.error'),
         description: error instanceof Error ? error.message : t('ThemeManagerPage.errorSettingDefaultTheme'),
       });
-    } finally {
-      setIsSwitchingTheme(false);
+      setIsSwitchingTheme(false); // Only set to false on error, as success reloads
     }
   };
 

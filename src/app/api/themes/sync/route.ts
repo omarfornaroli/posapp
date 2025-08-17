@@ -1,3 +1,4 @@
+
 // src/api/themes/sync/route.ts
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
@@ -21,7 +22,11 @@ export async function POST(request: Request) {
             break;
           case 'update':
             const { id: updateId, ...updateData } = op.data;
-            const updatedTheme = await Theme.findByIdAndUpdate(updateId, updateData, { new: true });
+            if (updateData.isDefault === true) {
+                // If this theme is being set to default, unset all others first.
+                await Theme.updateMany({ _id: { $ne: updateId } }, { $set: { isDefault: false } });
+            }
+            const updatedTheme = await Theme.findByIdAndUpdate(updateId, { $set: updateData }, { new: true });
             if (!updatedTheme) throw new Error(`Theme with id ${updateId} not found for update.`);
             results.push({ status: 'fulfilled', operation: 'update', data: updatedTheme });
             break;
