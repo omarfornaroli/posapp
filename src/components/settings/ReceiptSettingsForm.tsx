@@ -7,7 +7,6 @@ import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
-import { useLocale } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'; 
@@ -40,7 +39,7 @@ const receiptSettingsFormSchema = (t: Function) => z.object({
   showCompanyPhone: z.boolean().default(true),
   showClientInfo: z.boolean().default(true),
   showItemBarcodes: z.boolean().default(false),
-  showDiscountSummary: z.boolean().default(true),
+  showDiscountSummary: z.boolean().default(true), 
   showPromotionsApplied: z.boolean().default(true),
   showPaymentMethodsDetails: z.boolean().default(true),
 });
@@ -48,8 +47,7 @@ const receiptSettingsFormSchema = (t: Function) => z.object({
 type ReceiptSettingsFormData = z.infer<ReturnType<typeof receiptSettingsFormSchema>>;
 
 export default function ReceiptSettingsForm() {
-  const currentLocale = useLocale();
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   
   useEffect(() => {
     initializeTranslations(currentLocale);
