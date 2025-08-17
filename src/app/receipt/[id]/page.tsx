@@ -8,6 +8,7 @@ import { useRxTranslate } from '@/hooks/use-rx-translate';
 import ReceiptView from '@/components/receipt/ReceiptView';
 import { Loader2 } from 'lucide-react';
 import { useDexieReceiptSettings } from '@/hooks/useDexieReceiptSettings';
+import { db } from '@/lib/dexie-db';
 
 export default function ReceiptPage() {
   const params = useParams();
@@ -23,22 +24,18 @@ export default function ReceiptPage() {
   }, [initializeTranslations, currentLocale]);
 
   useEffect(() => {
-    async function fetchTransaction() {
+    async function fetchTransactionFromDexie() {
       if (!id || typeof id !== 'string') {
         setError(t('ReceiptView.notFoundTitle'));
         setIsLoading(false);
         return;
       }
       try {
-        const response = await fetch(`/api/sales/${id}`);
-        if (!response.ok) {
-          throw new Error('Transaction not found');
-        }
-        const result = await response.json();
-        if (result.success) {
-          setTransaction(result.data);
+        const sale = await db.sales.get(id);
+        if (sale) {
+          setTransaction(sale);
         } else {
-          throw new Error(result.error || 'Failed to fetch transaction data');
+           throw new Error(t('ReceiptView.notFoundMessageApi'));
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : t('ReceiptView.errorFetchingTransaction');
@@ -49,7 +46,7 @@ export default function ReceiptPage() {
       }
     }
 
-    fetchTransaction();
+    fetchTransactionFromDexie();
   }, [id, t]);
 
   const totalLoading = isLoading || isLoadingTranslations || isLoadingSettings;
