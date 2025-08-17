@@ -1,4 +1,3 @@
-
 // src/app/pos/page.tsx
 'use client';
 
@@ -14,11 +13,11 @@ import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 
-import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency, SaleTransaction, PendingCart } from '@/types';
+import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency, SaleTransaction, PendingCart, AppliedTaxEntry, AppliedPromotionEntry } from '@/types';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -156,14 +155,43 @@ export default function POSPage() {
   }
 
   // Memoized calculations for totals, discounts, etc.
-  const {
-    subtotal,
-    totalAmount,
-    // other calculated values...
-  } = useMemo(() => {
+   const { subtotal, totalAmount, appliedPromotions, promotionalDiscountAmount } = useMemo(() => {
+    const activePromotions = promotions.filter(p => p.isActive && new Date(p.startDate) <= new Date() && (!p.endDate || new Date(p.endDate) >= new Date()));
     let currentSubtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    // This needs to be expanded with taxes, discounts etc.
-    return { subtotal: currentSubtotal, totalAmount: currentSubtotal };
+    
+    let promotionalDiscount = 0;
+    const appliedPromos: AppliedPromotionEntry[] = [];
+
+    // This is a simplified promotion logic. A real-world scenario would be more complex.
+    activePromotions.forEach(promo => {
+      // Basic check if cart total meets minimum sell amount
+      const minAmountCondition = promo.conditions.find(c => c.type === 'minSellAmount');
+      if (minAmountCondition && typeof minAmountCondition.value === 'number' && currentSubtotal < minAmountCondition.value) {
+        return; // Skip this promotion
+      }
+      
+      let discountableAmount = currentSubtotal;
+      
+      if (promo.discountType === 'percentage') {
+        const discountValue = (discountableAmount * promo.discountValue) / 100;
+        promotionalDiscount += discountValue;
+        appliedPromos.push({ promotionId: promo.id, name: promo.name, discountType: 'percentage', discountValue: promo.discountValue, amountDeducted: discountValue });
+      } else if (promo.discountType === 'fixedAmount') {
+        const discountValue = Math.min(discountableAmount, promo.discountValue);
+        promotionalDiscount += discountValue;
+        appliedPromos.push({ promotionId: promo.id, name: promo.name, discountType: 'fixedAmount', discountValue: promo.discountValue, amountDeducted: discountValue });
+      }
+    });
+
+    const subtotalAfterPromo = currentSubtotal - promotionalDiscount;
+    const total = subtotalAfterPromo; // This needs to be expanded with taxes
+
+    return { 
+      subtotal: currentSubtotal, 
+      totalAmount: total, 
+      appliedPromotions: appliedPromos,
+      promotionalDiscountAmount: promotionalDiscount,
+    };
   }, [cart, selectedClient, taxes, promotions, paymentCurrency]);
 
   const clientOptions = useMemo(() => {
@@ -182,116 +210,132 @@ export default function POSPage() {
 
 
   const renderCartView = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-      {/* Left Column: Cart */}
-      <div className="lg:col-span-2 h-full flex flex-col">
-        <Card className="flex-grow flex flex-col shadow-xl">
-          <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-3">
-              <ShoppingCart /> {t('POSPage.cartTitle')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex-grow overflow-y-auto p-4">
-             {cart.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                  <ShoppingCart className="h-16 w-16 mb-4" />
-                  <p>{t('POSPage.cartEmpty')}</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {cart.map(item => (
-                    <CartItemCard
-                      key={item.id}
-                      item={item}
-                      onUpdateQuantity={updateItemQuantity}
-                      onRemoveItem={onRemoveItem}
-                      onUpdateItemDiscount={() => {}}
-                      paymentCurrency={paymentCurrency}
+     <div className="h-full flex flex-col gap-4">
+        {/* Top Section: Search and Client */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <Card className="shadow-sm">
+                <CardHeader className="p-3">
+                    <CardTitle className="font-headline text-lg flex items-center gap-2"><Search /> {t('POSPage.scanOrSearchButton')}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-3">
+                    <div className="flex gap-2">
+                        <Input
+                            type="text"
+                            placeholder={t('POSPage.scanBarPlaceholder')}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="flex-grow"
+                        />
+                        <Button variant="outline" size="icon" onClick={() => setIsScannerOpen(true)}>
+                            <Camera />
+                        </Button>
+                    </div>
+                    {filteredProducts.length > 0 && (
+                        <ScrollArea className="mt-2 h-40 border rounded-md">
+                            <div className="p-2 space-y-1">
+                                {filteredProducts.map(product => (
+                                    <Button key={product.id} variant="ghost" className="w-full justify-start h-auto" onClick={() => addToCart(product)}>
+                                        <div className="flex items-center gap-2">
+                                            <img src={product.imageUrl || 'https://placehold.co/40x40.png'} alt={product.name} className="w-8 h-8 rounded-sm object-cover" />
+                                            <div>
+                                                <p className="text-sm font-medium text-left">{product.name}</p>
+                                                <p className="text-xs text-muted-foreground text-left">{paymentCurrency?.symbol || '$'}{product.price.toFixed(2)}</p>
+                                            </div>
+                                        </div>
+                                    </Button>
+                                ))}
+                            </div>
+                        </ScrollArea>
+                    )}
+                </CardContent>
+            </Card>
+            <Card className="shadow-sm">
+                <CardHeader className="p-3">
+                    <CardTitle className="font-headline text-lg flex items-center gap-2"><User /> {t('POSPage.clientSectionTitle')}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-3">
+                    <Combobox
+                        options={clientOptions}
+                        value={selectedClient?.id || ''}
+                        onChange={(value) => setSelectedClient(clients.find(c => c.id === value) || null)}
+                        placeholder={t('POSPage.selectClientPlaceholder')}
+                        searchPlaceholder="Search clients..."
+                        emptyResultText="No clients found."
                     />
-                  ))}
-                </div>
-              )}
-          </CardContent>
-          {cart.length > 0 && (
-             <div className="border-t p-4 space-y-3">
-                <div className="flex justify-between items-center text-lg">
-                  <span className="font-semibold">{t('POSPage.subtotal')}</span>
-                  <span className="font-bold">{paymentCurrency?.symbol || '$'}{subtotal.toFixed(2)}</span>
-                </div>
-                <Separator />
-                 <div className="flex justify-between items-center text-2xl font-bold text-primary">
-                  <span>{t('POSPage.total')}</span>
-                  <span>{paymentCurrency?.symbol || '$'}{totalAmount.toFixed(2)}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                    <Button variant="outline" size="lg" className="w-full" onClick={clearCart}>
-                        <XCircle className="mr-2"/> {t('POSPage.clearCartButton')}
-                    </Button>
-                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90">
-                        <CreditCard className="mr-2"/> {t('POSPage.processPaymentButton')}
-                    </Button>
-                </div>
-             </div>
-          )}
-        </Card>
-      </div>
+                </CardContent>
+            </Card>
+        </div>
 
-      {/* Right Column: Search & Client */}
-      <div className="h-full flex flex-col gap-6">
-        <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle className="font-headline text-lg flex items-center gap-2"><User /> {t('POSPage.clientSectionTitle')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-             <Combobox 
-                options={clientOptions}
-                value={selectedClient?.id || ''}
-                onChange={(value) => setSelectedClient(clients.find(c => c.id === value) || null)}
-                placeholder={t('POSPage.selectClientPlaceholder')}
-                searchPlaceholder="Search clients..."
-                emptyResultText="No clients found."
-             />
-          </CardContent>
-        </Card>
-        <Card className="flex-grow flex flex-col shadow-xl">
-          <CardHeader>
-             <CardTitle className="font-headline text-lg flex items-center gap-2"><Search /> {t('POSPage.scanOrSearchButton')}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-grow flex flex-col">
-            <div className="flex gap-2">
-              <Input
-                  type="text"
-                  placeholder={t('POSPage.scanBarPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-grow"
-              />
-               <Button variant="outline" size="icon" onClick={() => setIsScannerOpen(true)}>
-                  <Camera/>
-               </Button>
+        {/* Bottom Section: Cart and Summary */}
+        <div className="flex-grow grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0">
+            <div className="lg:col-span-2 h-full">
+                <Card className="flex-grow flex flex-col shadow-xl h-full">
+                    <CardHeader className="p-3">
+                        <CardTitle className="font-headline text-2xl flex items-center gap-3">
+                            <ShoppingCart /> {t('POSPage.cartTitle')}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow overflow-hidden p-3">
+                        <ScrollArea className="h-full pr-3 -mr-3">
+                            {cart.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                                    <ShoppingCart className="h-16 w-16 mb-4" />
+                                    <p>{t('POSPage.cartEmpty')}</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {cart.map(item => (
+                                        <CartItemCard
+                                            key={item.id}
+                                            item={item}
+                                            onUpdateQuantity={updateItemQuantity}
+                                            onRemoveItem={onRemoveItem}
+                                            onUpdateItemDiscount={() => { }}
+                                            paymentCurrency={paymentCurrency}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </ScrollArea>
+                    </CardContent>
+                </Card>
             </div>
-            <ScrollArea className="mt-4 flex-grow -mx-4">
-              <div className="px-4 space-y-2">
-                {isLoadingProducts ? (
-                   <div className="flex justify-center items-center h-32"><Loader2 className="h-6 w-6 animate-spin"/></div>
-                ) : (
-                  filteredProducts.map(product => (
-                    <Button key={product.id} variant="ghost" className="w-full justify-start h-auto" onClick={() => addToCart(product)}>
-                      <div className="flex items-center gap-2">
-                        <img src={product.imageUrl || 'https://placehold.co/40x40.png'} alt={product.name} className="w-8 h-8 rounded-sm object-cover" />
-                        <div>
-                          <p className="text-sm font-medium text-left">{product.name}</p>
-                          <p className="text-xs text-muted-foreground text-left">{paymentCurrency?.symbol || '$'}{product.price.toFixed(2)}</p>
-                        </div>
-                      </div>
-                    </Button>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="lg:col-span-1 h-full">
+                <Card className="flex flex-col h-full shadow-xl">
+                    <CardHeader className="p-3">
+                        <CardTitle className="font-headline text-lg">{t('POSPage.summaryAndPaymentTitle')}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow p-3 space-y-2 text-sm">
+                       {cart.length > 0 && (
+                         <>
+                            <div className="flex justify-between"><span>{t('POSPage.subtotal')}</span><span>{paymentCurrency?.symbol || '$'}{subtotal.toFixed(2)}</span></div>
+                            {promotionalDiscountAmount > 0 && (
+                                <div className="flex justify-between text-destructive">
+                                    <span>{t('POSPage.promotionalDiscountLabel')}</span>
+                                    <span>-{paymentCurrency?.symbol || '$'}{promotionalDiscountAmount.toFixed(2)}</span>
+                                </div>
+                            )}
+                            <Separator />
+                            <div className="flex justify-between font-bold text-lg text-primary">
+                                <span>{t('POSPage.total')}</span>
+                                <span>{paymentCurrency?.symbol || '$'}{totalAmount.toFixed(2)}</span>
+                            </div>
+                         </>
+                       )}
+                    </CardContent>
+                    {cart.length > 0 && (
+                        <CardFooter className="p-3 flex flex-col gap-2">
+                            <Button size="lg" className="w-full bg-primary hover:bg-primary/90">
+                                <CreditCard className="mr-2" /> {t('POSPage.processPaymentButton')}
+                            </Button>
+                            <Button variant="outline" size="lg" className="w-full" onClick={clearCart}>
+                                <XCircle className="mr-2" /> {t('POSPage.clearCartButton')}
+                            </Button>
+                        </CardFooter>
+                    )}
+                </Card>
+            </div>
+        </div>
     </div>
   );
 
