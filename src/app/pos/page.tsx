@@ -19,7 +19,7 @@ import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard, Percent } from 'lucide-react';
+import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard, Percent, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -37,8 +37,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from '@/components/ui/checkbox';
 
 
 const generateCartId = () => `cart-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -344,15 +346,33 @@ export default function POSPage() {
                  <CardHeader className="p-3">
                     <CardTitle className="font-headline text-lg flex items-center gap-2"><Percent /> {t('POSPage.taxSectionTitle')}</CardTitle>
                 </CardHeader>
-                <CardContent className="p-3 space-y-2">
-                    {taxes.map(tax => (
-                        <div key={tax.id} className="flex items-center space-x-2">
-                            <Checkbox id={`tax-${tax.id}`} checked={appliedTaxes.some(at => at.taxId === tax.id)} onCheckedChange={(checked) => handleToggleTax(tax, !!checked)} />
-                            <label htmlFor={`tax-${tax.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <CardContent className="p-3">
+                     <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                                {appliedTaxes.length > 0
+                                ? t('POSPage.taxSectionTitle') + `: ${appliedTaxes.map(t => t.name).join(', ')}`
+                                : t('POSPage.selectTaxPlaceholder')
+                                }
+                                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width]">
+                            <DropdownMenuLabel>{t('POSPage.selectTaxPlaceholder')}</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {taxes.length > 0 ? taxes.map(tax => (
+                                <DropdownMenuCheckboxItem
+                                key={tax.id}
+                                checked={appliedTaxes.some(at => at.taxId === tax.id)}
+                                onCheckedChange={(checked) => handleToggleTax(tax, !!checked)}
+                                >
                                 {tax.name} ({(tax.rate * 100).toFixed(2)}%)
-                            </label>
-                        </div>
-                    ))}
+                                </DropdownMenuCheckboxItem>
+                            )) : (
+                                <DropdownMenuItem disabled>{t('POSPage.noTaxesFound')}</DropdownMenuItem>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </CardContent>
             </Card>
 
@@ -441,8 +461,8 @@ export default function POSPage() {
         {posSettings?.separateCartAndPayment ? (
              <Tabs value={currentView} onValueChange={(value) => router.push(`/pos?view=${value}`)} className="h-full flex flex-col">
                 <TabsList className="shrink-0">
-                    <TabsTrigger value="cart"><ShoppingCart className="mr-2"/>{t('POSPage.cartTitle')}</TabsTrigger>
-                    <TabsTrigger value="checkout"><CreditCard className="mr-2"/>{t('POSPage.checkoutLink')}</TabsTrigger>
+                    <TabsTrigger value="cart"><ShoppingCart className="mr-2"/>{t('Header.cartLink')}</TabsTrigger>
+                    <TabsTrigger value="checkout"><CreditCard className="mr-2"/>{t('Header.checkoutLink')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="cart" className="flex-grow h-full overflow-hidden mt-4">
                     {renderCartView()}
