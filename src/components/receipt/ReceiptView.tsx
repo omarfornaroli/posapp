@@ -119,34 +119,42 @@ export default function ReceiptView({ transaction, settings }: ReceiptViewProps)
 
   const printStyles = `
     @media print {
-      body > *:not(.printable-receipt-area) {
+      @page {
+        size: auto;
+        margin: 0;
+      }
+      body {
+        background-color: #fff !important;
+      }
+      .no-print, .no-print * {
         display: none !important;
       }
-      .printable-receipt-area, .printable-receipt-area * {
+      .printable-receipt-area {
         visibility: visible !important;
-      }
-      .printable-receipt-area { 
         position: absolute !important;
-        left: 0 !important; top: 0 !important; right: 0 !important;
+        left: 0 !important;
+        top: 0 !important;
         width: 100% !important;
-        max-width: ${settings?.receiptWidth === '80mm' ? '80mm' : settings?.receiptWidth === '58mm' ? '58mm' : '100%'} !important; 
-        margin: 0 auto !important; 
-        padding: ${receiptPadding} !important; 
-        box-shadow: none !important; 
-        border: none !important; 
-        background-color: #fff !important; 
-        font-size: ${settings?.receiptWidth === '58mm' ? '9pt' : '10pt'} !important; 
-        -webkit-print-color-adjust: exact !important; 
-        color-adjust: exact !important; 
+        max-width: ${settings?.receiptWidth === '80mm' ? '80mm' : settings?.receiptWidth === '58mm' ? '58mm' : '100%'} !important;
+        margin: 0 auto !important;
+        padding: ${receiptPadding} !important;
+        box-shadow: none !important;
+        border: none !important;
+        background-color: #fff !important;
+        font-size: ${settings?.receiptWidth === '58mm' ? '9pt' : '10pt'} !important;
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
       }
-      .printable-receipt-area .no-print { display: none !important; }
+      .printable-receipt-area * {
+          visibility: visible !important;
+      }
       .printable-receipt-area img.print-logo-filter { filter: grayscale(1) opacity(0.7) !important; }
-      .printable-receipt-area .bg-card { background-color: #fff !important; }
+      .printable-receipt-area .bg-card { background-color: #fff !important; box-shadow: none !important; }
       .printable-receipt-area .text-card-foreground { color: #000 !important; }
-      .printable-receipt-area .text-primary { color: hsl(var(--primary)) !important; } 
-      .printable-receipt-area .text-muted-foreground { color: #555 !important; } 
-      .printable-receipt-area .border-t, .printable-receipt-area .border-b, .printable-receipt-area .border, .printable-receipt-area hr, .printable-receipt-area ${Separator} { border-color: #ccc !important; }
-      .printable-receipt-area .text-destructive { color: #b00 !important; } 
+      .printable-receipt-area .text-primary { color: hsl(var(--primary)) !important; }
+      .printable-receipt-area .text-muted-foreground { color: #555 !important; }
+      .printable-receipt-area .border-t, .printable-receipt-area .border-b, .printable-receipt-area .border, .printable-receipt-area hr { border-color: #ccc !important; }
+      .printable-receipt-area .text-destructive { color: #b00 !important; }
     }
   `;
 

@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -12,7 +13,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Truck, PackageCheck, Loader2, AlertTriangle, Package, Check, ClipboardList, MinusCircle, PlusCircle } from 'lucide-react';
 import type { SaleTransaction } from '@/types';
