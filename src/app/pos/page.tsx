@@ -38,7 +38,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Checkbox } from '../ui/checkbox';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 const generateCartId = () => `cart-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
