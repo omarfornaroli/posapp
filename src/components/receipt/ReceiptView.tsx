@@ -119,12 +119,17 @@ export default function ReceiptView({ transaction, settings }: ReceiptViewProps)
 
   const printStyles = `
     @media print {
-      .no-print { display: none !important; }
-      body { margin: 0 !important; padding: 0 !important; }
+      body > *:not(.printable-receipt-area) {
+        display: none !important;
+      }
+      .printable-receipt-area, .printable-receipt-area * {
+        visibility: visible !important;
+      }
       .printable-receipt-area { 
-        visibility: visible !important; 
         position: absolute !important;
-        left: 0 !important; top: 0 !important; right: 0 !important; 
+        left: 0 !important; top: 0 !important; right: 0 !important;
+        width: 100% !important;
+        max-width: ${settings?.receiptWidth === '80mm' ? '80mm' : settings?.receiptWidth === '58mm' ? '58mm' : '100%'} !important; 
         margin: 0 auto !important; 
         padding: ${receiptPadding} !important; 
         box-shadow: none !important; 
@@ -133,10 +138,8 @@ export default function ReceiptView({ transaction, settings }: ReceiptViewProps)
         font-size: ${settings?.receiptWidth === '58mm' ? '9pt' : '10pt'} !important; 
         -webkit-print-color-adjust: exact !important; 
         color-adjust: exact !important; 
-        width: ${settings?.receiptWidth === '80mm' ? '80mm' : settings?.receiptWidth === '58mm' ? '58mm' : '100%'} !important; 
-        max-width: ${settings?.receiptWidth === '80mm' ? '80mm' : settings?.receiptWidth === '58mm' ? '58mm' : '100%'} !important;
       }
-      .printable-receipt-area .print-hidden-section { display: none !important; }
+      .printable-receipt-area .no-print { display: none !important; }
       .printable-receipt-area img.print-logo-filter { filter: grayscale(1) opacity(0.7) !important; }
       .printable-receipt-area .bg-card { background-color: #fff !important; }
       .printable-receipt-area .text-card-foreground { color: #000 !important; }
@@ -324,7 +327,7 @@ export default function ReceiptView({ transaction, settings }: ReceiptViewProps)
                 </>
             )}
             </CardContent>
-            <CardFooter className="flex justify-around gap-2 print-hidden-section pt-4">
+            <CardFooter className="flex justify-around gap-2 no-print pt-4">
             <Button variant="outline" onClick={handlePrint} className="w-full">
                 <Printer className="mr-2 h-4 w-4" /> {t('ReceiptView.printButton')}
             </Button>

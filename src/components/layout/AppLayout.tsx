@@ -141,7 +141,7 @@ function MainAppLayout({ children }: AppLayoutProps) {
     <div className="flex min-h-screen bg-background">
       
       {showHeaderAndSidebarLogic && isSidebarOpen && <Sidebar toggleSidebar={toggleSidebar} />}
-      <div className={cn("flex-1 flex flex-col overflow-y-auto", showHeaderAndSidebarLogic ? 'no-print' : '')}>
+      <div className="flex-1 flex flex-col overflow-y-auto">
         {showHeaderAndSidebarLogic && <Header toggleSidebar={toggleSidebar} />}
         <main className={mainContainerClass}>
           {children}

@@ -208,7 +208,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
 
   return (
     <TooltipProvider>
-      <aside className="bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50">
+      <aside className={cn("bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50", "no-print")}>
         <div className="flex items-center justify-between shrink-0 pt-3 pb-1">
           <div className="flex-grow flex flex-col items-center space-y-3">
             <Avatar className="h-20 w-20 ring-2 ring-primary/50">
@@ -258,7 +258,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
                         {t(`Sidebar.category${categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)}`)}
                       </AccordionTrigger>
                       <AccordionContent className="pb-0 pl-2">
-                        <ul className="space-y-1 border-l-2 border-primary/20 pl-4 py-2">
+                        <ul className="space-y-1 border-l-2 border-primary/20 py-2">
                           {groupedMenuItems[categoryKey].map(renderMenuItem)}
                         </ul>
                       </AccordionContent>

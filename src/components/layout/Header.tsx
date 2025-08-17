@@ -23,6 +23,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import SyncStatusIndicator from './SyncStatusIndicator';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -101,7 +102,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
   }
 
   return (
-    <header className="bg-card shadow-sm sticky top-0 z-40 p-4 border-b">
+    <header className={cn("bg-card shadow-sm sticky top-0 z-40 p-4 border-b", "no-print")}>
       <TooltipProvider delayDuration={100}>
         <div className="flex flex-wrap items-center justify-between gap-y-2">
             <div className="flex items-center gap-2">
