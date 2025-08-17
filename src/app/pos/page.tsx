@@ -1,3 +1,4 @@
+
 // src/app/pos/page.tsx
 'use client';
 
@@ -11,6 +12,7 @@ import { useDexiePromotions } from '@/hooks/useDexiePromotions';
 import { useDexiePaymentMethods } from '@/hooks/useDexiePaymentMethods';
 import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
 import { useCurrency } from '@/context/CurrencyContext';
+import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 
 import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency, SaleTransaction, PendingCart } from '@/types';
 
