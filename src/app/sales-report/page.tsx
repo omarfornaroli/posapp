@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
@@ -79,9 +80,9 @@ export default function SalesReportPage() {
     return sales.filter(transaction => {
       if (dateRange?.from && new Date(transaction.date) < dateRange.from) return false;
       if (dateRange?.to && new Date(transaction.date) > dateRange.to) return false;
-      if (selectedClientId && transaction.clientId !== selectedClientId) return false;
-      if (selectedPaymentMethodId && !transaction.appliedPayments.some(p => p.methodId === selectedPaymentMethodId)) return false;
-      if (selectedDispatchStatus && transaction.dispatchStatus !== selectedDispatchStatus) return false;
+      if (selectedClientId && selectedClientId !== 'all' && transaction.clientId !== selectedClientId) return false;
+      if (selectedPaymentMethodId && selectedPaymentMethodId !== 'all' && !transaction.appliedPayments.some(p => p.methodId === selectedPaymentMethodId)) return false;
+      if (selectedDispatchStatus && selectedDispatchStatus !== 'all' && transaction.dispatchStatus !== selectedDispatchStatus) return false;
       
       const lowercasedTerm = searchTerm.toLowerCase();
       if (lowercasedTerm && !(
@@ -176,14 +177,14 @@ export default function SalesReportPage() {
                      <Select value={selectedClientId} onValueChange={setSelectedClientId}>
                         <SelectTrigger><SelectValue placeholder={t('SalesReportPage.filterByClient')} /></SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">{t('SalesReportPage.allClients')}</SelectItem>
+                            <SelectItem value="all">{t('SalesReportPage.allClients')}</SelectItem>
                             {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                         </SelectContent>
                     </Select>
                      <Select value={selectedDispatchStatus} onValueChange={setSelectedDispatchStatus}>
                         <SelectTrigger><SelectValue placeholder={t('SalesReportPage.filterByDispatchStatus')} /></SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">{t('SalesReportPage.allStatuses')}</SelectItem>
+                            <SelectItem value="all">{t('SalesReportPage.allStatuses')}</SelectItem>
                             <SelectItem value="Pending">{t('SalesReportPage.statusPending')}</SelectItem>
                             <SelectItem value="Partially Dispatched">{t('SalesReportPage.statusPartiallyDispatched')}</SelectItem>
                              <SelectItem value="Dispatched">{t('SalesReportPage.statusDispatched')}</SelectItem>
@@ -206,4 +207,5 @@ export default function SalesReportPage() {
     </div>
   );
 }
+
 
