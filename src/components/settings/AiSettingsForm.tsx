@@ -3,15 +3,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
-import { useLocale } from 'next-intl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import CodeBlock from '@/components/ui/code-block';
 import { BrainCircuit, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
 
 export default function AiSettingsForm() {
-  const currentLocale = useLocale();
-  const { t, isLoading: isLoadingTranslations, initializeTranslations } = useRxTranslate();
+  const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const [isKeySet, setIsKeySet] = useState<boolean | null>(null);
 
   useEffect(() => {
