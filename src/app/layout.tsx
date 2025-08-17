@@ -1,3 +1,4 @@
+
 // src/app/layout.tsx
 import type { ReactNode } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout'; 
