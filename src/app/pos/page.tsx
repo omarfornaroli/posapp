@@ -1,3 +1,4 @@
+
 // src/app/pos/page.tsx
 'use client';
 
@@ -17,7 +18,7 @@ import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -236,7 +237,7 @@ export default function POSPage() {
                                 {filteredProducts.map(product => (
                                     <Button key={product.id} variant="ghost" className="w-full justify-start h-auto" onClick={() => addToCart(product)}>
                                         <div className="flex items-center gap-2">
-                                            <img src={product.imageUrl || 'https://placehold.co/40x40.png'} alt={product.name} className="w-8 h-8 rounded-sm object-cover" />
+                                            <img src={product.imageUrl || 'https://placehold.co/40x40.png'} alt={product.name} className="w-8 h-8 rounded-sm object-cover" data-ai-hint="product image" />
                                             <div>
                                                 <p className="text-sm font-medium text-left">{product.name}</p>
                                                 <p className="text-xs text-muted-foreground text-left">{paymentCurrency?.symbol || '$'}{product.price.toFixed(2)}</p>
