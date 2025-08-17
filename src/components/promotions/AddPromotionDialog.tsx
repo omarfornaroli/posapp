@@ -242,7 +242,7 @@ export default function AddPromotionDialog({ open, onOpenChange, onAddPromotion 
                   />
 
                   <Separator />
-                  <h3 className="text-md font-semibold pt-2">{t('PromotionListTable.headerApplicability')}</h3>
+                  <h3 className="text-md font-semibold pt-2">{t('AddPromotionDialog.conditionsSectionTitle')}</h3>
                   
                   <FormField control={form.control} name="minimumSellAmount" render={({ field }) => (<FormItem><FormLabel>{t('AddPromotionDialog.minimumSellAmountLabel')}</FormLabel><FormControl><Input type="number" placeholder={t('AddPromotionDialog.minimumSellAmountPlaceholder')} {...field} step="0.01" /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="itemQuantity" render={({ field }) => (<FormItem><FormLabel>{t('AddPromotionDialog.itemQuantityLabel')}</FormLabel><FormControl><Input type="number" placeholder={t('AddPromotionDialog.itemQuantityPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -264,3 +264,4 @@ export default function AddPromotionDialog({ open, onOpenChange, onAddPromotion 
     </Dialog>
   );
 }
+
