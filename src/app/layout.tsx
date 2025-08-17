@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout'; 
 import { Toaster } from '@/components/ui/toaster';
 import { CurrencyProvider } from '@/context/CurrencyContext';
+import ThemeStyleInjector from '@/components/layout/ThemeStyleInjector';
 
 import '@/app/globals.css';
 
@@ -29,6 +30,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Lobster&family=Pacifico&family=Roboto+Slab&display=swap" rel="stylesheet" />
+        <ThemeStyleInjector />
       </head>
       <body>
         <CurrencyProvider>

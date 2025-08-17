@@ -14,7 +14,7 @@ import { translationRxService } from '@/services/translation.rx.service';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider, useAuth } from '@/context/AuthContext';
-import ThemeStyleInjector from './ThemeStyleInjector';
+
 
 interface UserWithPermissions extends User {
   permissions: Permission[];
@@ -138,7 +138,7 @@ function MainAppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <ThemeStyleInjector />
+      
       {showHeaderAndSidebarLogic && isSidebarOpen && <Sidebar toggleSidebar={toggleSidebar} />}
       <div className="flex-1 flex flex-col overflow-y-auto">
         {showHeaderAndSidebarLogic && <Header toggleSidebar={toggleSidebar} />}
