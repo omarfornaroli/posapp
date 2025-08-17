@@ -1,3 +1,4 @@
+
 // src/lib/dexie-db.ts
 import Dexie, { type Table } from 'dexie';
 import type { Product, Client, SaleTransaction, Tax, Promotion, PaymentMethod, Supplier, User, Currency, Country, Theme, GridSetting, RolePermission, Notification, Report, POSSetting, ReceiptSetting, SmtpSetting, PendingCart, AppLanguage } from '@/types';
