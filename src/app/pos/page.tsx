@@ -23,7 +23,6 @@ import { Separator } from '@/components/ui/separator';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 import CartItemCard from '@/components/pos/CartItemCard';
-import ProductCard from '@/components/pos/ProductCard';
 import { Combobox } from '@/components/ui/combobox';
 import BarcodeScannerDialog from '@/components/pos/BarcodeScannerDialog';
 import AuthorizationDialog from '@/components/pos/AuthorizationDialog';
@@ -47,6 +46,7 @@ export default function POSPage() {
   const { paymentMethods, isLoading: isLoadingPaymentMethods } = useDexiePaymentMethods();
   const { posSettings } = useDexiePOSSettings();
   const { currency: currentCurrencyCode } = useCurrency();
+  const { currencies } = useDexieCurrencies();
 
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeCartId, setActiveCartId] = useState<string | null>(null);
@@ -61,6 +61,14 @@ export default function POSPage() {
 
   const initialView = searchParams.get('view') || 'cart';
   const [currentView, setCurrentView] = useState(initialView);
+
+  useEffect(() => {
+    if(currencies.length > 0) {
+        const current = currencies.find(c => c.code === currentCurrencyCode);
+        const defaultCurrency = currencies.find(c => c.isDefault);
+        setPaymentCurrency(current || defaultCurrency || null);
+    }
+  }, [currentCurrencyCode, currencies]);
 
 
   useEffect(() => {
@@ -96,15 +104,32 @@ export default function POSPage() {
 
 
   const addToCart = useCallback((product: Product) => {
-    // ... (implementation)
-  }, [cart, t, toast]);
+    setCart(prevCart => {
+      const existingItem = prevCart.find(item => item.id === product.id);
+      if (existingItem) {
+        return prevCart.map(item => 
+          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+        );
+      } else {
+        return [...prevCart, { ...product, productId: product.id, quantity: 1 }];
+      }
+    });
+    toast({ title: t('Toasts.productAddedTitle'), description: t('Toasts.productAddedDescription', { productName: product.name }) });
+  }, [t, toast]);
 
   const updateItemQuantity = (productId: string, newQuantity: number) => {
-    // ... (implementation)
+    setCart(prevCart => {
+      if (newQuantity <= 0) {
+        return prevCart.filter(item => item.id !== productId);
+      }
+      return prevCart.map(item =>
+        item.id === productId ? { ...item, quantity: newQuantity } : item
+      );
+    });
   };
 
   const onRemoveItem = (productId: string) => {
-     // ... (implementation)
+    setCart(prevCart => prevCart.filter(item => item.id !== productId));
   };
 
   const clearCart = () => {
@@ -115,7 +140,13 @@ export default function POSPage() {
   };
   
   const handleScanSuccess = (barcode: string) => {
-    // ... (implementation)
+    const product = products.find(p => p.barcode === barcode);
+    if(product) {
+      addToCart(product);
+      setIsScannerOpen(false);
+    } else {
+      toast({ variant: 'destructive', title: t('POSPage.productNotFoundByBarcodeToastTitle'), description: t('POSPage.productNotFoundByBarcodeToastDescription', { barcode }) });
+    }
   };
   
   const handleSelectCart = (cartToLoad: PendingCart) => {
@@ -129,6 +160,7 @@ export default function POSPage() {
     // other calculated values...
   } = useMemo(() => {
     let currentSubtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    // This needs to be expanded with taxes, discounts etc.
     return { subtotal: currentSubtotal, totalAmount: currentSubtotal };
   }, [cart, selectedClient, taxes, promotions, paymentCurrency]);
 
@@ -297,17 +329,17 @@ export default function POSPage() {
   );
 
   return (
-    <div className="h-[calc(100vh-var(--header-height,64px)-4rem)]">
+    <div className="h-[calc(100vh-var(--header-height,64px)-2rem)]">
         {posSettings?.separateCartAndPayment ? (
              <Tabs value={currentView} onValueChange={(value) => router.push(`/pos?view=${value}`)} className="h-full flex flex-col">
                 <TabsList className="shrink-0">
                     <TabsTrigger value="cart"><ShoppingCart className="mr-2"/>{t('POSPage.cartTitle')}</TabsTrigger>
                     <TabsTrigger value="checkout"><CreditCard className="mr-2"/>{t('POSPage.checkoutLink')}</TabsTrigger>
                 </TabsList>
-                <TabsContent value="cart" className="flex-grow h-full overflow-hidden">
+                <TabsContent value="cart" className="flex-grow h-full overflow-hidden mt-4">
                     {renderCartView()}
                 </TabsContent>
-                <TabsContent value="checkout" className="flex-grow h-full overflow-hidden">
+                <TabsContent value="checkout" className="flex-grow h-full overflow-hidden mt-4">
                     {renderCheckoutView()}
                 </TabsContent>
             </Tabs>
