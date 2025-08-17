@@ -546,6 +546,33 @@
     "csv": "Exportar como CSV",
     "excel": "Exportar como Excel"
   },
+  "ThemeManagerPage": {
+    "title": "Gestor de Temas",
+    "addNewThemeButton": "Agregar Nuevo Tema",
+    "addNewThemeDescription": "Crea un nuevo tema visual con un nombre único.",
+    "themeNameLabel": "Nombre del Tema",
+    "fontBodyLabel": "Fuente del Cuerpo",
+    "fontHeadlineLabel": "Fuente del Encabezado",
+    "colorsSectionTitle": "Colores (HSL)",
+    "isDefaultBadge": "Predeterminado",
+    "setDefaultButton": "Establecer como Predeterminado",
+    "themeUpdatedTitle": "Tema Actualizado",
+    "themeUpdatedDescription": "El tema \"{themeName}\" ha sido actualizado.",
+    "errorSettingDefaultTheme": "Error al establecer el tema predeterminado."
+  },
+  "AddThemeDialog": {
+    "title": "Agregar Nuevo Tema",
+    "description": "Ingresa un nombre para tu nuevo tema. Los colores y las fuentes se generarán aleatoriamente.",
+    "namePlaceholder": "Ej: Azul Océano, Brillo del Atardecer",
+    "cancelButton": "Cancelar",
+    "generateAndSaveButton": "Generar y Guardar"
+  },
+  "EditThemeDialog": {
+    "title": "Editar Tema: {themeName}",
+    "description": "Personaliza las fuentes y los valores de color HSL para este tema.",
+    "saveButton": "Guardar Cambios",
+    "cancelButton": "Cancelar"
+  },
   "Toasts": {
     "stockLimitReachedTitle": "Límite de Stock Alcanzado",
     "stockLimitReachedDescription": "No se puede agregar más {productName}. El stock máximo es {maxStock}.",
@@ -683,7 +710,9 @@
     "supplierCostsUpdated": "Actualización de costos para {supplierName} completa. {updated} productos actualizados. {notFound} no encontrados. {invalid} filas con costos inválidos.",
     "supplierCostsUpdateFailed": "No se pudieron actualizar los costos de los productos. Error: {error}",
     "themeAddedTitle": "Tema Agregado",
-    "themeAddedDescription": "El tema \"{themeName}\" ha sido agregado exitosamente."
+    "themeAddedDescription": "El tema \"{themeName}\" ha sido agregado exitosamente.",
+    "themeDefaultSetTitle": "Tema Establecido como Predeterminado",
+    "themeDefaultSetDescription": "\"{themeName}\" ahora es el tema predeterminado. Recargando para aplicar los cambios."
   },
   "Notifications": {
     "dropdownTitle": "Notificaciones",

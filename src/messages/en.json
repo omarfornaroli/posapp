@@ -546,6 +546,35 @@
     "csv": "Export as CSV",
     "excel": "Export as Excel"
   },
+  "ThemeManagerPage": {
+    "title": "Theme Manager",
+    "addNewThemeButton": "Add New Theme",
+    "addNewThemeDescription": "Create a new visual theme with a unique name.",
+    "themeNameLabel": "Theme Name",
+    "fontBodyLabel": "Body Font",
+    "fontHeadlineLabel": "Headline Font",
+    "colorsSectionTitle": "Colors (HSL)",
+    "isDefaultBadge": "Default",
+    "setDefaultButton": "Set as Default",
+    "themeSetDefaultSuccessTitle": "Theme Set",
+    "themeSetDefaultSuccessDescription": "Theme \"{themeName}\" is now the default.",
+    "errorSettingDefaultTheme": "Error setting default theme.",
+    "themeUpdatedTitle": "Theme Updated",
+    "themeUpdatedDescription": "Theme \"{themeName}\" has been updated."
+  },
+  "AddThemeDialog": {
+    "title": "Add New Theme",
+    "description": "Enter a name for your new theme. Colors and fonts will be generated randomly.",
+    "namePlaceholder": "e.g., Ocean Blue, Sunset Glow",
+    "cancelButton": "Cancel",
+    "generateAndSaveButton": "Generate & Save"
+  },
+  "EditThemeDialog": {
+    "title": "Edit Theme: {themeName}",
+    "description": "Customize the fonts and HSL color values for this theme.",
+    "saveButton": "Save Changes",
+    "cancelButton": "Cancel"
+  },
   "Toasts": {
     "stockLimitReachedTitle": "Stock Limit Reached",
     "stockLimitReachedDescription": "Cannot add more {productName}. Max stock is {maxStock}.",
@@ -683,7 +712,9 @@
     "supplierCostsUpdated": "Cost update for {supplierName} complete. {updated} products updated. {notFound} not found. {invalid} rows with invalid costs.",
     "supplierCostsUpdateFailed": "Failed to update product costs. Error: {error}",
     "themeAddedTitle": "Theme Added",
-    "themeAddedDescription": "Theme \"{themeName}\" has been successfully added."
+    "themeAddedDescription": "Theme \"{themeName}\" has been successfully added.",
+    "themeDefaultSetTitle": "Theme Set as Default",
+    "themeDefaultSetDescription": "\"{themeName}\" is now the default theme. Reloading to apply changes."
   },
   "Notifications": {
     "dropdownTitle": "Notificaciones",
