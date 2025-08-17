@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -27,6 +28,10 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import type { AppLanguage } from '@/types';
 import { ScrollArea } from '../ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Languages } from 'lucide-react';
 
 const appLanguageFormSchema = (t: Function, tCommonErrors: Function, existingCodes: string[]) => z.object({
   code: z.string()
@@ -44,12 +49,27 @@ type AppLanguageFormData = z.infer<ReturnType<typeof appLanguageFormSchema>>;
 interface AddAppLanguageDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddLanguage: (newLangData: Omit<AppLanguage, 'id'>) => void;
+  onAddLanguage: (newLangData: Omit<AppLanguage, 'id'>) => Promise<void>;
   existingCodes: string[];
 }
 
 export default function AddAppLanguageDialog({ open, onOpenChange, onAddLanguage, existingCodes }: AddAppLanguageDialogProps) {
   const { t } = useRxTranslate();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isApiKeySet, setIsApiKeySet] = useState(false);
+
+  useEffect(() => {
+    async function checkKey() {
+      if (open) {
+        const res = await fetch('/api/settings/translate');
+        const data = await res.json();
+        setIsApiKeySet(data.success && data.data.isKeySet);
+      }
+    }
+    checkKey();
+  }, [open]);
+
   const currentSchema = appLanguageFormSchema(t, t, existingCodes);
 
   const form = useForm<AppLanguageFormData>({
@@ -62,12 +82,18 @@ export default function AddAppLanguageDialog({ open, onOpenChange, onAddLanguage
     },
   });
 
-  function onSubmit(values: AppLanguageFormData) {
-    onAddLanguage({
-        ...values,
-        code: values.code.toLowerCase() // Ensure code is saved in lowercase
-    });
-    form.reset();
+  async function onSubmit(values: AppLanguageFormData) {
+    setIsSubmitting(true);
+    try {
+      await onAddLanguage({
+          ...values,
+          code: values.code.toLowerCase()
+      });
+    } catch (e) {
+      // Error toast is handled in the parent hook
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -81,6 +107,15 @@ export default function AddAppLanguageDialog({ open, onOpenChange, onAddLanguage
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
             <ScrollArea className="flex-grow pr-6 -mr-6">
                 <div className="space-y-4 py-4 pr-6">
+                  {isApiKeySet && (
+                     <Alert variant="default" className="bg-blue-50 border-blue-200">
+                        <Languages className="h-4 w-4 !text-blue-600" />
+                        <AlertTitle className="text-blue-800">{t('AddAppLanguageDialog.autoTranslateTitle')}</AlertTitle>
+                        <AlertDescription className="text-blue-700">
+                          {t('AddAppLanguageDialog.autoTranslateDescription')}
+                        </AlertDescription>
+                    </Alert>
+                  )}
                   <FormField control={form.control} name="code" render={({ field }) => (<FormItem><FormLabel>{t('AddAppLanguageDialog.codeLabel')}</FormLabel><FormControl><Input placeholder={t('AddAppLanguageDialog.codePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddAppLanguageDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddAppLanguageDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <div className="grid grid-cols-2 gap-4">
@@ -90,8 +125,13 @@ export default function AddAppLanguageDialog({ open, onOpenChange, onAddLanguage
                 </div>
             </ScrollArea>
             <DialogFooter className="pt-4 mt-4 border-t shrink-0">
-              <DialogClose asChild><Button type="button" variant="outline">{t('AddAppLanguageDialog.cancelButton')}</Button></DialogClose>
-              <Button type="submit" className="bg-primary hover:bg-primary/90">{t('AddAppLanguageDialog.addButton')}</Button>
+              <DialogClose asChild>
+                <Button type="button" variant="outline" disabled={isSubmitting}>{t('AddAppLanguageDialog.cancelButton')}</Button>
+              </DialogClose>
+              <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                {isSubmitting ? t('AddAppLanguageDialog.savingButton') : t('AddAppLanguageDialog.addButton')}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
