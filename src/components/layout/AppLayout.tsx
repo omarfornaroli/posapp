@@ -14,6 +14,7 @@ import { translationRxService } from '@/services/translation.rx.service';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { cn } from '@/lib/utils';
 
 
 interface UserWithPermissions extends User {
@@ -140,7 +141,7 @@ function MainAppLayout({ children }: AppLayoutProps) {
     <div className="flex min-h-screen bg-background">
       
       {showHeaderAndSidebarLogic && isSidebarOpen && <Sidebar toggleSidebar={toggleSidebar} />}
-      <div className="flex-1 flex flex-col overflow-y-auto">
+      <div className={cn("flex-1 flex flex-col overflow-y-auto", showHeaderAndSidebarLogic ? 'no-print' : '')}>
         {showHeaderAndSidebarLogic && <Header toggleSidebar={toggleSidebar} />}
         <main className={mainContainerClass}>
           {children}
