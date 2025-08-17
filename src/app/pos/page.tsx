@@ -14,13 +14,14 @@ import { useDexiePaymentMethods } from '@/hooks/useDexiePaymentMethods';
 import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
+import { useAuth } from '@/context/AuthContext';
 
-import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency, SaleTransaction, PendingCart, AppliedTaxEntry, AppliedPromotionEntry } from '@/types';
+import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency, SaleTransaction, PendingCart, AppliedTaxEntry, AppliedPromotionEntry, AppliedPayment } from '@/types';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard, Percent, ChevronDown } from 'lucide-react';
+import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard, Percent, ChevronDown, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -45,6 +46,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 
 const generateCartId = () => `cart-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -55,6 +57,7 @@ export default function POSPage() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { user } = useAuth();
 
   const { products, isLoading: isLoadingProducts } = useDexieProducts();
   const { clients, isLoading: isLoadingClients } = useDexieClients();
@@ -82,10 +85,14 @@ export default function POSPage() {
 
   const [appliedTaxes, setAppliedTaxes] = useState<AppliedTaxEntry[]>([]);
   
-  // Overall cart discount state
   const [overallDiscountType, setOverallDiscountType] = useState<'percentage' | 'fixedAmount' | undefined>(undefined);
   const [overallDiscountValue, setOverallDiscountValue] = useState<number | string>('');
   const [isDiscountPopoverOpen, setIsDiscountPopoverOpen] = useState(false);
+
+  // States for the new payment section
+  const [appliedPayments, setAppliedPayments] = useState<AppliedPayment[]>([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState<string>('');
 
 
   useEffect(() => {
@@ -166,6 +173,7 @@ export default function POSPage() {
     setOverallDiscountValue('');
     setSelectedClient(null);
     setActiveCartId(null);
+    setAppliedPayments([]);
     toast({ title: t('Toasts.cartClearedTitle'), description: t('Toasts.cartClearedDescription') });
   };
   
@@ -263,6 +271,48 @@ export default function POSPage() {
   const currencyOptions = useMemo(() => {
     return currencies.filter(c => c.isEnabled).map(c => ({ value: c.code, label: `${c.name} (${c.code})`}));
   }, [currencies]);
+  
+  const enabledPaymentMethods = useMemo(() => paymentMethods.filter(p => p.isEnabled), [paymentMethods]);
+  
+  const totalPaid = useMemo(() => appliedPayments.reduce((sum, p) => sum + p.amount, 0), [appliedPayments]);
+  const amountRemaining = useMemo(() => totalAmount - totalPaid, [totalAmount, totalPaid]);
+
+  useEffect(() => {
+    if (amountRemaining > 0 && amountRemaining < 1000000) {
+        setPaymentAmount(amountRemaining.toFixed(paymentCurrency?.decimalPlaces ?? 2));
+    } else {
+        setPaymentAmount('');
+    }
+  }, [amountRemaining, paymentCurrency]);
+
+  const handleAddPayment = () => {
+    if (!selectedPaymentMethod || !paymentAmount) {
+      toast({ variant: 'destructive', description: t('POSPage.invalidPaymentAmount') });
+      return;
+    }
+    const amount = parseFloat(paymentAmount);
+    if (isNaN(amount) || amount <= 0) {
+      toast({ variant: 'destructive', description: t('POSPage.invalidPaymentAmount') });
+      return;
+    }
+     if (amount > amountRemaining + 0.001) { // Add tolerance for floating point issues
+      toast({ variant: 'destructive', description: t('POSPage.paymentExceedsTotal', { amount: formatCurrency(amountRemaining) }) });
+      return;
+    }
+    
+    setAppliedPayments(prev => [...prev, {
+        methodId: selectedPaymentMethod.id,
+        methodName: selectedPaymentMethod.name,
+        amount: amount
+    }]);
+    setPaymentAmount('');
+    // Do not reset the selected payment method, user might want to use it again.
+  };
+
+  const handleRemovePayment = (index: number) => {
+    setAppliedPayments(prev => prev.filter((_, i) => i !== index));
+  };
+
 
   const filteredProducts = useMemo(() => {
     if (!debouncedSearchTerm) return [];
@@ -438,10 +488,40 @@ export default function POSPage() {
                     <Separator />
                     <div className="flex justify-between font-bold text-lg text-primary"><span>{t('POSPage.total')}</span><span>{paymentCurrency?.symbol || '$'}{totalAmount.toFixed(2)}</span></div>
                 </div>
+                 {/* Payment Section */}
+                 <div className="pt-2 space-y-2 border-t">
+                    <h3 className="text-sm font-semibold">{t('POSPage.paymentSectionTitle')}</h3>
+                     {appliedPayments.map((p, i) => (
+                        <div key={i} className="flex justify-between items-center text-xs">
+                            <span>{p.methodName}</span>
+                            <span>{paymentCurrency?.symbol || '$'}{p.amount.toFixed(2)}</span>
+                             <Button variant="ghost" size="icon" onClick={() => handleRemovePayment(i)} className="h-6 w-6 text-destructive/80 hover:text-destructive"><Trash2 className="h-3.5 w-3.5"/></Button>
+                        </div>
+                    ))}
+                    {amountRemaining > 0.001 && (
+                         <div className="flex gap-2 items-end">
+                            <div className="flex-grow">
+                                <Label htmlFor="payment-method" className="text-xs">{t('POSPage.selectPaymentMethodPlaceholder')}</Label>
+                                <Select onValueChange={(value) => setSelectedPaymentMethod(enabledPaymentMethods.find(p => p.id === value) || null)}>
+                                    <SelectTrigger id="payment-method"><SelectValue /></SelectTrigger>
+                                    <SelectContent>{enabledPaymentMethods.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                            <div className="w-28">
+                                <Label htmlFor="payment-amount" className="text-xs">{t('POSPage.paymentAmountPlaceholder')}</Label>
+                                <Input id="payment-amount" type="number" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} />
+                            </div>
+                            <Button type="button" onClick={handleAddPayment} disabled={!selectedPaymentMethod || !paymentAmount}><Plus className="h-4 w-4"/></Button>
+                        </div>
+                    )}
+                     <Separator />
+                     <div className="flex justify-between text-sm"><span>{t('POSPage.totalPaidLabel')}</span><span>{paymentCurrency?.symbol || '$'}{totalPaid.toFixed(2)}</span></div>
+                     <div className={cn("flex justify-between font-bold", amountRemaining > 0 ? "text-destructive" : "text-green-600")}><span>{t('POSPage.amountRemainingLabel')}</span><span>{paymentCurrency?.symbol || '$'}{amountRemaining.toFixed(2)}</span></div>
+                </div>
             </CardContent>
             {cart.length > 0 && (
                 <div className="p-3 flex flex-col gap-2 border-t mt-auto">
-                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90">
+                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90" disabled={amountRemaining > 0.001}>
                         <CreditCard className="mr-2" /> {t('POSPage.processPaymentButton')}
                     </Button>
                     <Button variant="outline" size="lg" className="w-full" onClick={clearCart}>
