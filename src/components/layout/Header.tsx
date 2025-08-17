@@ -35,7 +35,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
   const pathname = usePathname();
   const { toast } = useToast();
 
-  const { themes, isLoading: isLoadingThemes, refetch: refetchThemes } = useDexieThemes();
+  const { themes, isLoading: isLoadingThemes, updateTheme } = useDexieThemes();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSwitchingTheme, setIsSwitchingTheme] = useState(false);
 
@@ -61,26 +61,28 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
   const handleThemeSwitch = async (themeId: string) => {
     setIsSwitchingTheme(true);
+    const themeToSet = themes.find(t => t.id === themeId);
+    if (!themeToSet) return;
+    
     try {
-      const response = await fetch(`/api/themes/${themeId}/set-default`, {
-        method: 'PUT',
-      });
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || t('ThemeManagerPage.errorSettingDefaultTheme'));
-      }
+      await updateTheme({ ...themeToSet, isDefault: true });
+
       toast({
         title: t('ThemeManagerPage.themeSetDefaultSuccessTitle'),
-        description: t('ThemeManagerPage.themeSetDefaultSuccessDescription', { themeName: result.data.name }),
+        description: t('ThemeManagerPage.themeSetDefaultSuccessDescription', { themeName: themeToSet.name }),
       });
-      window.location.reload(); 
+      // The Dexie hook will trigger a re-render. A full reload re-fetches everything,
+      // which is slow and against the offline-first approach.
+      // The ThemeStyleInjector will reactively apply the new theme from Dexie.
+       window.location.reload(); // Still might be necessary if some components don't react properly.
     } catch (error) {
       toast({
         variant: 'destructive',
         title: t('Common.error'),
         description: error instanceof Error ? error.message : t('ThemeManagerPage.errorSettingDefaultTheme'),
       });
-      setIsSwitchingTheme(false); // Only set to false on error, as success reloads
+    } finally {
+      setIsSwitchingTheme(false);
     }
   };
 

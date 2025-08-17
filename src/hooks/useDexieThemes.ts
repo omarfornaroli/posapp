@@ -11,44 +11,35 @@ let isPopulating = false;
 
 export function useDexieThemes() {
   const [isLoading, setIsLoading] = useState(true);
-
   const themes = useLiveQuery(() => db.themes.toArray(), []);
 
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
-
-    // Check if there are any themes in Dexie. If so, don't block for loading.
-    const count = await db.themes.count();
-    if (count > 0) {
-      setIsLoading(false);
-      // Still attempt a background fetch to get latest, but don't set loading state
-      try {
-        const response = await fetch('/api/themes');
-        if (response.ok) {
-            const result = await response.json();
-            if (result.success) {
-                await db.themes.bulkPut(result.data);
-            }
-        }
-      } catch (e) {
-          console.warn("[useDexieThemes] Background fetch failed, likely offline.", e);
-      }
-      return;
-    }
-
     isPopulating = true;
     setIsLoading(true);
+
     try {
       const response = await fetch('/api/themes');
-      if (!response.ok) throw new Error('Failed to fetch initial themes');
+      if (!response.ok) throw new Error('Failed to fetch themes');
       const result = await response.json();
-      if (result.success) {
-        await db.themes.bulkAdd(result.data);
-      } else {
-        throw new Error(result.error || 'API error fetching initial themes');
+      if (!result.success) throw new Error(result.error || 'API error fetching themes');
+
+      const serverThemes: Theme[] = result.data;
+      const localThemes = await db.themes.toArray();
+
+      const serverIds = new Set(serverThemes.map(t => t.id));
+      
+      // Add or update themes from the server
+      await db.themes.bulkPut(serverThemes);
+
+      // Remove local themes that are no longer on the server (and are not temp)
+      const themesToDelete = localThemes.filter(lt => !lt.id.startsWith('temp-') && !serverIds.has(lt.id)).map(lt => lt.id);
+      if (themesToDelete.length > 0) {
+        await db.themes.bulkDelete(themesToDelete);
       }
+
     } catch (error) {
-      console.warn("[useDexieThemes] Failed to populate initial data (likely offline):", error);
+      console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
     } finally {
       setIsLoading(false);
       isPopulating = false;
@@ -64,27 +55,34 @@ export function useDexieThemes() {
     const themeWithId: Theme = {
       ...newTheme,
       id: tempId,
-      isDefault: false, // New themes are never default initially
+      isDefault: false,
     };
     await db.themes.add(themeWithId);
-    // Let the API handle creation. No need for a sync queue item for create
-    // if the action itself calls the API. This depends on implementation.
-    // For simplicity, we assume API call is separate.
+    // Let the API handle creation. No need for a sync queue item for create.
+    // The server will assign a permanent ID, which will be synced back.
+    const response = await fetch('/api/themes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTheme),
+    });
+    const result = await response.json();
+    if (result.success) {
+        // Replace temp record with the one from the server
+        await db.transaction('rw', db.themes, async () => {
+            await db.themes.delete(tempId);
+            await db.themes.put(result.data);
+        });
+    } else {
+       console.error("Failed to save new theme to server:", result.error);
+       // The theme remains in Dexie with a temp ID and will need a more robust sync/retry strategy
+       // For now, we leave it for the user to potentially try again.
+       throw new Error(result.error);
+    }
   };
 
   const updateTheme = async (updatedTheme: Theme) => {
      try {
-        // If setting a new default, unset the old one locally first.
-        if (updatedTheme.isDefault) {
-            const oldDefault = await db.themes.filter(t => t.isDefault === true).first();
-            if (oldDefault && oldDefault.id !== updatedTheme.id) {
-                await db.themes.update(oldDefault.id, { isDefault: false });
-                 // Sync the change for the old default theme
-                await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...oldDefault, isDefault: false } });
-            }
-        }
         await db.themes.put(updatedTheme);
-        // Sync the change for the new default theme
         await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
      } catch (e) {
          console.error("Failed to update theme in Dexie:", e);

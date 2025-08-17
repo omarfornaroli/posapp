@@ -3,7 +3,7 @@
 'use client';
 
 import type React from 'react';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -28,7 +28,7 @@ interface AppLayoutProps {
 const SIDEBAR_STORAGE_KEY = 'sidebarOpen';
 const SESSION_WARNING_MS = 60 * 1000; // 60 seconds before expiration
 
-function MainAppLayout({ children }: AppLayoutProps) {
+function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode, userSessionKey: string }) {
   const pathname = usePathname();
   const { user } = useAuth();
 
@@ -138,7 +138,7 @@ function MainAppLayout({ children }: AppLayoutProps) {
   const mainContainerClass = isPublicPage ? "flex-grow" : "flex-grow container mx-auto px-4 py-8";
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div key={userSessionKey} className="flex min-h-screen bg-background">
       
       {showHeaderAndSidebarLogic && isSidebarOpen && <Sidebar toggleSidebar={toggleSidebar} />}
       <div className="flex-1 flex flex-col overflow-y-auto">
@@ -161,6 +161,7 @@ function MainAppLayout({ children }: AppLayoutProps) {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserWithPermissions | null>(null);
+    const [userSessionKey, setUserSessionKey] = useState('initial'); // Added for re-mounting
 
     const fetchUserSession = useCallback(async (email: string) => {
         try {
@@ -171,6 +172,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             const result = await response.json();
             if (result.success && result.data) {
                 setUser(result.data as UserWithPermissions);
+                setUserSessionKey(email); // Change key on successful user load
             } else {
                 throw new Error(result.error || 'User session data not found');
             }
@@ -179,6 +181,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             localStorage.removeItem('isLoggedIn');
             localStorage.removeItem('loggedInUserEmail');
             setUser(null);
+            setUserSessionKey('logged-out'); // Change key on logout/error
             if (!window.location.pathname.startsWith('/login')) {
                 window.location.assign(`/login`);
             }
@@ -190,6 +193,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             const userEmail = localStorage.getItem('loggedInUserEmail');
             if (userEmail) {
                 fetchUserSession(userEmail);
+            } else {
+                 setUserSessionKey('no-user'); // Set a key for logged-out state
             }
         }
         
@@ -204,7 +209,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
     return (
         <AuthProvider value={{ user }}>
-            <MainAppLayout>
+            <MainAppLayout userSessionKey={userSessionKey}>
                 {children}
             </MainAppLayout>
         </AuthProvider>
