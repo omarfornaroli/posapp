@@ -19,7 +19,7 @@ import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard, Percent, ChevronDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -260,6 +260,10 @@ export default function POSPage() {
     return clients.map(c => ({ value: c.id, label: `${c.name} (${c.email})`}));
   }, [clients]);
 
+  const currencyOptions = useMemo(() => {
+    return currencies.filter(c => c.isEnabled).map(c => ({ value: c.code, label: `${c.name} (${c.code})`}));
+  }, [currencies]);
+
   const filteredProducts = useMemo(() => {
     if (!debouncedSearchTerm) return [];
     const lowercasedTerm = debouncedSearchTerm.toLowerCase();
@@ -349,30 +353,29 @@ export default function POSPage() {
         </div>
 
         {/* Right Column: Client, Taxes, Summary */}
-        <div className="lg:col-span-2 h-full flex flex-col gap-4">
-             <Card className="shadow-sm">
-                <CardHeader className="p-3">
-                    <CardTitle className="font-headline text-lg flex items-center gap-2"><User /> {t('POSPage.clientSectionTitle')}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-3">
-                    <Combobox
-                        options={clientOptions}
-                        value={selectedClient?.id || ''}
-                        onChange={(value) => setSelectedClient(clients.find(c => c.id === value) || null)}
-                        placeholder={t('POSPage.selectClientPlaceholder')}
-                        searchPlaceholder="Search clients..."
-                        emptyResultText="No clients found."
-                    />
-                </CardContent>
-            </Card>
-            
-             <Card className="shadow-sm">
-                <CardHeader className="p-3">
-                    <CardTitle className="font-headline text-lg flex items-center gap-2">
-                        <TicketPercent /> {t('POSPage.overallSaleDiscountSectionTitle')}
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-3">
+        <Card className="lg:col-span-2 h-full flex flex-col shadow-xl">
+             <CardHeader className="p-3">
+                <CardTitle className="font-headline text-lg">{t('POSPage.summaryAndPaymentTitle')}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow p-3 space-y-3 overflow-y-auto">
+                {/* Client Section */}
+                <div className="space-y-1">
+                    <Label>{t('POSPage.clientSectionTitle')}</Label>
+                    <Combobox options={clientOptions} value={selectedClient?.id || ''} onChange={(value) => setSelectedClient(clients.find(c => c.id === value) || null)} placeholder={t('POSPage.selectClientPlaceholder')} searchPlaceholder="Search clients..." emptyResultText="No clients found." />
+                </div>
+
+                {/* Currency Section */}
+                 <div className="space-y-1">
+                    <Label>{t('SalesTable.headerCurrency')}</Label>
+                    <Select value={paymentCurrency?.code} onValueChange={(code) => setPaymentCurrency(currencies.find(c => c.code === code) || null)}>
+                        <SelectTrigger><SelectValue placeholder="Select currency..." /></SelectTrigger>
+                        <SelectContent>{currencyOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
+                    </Select>
+                 </div>
+
+                {/* Discount Section */}
+                <div className="space-y-1">
+                    <Label>{t('POSPage.overallSaleDiscountSectionTitle')}</Label>
                     <Popover open={isDiscountPopoverOpen} onOpenChange={setIsDiscountPopoverOpen}>
                         <PopoverTrigger asChild>
                             <Button variant="outline" className="w-full justify-between">
@@ -393,35 +396,22 @@ export default function POSPage() {
                                     <SelectItem value="fixedAmount" className="text-xs">{t('POSPage.discountTypeFixedAmount')}</SelectItem>
                                 </SelectContent>
                             </Select>
-                            <Input
-                                type="number"
-                                placeholder={t('POSPage.discountValuePlaceholder')}
-                                value={overallDiscountValue}
-                                onChange={(e) => setOverallDiscountValue(e.target.value)}
-                                className="h-8 text-xs"
-                                step="0.01"
-                            />
+                            <Input type="number" placeholder={t('POSPage.discountValuePlaceholder')} value={overallDiscountValue} onChange={(e) => setOverallDiscountValue(e.target.value)} className="h-8 text-xs" step="0.01" />
                             <div className="flex justify-end gap-2">
                                 <Button variant="outline" size="sm" onClick={() => { setOverallDiscountType(undefined); setOverallDiscountValue(''); setIsDiscountPopoverOpen(false); }} className="text-xs px-2 py-1 h-auto">{t('POSPage.clearDiscountButton')}</Button>
                                 <Button size="sm" onClick={() => { setOverallDiscountValue(Number(overallDiscountValue)); setIsDiscountPopoverOpen(false); }} className="text-xs px-2 py-1 h-auto bg-primary hover:bg-primary/90">{t('POSPage.applyDiscountButton')}</Button>
                             </div>
                         </PopoverContent>
                     </Popover>
-                </CardContent>
-            </Card>
-
-            <Card className="shadow-sm">
-                 <CardHeader className="p-3">
-                    <CardTitle className="font-headline text-lg flex items-center gap-2"><Percent /> {t('POSPage.taxSectionTitle')}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-3">
-                     <DropdownMenu>
+                </div>
+                
+                {/* Tax Section */}
+                <div className="space-y-1">
+                    <Label>{t('POSPage.taxSectionTitle')}</Label>
+                    <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="w-full justify-between">
-                                {appliedTaxes.length > 0
-                                ? t('POSPage.taxSectionTitle') + `: ${appliedTaxes.map(t => t.name).join(', ')}`
-                                : t('POSPage.selectTaxPlaceholder')
-                                }
+                                {appliedTaxes.length > 0 ? t('POSPage.taxSectionTitle') + `: ${appliedTaxes.map(t => t.name).join(', ')}` : t('POSPage.selectTaxPlaceholder')}
                                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                         </DropdownMenuTrigger>
@@ -429,11 +419,7 @@ export default function POSPage() {
                             <DropdownMenuLabel>{t('POSPage.selectTaxPlaceholder')}</DropdownMenuLabel>
                             <DropdownMenuSeparator />
                             {taxes.length > 0 ? taxes.map(tax => (
-                                <DropdownMenuCheckboxItem
-                                key={tax.id}
-                                checked={appliedTaxes.some(at => at.taxId === tax.id)}
-                                onCheckedChange={(checked) => handleToggleTax(tax, !!checked)}
-                                >
+                                <DropdownMenuCheckboxItem key={tax.id} checked={appliedTaxes.some(at => at.taxId === tax.id)} onCheckedChange={(checked) => handleToggleTax(tax, !!checked)}>
                                 {tax.name} ({(tax.rate * 100).toFixed(2)}%)
                                 </DropdownMenuCheckboxItem>
                             )) : (
@@ -441,59 +427,29 @@ export default function POSPage() {
                             )}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                </CardContent>
-            </Card>
+                </div>
 
-             <Card className="flex-grow flex flex-col shadow-xl">
-                <CardHeader className="p-3">
-                    <CardTitle className="font-headline text-lg">{t('POSPage.summaryAndPaymentTitle')}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow p-3 space-y-2 text-sm">
-                    {cart.length > 0 && (
-                        <>
-                        <div className="flex justify-between"><span>{t('POSPage.subtotal')}</span><span>{paymentCurrency?.symbol || '$'}{subtotal.toFixed(2)}</span></div>
-                        
-                        {overallDiscountAmountApplied > 0 && (
-                            <div className="flex justify-between text-destructive">
-                                <span>{t('POSPage.overallSaleDiscountSectionTitle')}</span>
-                                <span>-{paymentCurrency?.symbol || '$'}{overallDiscountAmountApplied.toFixed(2)}</span>
-                            </div>
-                        )}
-                        
-                        {promotionalDiscountAmount > 0 && (
-                            <div className="flex justify-between text-destructive">
-                                <span>{t('POSPage.promotionalDiscountLabel')}</span>
-                                <span>-{paymentCurrency?.symbol || '$'}{promotionalDiscountAmount.toFixed(2)}</span>
-                            </div>
-                        )}
-                        {appliedTaxes.length > 0 && (
-                             <>
-                                <div className="flex justify-between">
-                                    <span>{t('SalesTable.headerTax')}</span>
-                                    <span>{paymentCurrency?.symbol || '$'}{taxAmount.toFixed(2)}</span>
-                                </div>
-                            </>
-                        )}
-                        <Separator />
-                        <div className="flex justify-between font-bold text-lg text-primary">
-                            <span>{t('POSPage.total')}</span>
-                            <span>{paymentCurrency?.symbol || '$'}{totalAmount.toFixed(2)}</span>
-                        </div>
-                        </>
-                    )}
-                </CardContent>
-                {cart.length > 0 && (
-                    <CardFooter className="p-3 flex flex-col gap-2">
-                        <Button size="lg" className="w-full bg-primary hover:bg-primary/90">
-                            <CreditCard className="mr-2" /> {t('POSPage.processPaymentButton')}
-                        </Button>
-                        <Button variant="outline" size="lg" className="w-full" onClick={clearCart}>
-                            <XCircle className="mr-2" /> {t('POSPage.clearCartButton')}
-                        </Button>
-                    </CardFooter>
-                )}
-            </Card>
-        </div>
+                {/* Summary Section */}
+                <div className="pt-2 space-y-2 text-sm border-t">
+                    <div className="flex justify-between"><span>{t('POSPage.subtotal')}</span><span>{paymentCurrency?.symbol || '$'}{subtotal.toFixed(2)}</span></div>
+                    {overallDiscountAmountApplied > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.overallSaleDiscountSectionTitle')}</span><span>-{paymentCurrency?.symbol || '$'}{overallDiscountAmountApplied.toFixed(2)}</span></div>}
+                    {promotionalDiscountAmount > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.promotionalDiscountLabel')}</span><span>-{paymentCurrency?.symbol || '$'}{promotionalDiscountAmount.toFixed(2)}</span></div>}
+                    {appliedTaxes.length > 0 && <div className="flex justify-between"><span>{t('SalesTable.headerTax')}</span><span>{paymentCurrency?.symbol || '$'}{taxAmount.toFixed(2)}</span></div>}
+                    <Separator />
+                    <div className="flex justify-between font-bold text-lg text-primary"><span>{t('POSPage.total')}</span><span>{paymentCurrency?.symbol || '$'}{totalAmount.toFixed(2)}</span></div>
+                </div>
+            </CardContent>
+            {cart.length > 0 && (
+                <div className="p-3 flex flex-col gap-2 border-t mt-auto">
+                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90">
+                        <CreditCard className="mr-2" /> {t('POSPage.processPaymentButton')}
+                    </Button>
+                    <Button variant="outline" size="lg" className="w-full" onClick={clearCart}>
+                        <XCircle className="mr-2" /> {t('POSPage.clearCartButton')}
+                    </Button>
+                </div>
+            )}
+        </Card>
     </div>
   );
 
