@@ -1,4 +1,5 @@
 
+
 // src/app/pos/page.tsx
 'use client';
 
@@ -24,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDebounce } from 'use-debounce';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 import CartItemCard from '@/components/pos/CartItemCard';
 import { Combobox } from '@/components/ui/combobox';
@@ -36,11 +38,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 
 
 const generateCartId = () => `cart-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -77,6 +81,12 @@ export default function POSPage() {
   const [currentView, setCurrentView] = useState(initialView);
 
   const [appliedTaxes, setAppliedTaxes] = useState<AppliedTaxEntry[]>([]);
+  
+  // Overall cart discount state
+  const [overallDiscountType, setOverallDiscountType] = useState<'percentage' | 'fixedAmount' | undefined>(undefined);
+  const [overallDiscountValue, setOverallDiscountValue] = useState<number | string>('');
+  const [isDiscountPopoverOpen, setIsDiscountPopoverOpen] = useState(false);
+
 
   useEffect(() => {
     if(currencies.length > 0) {
@@ -152,6 +162,8 @@ export default function POSPage() {
   const clearCart = () => {
     setCart([]);
     setAppliedTaxes([]);
+    setOverallDiscountType(undefined);
+    setOverallDiscountValue('');
     setSelectedClient(null);
     setActiveCartId(null);
     toast({ title: t('Toasts.cartClearedTitle'), description: t('Toasts.cartClearedDescription') });
@@ -182,20 +194,31 @@ export default function POSPage() {
     });
   };
 
-  const { subtotal, totalAmount, appliedPromotions, promotionalDiscountAmount, taxAmount } = useMemo(() => {
+  const { subtotal, totalAmount, appliedPromotions, promotionalDiscountAmount, taxAmount, overallDiscountAmountApplied } = useMemo(() => {
     const activePromotions = promotions.filter(p => p.isActive && new Date(p.startDate) <= new Date() && (!p.endDate || new Date(p.endDate) >= new Date()));
     let currentSubtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+    // 1. Calculate overall sale discount
+    let currentOverallDiscountAmount = 0;
+    if (overallDiscountType && typeof overallDiscountValue === 'number' && overallDiscountValue > 0) {
+      if (overallDiscountType === 'percentage') {
+        currentOverallDiscountAmount = currentSubtotal * (overallDiscountValue / 100);
+      } else { // fixedAmount
+        currentOverallDiscountAmount = Math.min(currentSubtotal, overallDiscountValue);
+      }
+    }
+    const subtotalAfterOverallDiscount = currentSubtotal - currentOverallDiscountAmount;
     
+    // 2. Calculate promotional discount (on the subtotal *after* manual discount)
     let promotionalDiscount = 0;
     const appliedPromos: AppliedPromotionEntry[] = [];
-
     activePromotions.forEach(promo => {
       const minAmountCondition = promo.conditions.find(c => c.type === 'minSellAmount');
-      if (minAmountCondition && typeof minAmountCondition.value === 'number' && currentSubtotal < minAmountCondition.value) {
+      if (minAmountCondition && typeof minAmountCondition.value === 'number' && subtotalAfterOverallDiscount < minAmountCondition.value) {
         return; 
       }
       
-      let discountableAmount = currentSubtotal;
+      let discountableAmount = subtotalAfterOverallDiscount;
       
       if (promo.discountType === 'percentage') {
         const discountValue = (discountableAmount * promo.discountValue) / 100;
@@ -208,7 +231,7 @@ export default function POSPage() {
       }
     });
 
-    const subtotalAfterPromo = currentSubtotal - promotionalDiscount;
+    const subtotalAfterPromo = subtotalAfterOverallDiscount - promotionalDiscount;
     let totalTaxAmount = 0;
     
     const calculatedTaxes = appliedTaxes.map(appliedTax => {
@@ -224,13 +247,14 @@ export default function POSPage() {
     const total = subtotalAfterPromo + totalTaxAmount; 
 
     return { 
-      subtotal: currentSubtotal, 
+      subtotal: currentSubtotal,
+      overallDiscountAmountApplied: currentOverallDiscountAmount,
       totalAmount: total, 
       appliedPromotions: appliedPromos,
       promotionalDiscountAmount: promotionalDiscount,
       taxAmount: totalTaxAmount,
     };
-  }, [cart, selectedClient, promotions, appliedTaxes, taxes]);
+  }, [cart, selectedClient, promotions, appliedTaxes, taxes, overallDiscountType, overallDiscountValue]);
 
   const clientOptions = useMemo(() => {
     return clients.map(c => ({ value: c.id, label: `${c.name} (${c.email})`}));
@@ -341,6 +365,50 @@ export default function POSPage() {
                     />
                 </CardContent>
             </Card>
+            
+             <Card className="shadow-sm">
+                <CardHeader className="p-3">
+                    <CardTitle className="font-headline text-lg flex items-center gap-2">
+                        <TicketPercent /> {t('POSPage.overallSaleDiscountSectionTitle')}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-3">
+                    <Popover open={isDiscountPopoverOpen} onOpenChange={setIsDiscountPopoverOpen}>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className="w-full justify-between">
+                                {overallDiscountAmountApplied > 0
+                                    ? `${t('POSPage.totalDiscountLabel')}: ${paymentCurrency?.symbol || '$'}${overallDiscountAmountApplied.toFixed(2)}`
+                                    : t('POSPage.itemDiscountButtonAriaLabel')}
+                                <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-60 p-3 space-y-3 z-30" align="end">
+                            <Label className="text-xs font-medium">{t('POSPage.overallSaleDiscountSectionTitle')}</Label>
+                            <Select value={overallDiscountType} onValueChange={(val) => setOverallDiscountType(val as any)}>
+                                <SelectTrigger className="h-8 text-xs">
+                                    <SelectValue placeholder={t('POSPage.discountTypePlaceholder')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="percentage" className="text-xs">{t('POSPage.discountTypePercentage')}</SelectItem>
+                                    <SelectItem value="fixedAmount" className="text-xs">{t('POSPage.discountTypeFixedAmount')}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Input
+                                type="number"
+                                placeholder={t('POSPage.discountValuePlaceholder')}
+                                value={overallDiscountValue}
+                                onChange={(e) => setOverallDiscountValue(e.target.value)}
+                                className="h-8 text-xs"
+                                step="0.01"
+                            />
+                            <div className="flex justify-end gap-2">
+                                <Button variant="outline" size="sm" onClick={() => { setOverallDiscountType(undefined); setOverallDiscountValue(''); setIsDiscountPopoverOpen(false); }} className="text-xs px-2 py-1 h-auto">{t('POSPage.clearDiscountButton')}</Button>
+                                <Button size="sm" onClick={() => { setOverallDiscountValue(Number(overallDiscountValue)); setIsDiscountPopoverOpen(false); }} className="text-xs px-2 py-1 h-auto bg-primary hover:bg-primary/90">{t('POSPage.applyDiscountButton')}</Button>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+                </CardContent>
+            </Card>
 
             <Card className="shadow-sm">
                  <CardHeader className="p-3">
@@ -384,6 +452,14 @@ export default function POSPage() {
                     {cart.length > 0 && (
                         <>
                         <div className="flex justify-between"><span>{t('POSPage.subtotal')}</span><span>{paymentCurrency?.symbol || '$'}{subtotal.toFixed(2)}</span></div>
+                        
+                        {overallDiscountAmountApplied > 0 && (
+                            <div className="flex justify-between text-destructive">
+                                <span>{t('POSPage.overallSaleDiscountSectionTitle')}</span>
+                                <span>-{paymentCurrency?.symbol || '$'}{overallDiscountAmountApplied.toFixed(2)}</span>
+                            </div>
+                        )}
+                        
                         {promotionalDiscountAmount > 0 && (
                             <div className="flex justify-between text-destructive">
                                 <span>{t('POSPage.promotionalDiscountLabel')}</span>
