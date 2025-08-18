@@ -81,17 +81,17 @@ const pwaConfig = {
         handler: 'NetworkOnly'
       },
        {
-        urlPattern: ({ url }) => {
-          const isSameOrigin = self.origin === url.origin;
-          if (!isSameOrigin) return false;
-          const pathname = url.pathname;
-          // Exclude auth and report pages from caching.
-          if (pathname.startsWith('/api/') || pathname.startsWith('/login') || pathname.startsWith('/setup-account') || pathname.startsWith('/reset-password') || pathname.startsWith('/reports')) return false;
-          return true;
+        urlPattern: ({ url, request, sameOrigin }) => {
+          if (!sameOrigin || request.method !== 'GET') {
+            return false;
+          }
+          const isApiRequest = url.pathname.startsWith('/api/');
+          return !isApiRequest && request.mode === 'navigate';
         },
         handler: 'NetworkFirst',
         options: {
           cacheName: 'pages-cache',
+          networkTimeoutSeconds: 3, 
           expiration: {
               maxEntries: 64,
               maxAgeSeconds: 24 * 60 * 60 // 24 hours
