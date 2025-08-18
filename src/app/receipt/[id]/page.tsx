@@ -1,3 +1,4 @@
+
 // This file was moved from src/app/[locale]/receipt/[id]/page.tsx
 'use client';
 
@@ -35,7 +36,10 @@ export default function ReceiptPage() {
         if (sale) {
           setTransaction(sale);
         } else {
-           throw new Error(t('ReceiptView.notFoundMessageApi'));
+           // If not in Dexie, it's considered not found for the client.
+           // The sync service will handle pushing it to the server.
+           // No API call should be made here.
+           throw new Error(t('ReceiptView.notFoundMessage'));
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : t('ReceiptView.errorFetchingTransaction');
