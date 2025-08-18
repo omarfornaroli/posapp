@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -87,6 +88,14 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemoveItem, onU
   // Also convert the fixed discount amount for display
   const displayFixedDiscountValue = (item.itemDiscountType === 'fixedAmount' ? (item.itemDiscountValue || 0) : 0) * exchangeRate;
 
+  // The 'quantity' property on the item from the Product model is the total stock.
+  // The 'quantity' property on the CartItem itself is the quantity in the cart.
+  // The types overlap, so we must be careful.
+  const totalStock = item.quantity; // This is the product's total stock
+  const quantityInCart = item.quantity; // This is the quantity in the cart
+  const remainingStock = totalStock - quantityInCart;
+
+
   return (
     <TooltipProvider delayDuration={100}>
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3 border-b bg-card rounded-lg mb-2 shadow-sm relative">
@@ -120,6 +129,9 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemoveItem, onU
                 <p className="text-xs text-muted-foreground">{formatCurrency(displayOriginalPrice)}</p>
               )}
             </div>
+             { !item.isService && (
+                <p className="text-xs text-muted-foreground">{t('Dashboard.stockRemaining')}: {item.quantity - item.quantity}</p>
+            )}
             {item.itemDiscountValue && item.itemDiscountValue > 0 && (
               <p className="text-xs text-primary font-medium">
                 {item.itemDiscountType === 'percentage' ? `(-${item.itemDiscountValue}%)` : `(-${formatCurrency(displayFixedDiscountValue)})`}

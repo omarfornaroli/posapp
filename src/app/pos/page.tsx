@@ -255,8 +255,12 @@ export default function POSPage() {
   const handleScanSuccess = useCallback((barcode: string) => {
     const product = products.find(p => p.barcode === barcode);
     if(product) {
-      addToCart(product);
-      setIsScannerOpen(false);
+      if (product.quantity > 0 || product.isService) {
+        addToCart(product);
+        setIsScannerOpen(false);
+      } else {
+        toast({ variant: 'destructive', title: "Out of Stock", description: `Product "${product.name}" is out of stock.` });
+      }
     } else {
       toast({ variant: 'destructive', title: t('POSPage.productNotFoundByBarcodeToastTitle'), description: t('POSPage.productNotFoundByBarcodeToastDescription', { barcode }) });
     }
@@ -511,17 +515,23 @@ export default function POSPage() {
                             <div className="absolute top-2 w-full bg-background border shadow-lg rounded-md z-20">
                                 <ScrollArea className="max-h-60">
                                     <div className="p-2 space-y-1">
-                                        {filteredProducts.map(product => (
-                                            <Button key={product.id} variant="ghost" className="w-full justify-start h-auto" onClick={() => addToCart(product)}>
-                                                <div className="flex items-center gap-2">
+                                        {filteredProducts.map(product => {
+                                          const outOfStock = !product.isService && product.quantity <= 0;
+                                          return (
+                                            <Button key={product.id} variant="ghost" className={cn("w-full justify-start h-auto", outOfStock && "opacity-50 cursor-not-allowed")} onClick={() => !outOfStock && addToCart(product)} disabled={outOfStock}>
+                                                <div className="flex items-center gap-2 w-full">
                                                     <img src={product.imageUrl || 'https://placehold.co/40x40.png'} alt={product.name} className="w-8 h-8 rounded-sm object-cover" data-ai-hint="product image"/>
-                                                    <div>
+                                                    <div className="flex-grow">
                                                         <p className="text-sm font-medium text-left">{product.name}</p>
                                                         <p className="text-xs text-muted-foreground text-left">{paymentCurrency?.symbol || '$'}{product.price.toFixed(2)}</p>
                                                     </div>
+                                                     <div className="text-xs text-muted-foreground ml-auto">
+                                                        {product.isService ? 'N/A' : `${t('Dashboard.stockRemaining')}: ${product.quantity}`}
+                                                    </div>
                                                 </div>
                                             </Button>
-                                        ))}
+                                          )
+                                        })}
                                     </div>
                                 </ScrollArea>
                             </div>
