@@ -83,11 +83,11 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
       { href: '/payment-methods', labelKey: 'Header.paymentMethodsLink', icon: CreditCardIcon, permission: 'manage_payment_methods_page', category: 'configuration', offlineAccess: false },
       { href: '/users', labelKey: 'Header.usersManagerLink', icon: UserCog, permission: 'manage_users_page', category: 'administration', offlineAccess: false },
       { href: '/roles', labelKey: 'Header.rolesPermissionsLink', icon: Lock, permission: 'view_roles_permissions_page', category: 'administration', offlineAccess: false},
-      { href: '/notifications', labelKey: 'NotificationsManagerPage.sidebarLink', icon: Bell, permission: 'manage_notifications_page', category: 'administration', offlineAccess: true },
-      { href: '/themes', labelKey: 'Header.themesManagerLink', icon: Palette, permission: 'manage_themes_page', category: 'system', offlineAccess: true },
+      { href: '/notifications', labelKey: 'NotificationsManagerPage.sidebarLink', icon: Bell, permission: 'manage_notifications_page', category: 'administration', offlineAccess: false },
+      { href: '/themes', labelKey: 'Header.themesManagerLink', icon: Palette, permission: 'manage_themes_page', category: 'system', offlineAccess: false },
       { href: '/translations', labelKey: 'Header.translationsManagerLink', icon: Languages, permission: 'manage_translations_page', category: 'system', offlineAccess: false },
       { href: '/languages', labelKey: 'Header.languagesManagerLink', icon: Languages, permission: 'manage_languages_page', category: 'system', offlineAccess: false }, 
-      { href: '/settings', labelKey: 'Header.settingsLink', icon: Cog, permission: 'manage_settings_page', category: 'system', offlineAccess: true }, 
+      { href: '/settings', labelKey: 'Header.settingsLink', icon: Cog, permission: 'manage_settings_page', category: 'system', offlineAccess: false }, 
     ];
 
     const posItems: MenuItemConfig[] = [];

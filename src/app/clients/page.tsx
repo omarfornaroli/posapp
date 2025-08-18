@@ -140,7 +140,7 @@ export default function ClientsPage() {
       }
     };
     if (!isLoadingTranslations) {
-      fetchGridSettings();
+      // No need to fetch settings in offline mode, will use defaults.
     }
   }, [isLoadingTranslations]);
 
