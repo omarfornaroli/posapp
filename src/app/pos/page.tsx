@@ -359,7 +359,13 @@ export default function POSPage() {
       toast({ variant: 'destructive', description: t('POSPage.invalidPaymentAmount') });
       return;
     }
-     if (amount > amountRemaining + 0.001) { // Add tolerance for floating point issues
+    
+    // Round both values to the currency's precision before comparing
+    const decimals = paymentCurrency?.decimalPlaces ?? 2;
+    const roundedAmount = parseFloat(amount.toFixed(decimals));
+    const roundedAmountRemaining = parseFloat(amountRemaining.toFixed(decimals));
+
+    if (roundedAmount > roundedAmountRemaining) {
       toast({ variant: 'destructive', description: t('POSPage.paymentExceedsTotal', { amount: formatCurrency(amountRemaining) }) });
       return;
     }
@@ -613,9 +619,9 @@ export default function POSPage() {
                 {/* Summary Section */}
                 <div className="pt-2 space-y-2 text-sm border-t">
                     <div className="flex justify-between"><span>{t('POSPage.subtotal')}</span><span>{paymentCurrency?.symbol || '$'}{subtotal.toFixed(2)}</span></div>
-                    {overallDiscountAmountApplied > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.overallSaleDiscountSectionTitle')}</span><span>-{paymentCurrency?.symbol || '$'}{overallDiscountAmountApplied.toFixed(2)}</span></div>}
-                    {promotionalDiscountAmount > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.promotionalDiscountLabel')}</span><span>-{paymentCurrency?.symbol || '$'}{promotionalDiscountAmount.toFixed(2)}</span></div>}
-                    {appliedTaxes.length > 0 && <div className="flex justify-between"><span>{t('SalesTable.headerTax')}</span><span>{paymentCurrency?.symbol || '$'}{taxAmount.toFixed(2)}</span></div>}
+                    {overallDiscountAmountApplied > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.overallSaleDiscountSectionTitle')}</span><span>-{paymentCurrency?.symbol || '$'}${overallDiscountAmountApplied.toFixed(2)}</span></div>}
+                    {promotionalDiscountAmount > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.promotionalDiscountLabel')}</span><span>-{paymentCurrency?.symbol || '$'}${promotionalDiscountAmount.toFixed(2)}</span></div>}
+                    {appliedTaxes.length > 0 && <div className="flex justify-between"><span>{t('SalesTable.headerTax')}</span><span>{paymentCurrency?.symbol || '$'}${taxAmount.toFixed(2)}</span></div>}
                     <Separator />
                     <div className="flex justify-between font-bold text-lg text-primary"><span>{t('POSPage.total')}</span><span>{paymentCurrency?.symbol || '$'}{totalAmount.toFixed(2)}</span></div>
                 </div>
@@ -647,7 +653,7 @@ export default function POSPage() {
                     )}
                      <Separator />
                      <div className="flex justify-between text-sm"><span>{t('POSPage.totalPaidLabel')}</span><span>{paymentCurrency?.symbol || '$'}{totalPaid.toFixed(2)}</span></div>
-                     <div className={cn("flex justify-between font-bold", amountRemaining > 0 ? "text-destructive" : "text-green-600")}><span>{t('POSPage.amountRemainingLabel')}</span><span>{paymentCurrency?.symbol || '$'}{amountRemaining.toFixed(2)}</span></div>
+                     <div className={cn("flex justify-between font-bold", amountRemaining > 0.001 ? "text-destructive" : "text-green-600")}><span>{t('POSPage.amountRemainingLabel')}</span><span>{paymentCurrency?.symbol || '$'}{amountRemaining.toFixed(2)}</span></div>
                 </div>
             </CardContent>
             {cart.length > 0 && (
@@ -739,3 +745,5 @@ export default function POSPage() {
     </div>
   );
 }
+
+    
