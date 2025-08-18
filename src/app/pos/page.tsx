@@ -285,6 +285,11 @@ export default function POSPage() {
     }
   }, [amountRemaining, paymentCurrency]);
 
+  const formatCurrency = useCallback((amount: number) => {
+    if (!paymentCurrency) return `${amount.toFixed(2)}`;
+    return `${paymentCurrency.symbol}${amount.toFixed(paymentCurrency.decimalPlaces)}`;
+  }, [paymentCurrency]);
+
   const handleAddPayment = () => {
     if (!selectedPaymentMethod || !paymentAmount) {
       toast({ variant: 'destructive', description: t('POSPage.invalidPaymentAmount') });
