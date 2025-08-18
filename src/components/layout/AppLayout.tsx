@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
-
+import { db } from '@/lib/dexie-db';
 
 interface UserWithPermissions extends User {
   permissions: Permission[];
@@ -175,29 +175,62 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     const [userSessionKey, setUserSessionKey] = useState('initial'); // Added for re-mounting
 
     const fetchUserSession = useCallback(async (email: string) => {
-        try {
-            const response = await fetch(`/api/auth/session`, {
-                headers: { 'X-User-Email': email }
-            });
-            if (!response.ok) throw new Error('Failed to fetch user session');
-            const result = await response.json();
-            if (result.success && result.data) {
-                setUser(result.data as UserWithPermissions);
-                setUserSessionKey(email); // Change key on successful user load
-            } else {
-                throw new Error(result.error || 'User session data not found');
+        
+        const loadFromDexie = async () => {
+            const userFromDb = await db.users.where('email').equalsIgnoreCase(email).first();
+            if (userFromDb) {
+                const permissions = await db.rolePermissions.where('role').equals(userFromDb.role).first();
+                setUser({ ...userFromDb, permissions: permissions?.permissions || [] });
+                setUserSessionKey(email);
+                return true;
             }
-        } catch (error) {
-            console.error('Error fetching user session:', error);
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('loggedInUserEmail');
-            setUser(null);
-            setUserSessionKey('logged-out'); // Change key on logout/error
+            return false;
+        };
+        
+        const localUserExists = await loadFromDexie();
+
+        if (navigator.onLine) {
+            try {
+                const response = await fetch(`/api/auth/session`, {
+                    headers: { 'X-User-Email': email }
+                });
+                if (!response.ok) throw new Error('Failed to fetch user session');
+                
+                const result = await response.json();
+                if (result.success && result.data) {
+                    setUser(result.data as UserWithPermissions);
+                    await db.users.put(result.data); // Update local user data
+                    const rolePerms = await fetch(`/api/role-permissions`);
+                    const rolePermsResult = await rolePerms.json();
+                    if(rolePermsResult.success) {
+                        await db.rolePermissions.bulkPut(rolePermsResult.data);
+                    }
+                    if (userSessionKey !== email) setUserSessionKey(email); 
+                } else {
+                    throw new Error(result.error || 'User session data not found');
+                }
+            } catch (error) {
+                console.error('Error fetching user session (online):', error);
+                if (!localUserExists) {
+                    // Only log out if there's no local data to fall back on
+                    localStorage.removeItem('isLoggedIn');
+                    localStorage.removeItem('loggedInUserEmail');
+                    setUser(null);
+                    setUserSessionKey('logged-out'); 
+                    if (!window.location.pathname.startsWith('/login')) {
+                        window.location.assign(`/login`);
+                    }
+                }
+            }
+        } else if (!localUserExists) {
+            // Offline and no local data = can't log in
+            console.error("Offline and no local user data found. Redirecting to login.");
             if (!window.location.pathname.startsWith('/login')) {
                 window.location.assign(`/login`);
             }
         }
-    }, []);
+
+    }, [userSessionKey]);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -205,7 +238,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             if (userEmail) {
                 fetchUserSession(userEmail);
             } else {
-                 setUserSessionKey('no-user'); // Set a key for logged-out state
+                 setUserSessionKey('no-user'); 
             }
         }
         

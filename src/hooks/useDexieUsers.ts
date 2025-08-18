@@ -3,7 +3,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import { syncService } from '@/services/sync.service';
-import type { User } from '@/types';
+import type { User, Permission } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const generateId = () => `temp-${crypto.randomUUID()}`;
@@ -12,28 +12,50 @@ let isPopulating = false;
 export function useDexieUsers() {
   const [isLoading, setIsLoading] = useState(true);
 
-  const users = useLiveQuery(() => db.users.toArray(), []);
+  // Live query to get users from IndexedDB, now including permissions
+  const users = useLiveQuery(async () => {
+    const usersFromDb = await db.users.toArray();
+    const rolePermissions = await db.rolePermissions.toArray();
+    const permissionsMap = new Map(rolePermissions.map(rp => [rp.role, rp.permissions]));
+    
+    return usersFromDb.map(user => ({
+      ...user,
+      permissions: permissionsMap.get(user.role) || [],
+    }));
+  }, []);
 
+  // Function to pull initial data from API to Dexie
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
 
     const count = await db.users.count();
     if (count > 0) {
       setIsLoading(false);
-      return;
+      // Even if data exists, we might want to refresh it from the server if online
+    } else {
+      setIsLoading(true);
     }
-
+    
     isPopulating = true;
-    setIsLoading(true);
+    
     try {
       const response = await fetch('/api/users');
       if (!response.ok) throw new Error('Failed to fetch initial users');
       const result = await response.json();
       if (result.success) {
-        await db.users.bulkAdd(result.data);
+        await db.users.bulkPut(result.data); // Use bulkPut to add/update
       } else {
         throw new Error(result.error || 'API error fetching initial users');
       }
+
+      // Also fetch role permissions
+      const permsResponse = await fetch('/api/role-permissions');
+       if (!permsResponse.ok) throw new Error('Failed to fetch initial role permissions');
+      const permsResult = await permsResponse.json();
+      if(permsResult.success) {
+        await db.rolePermissions.bulkPut(permsResult.data);
+      }
+
     } catch (error) {
       console.warn("[useDexieUsers] Failed to populate initial data (likely offline):", error);
     } finally {
@@ -41,7 +63,8 @@ export function useDexieUsers() {
       isPopulating = false;
     }
   }, []);
-
+  
+  // Effect to run initial population check
   useEffect(() => {
     populateInitialData();
   }, [populateInitialData]);
@@ -73,8 +96,10 @@ export function useDexieUsers() {
   };
 
   const updateUser = async (updatedUser: User) => {
-    await db.users.put(updatedUser);
-    await syncService.addToQueue({ entity: 'user', operation: 'update', data: updatedUser });
+    // The permissions property is transient and should not be saved to the users table
+    const { permissions, ...userToSave } = updatedUser;
+    await db.users.put(userToSave);
+    await syncService.addToQueue({ entity: 'user', operation: 'update', data: userToSave });
   };
 
   const deleteUser = async (id: string) => {
