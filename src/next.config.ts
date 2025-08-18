@@ -77,21 +77,22 @@ const pwaConfig = {
         }
       },
       {
-        urlPattern: /(\/login|\/setup-account|\/reset-password|\/reports)/,
+        urlPattern: /(\/login|\/setup-account|\/reset-password)/,
         handler: 'NetworkOnly'
       },
        {
-        urlPattern: ({ url, request, sameOrigin }) => {
-          if (!sameOrigin || request.method !== 'GET') {
+        urlPattern: ({ request, url }) => {
+          if (request.mode !== 'navigate') {
             return false;
           }
-          const isApiRequest = url.pathname.startsWith('/api/');
-          return !isApiRequest && request.mode === 'navigate';
+          if (url.pathname.startsWith('/api')) {
+            return false;
+          }
+          return true;
         },
-        handler: 'NetworkFirst',
+        handler: 'StaleWhileRevalidate',
         options: {
           cacheName: 'pages-cache',
-          networkTimeoutSeconds: 3, 
           expiration: {
               maxEntries: 64,
               maxAgeSeconds: 24 * 60 * 60 // 24 hours
