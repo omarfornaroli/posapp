@@ -7,9 +7,10 @@
     "dev": "next dev --turbopack -p 9002",
     "genkit:dev": "genkit start -- tsx src/ai/dev.ts",
     "genkit:watch": "genkit start -- tsx --watch src/ai/dev.ts",
-    "build": "next build && node scripts/copy-pwa-assets.mjs",
+    "copy":"node scripts/copy-pwa-assets.mjs",
+    "build": "next build",
     "start": "next start",
-    "prod": "next build && next start",
+    "prod": "next build && npm run copy && next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "seed": "tsx scripts/seed.ts"
