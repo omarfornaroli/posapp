@@ -23,6 +23,7 @@ const entityToEndpointMap: Record<string, string> = {
   posSetting: 'pos-settings',
   receiptSetting: 'receipt-settings',
   smtpSetting: 'settings/smtp',
+  sale: 'sales', // Added sale endpoint
 };
 
 type SyncStatus = 'idle' | 'syncing' | 'offline';
@@ -97,29 +98,68 @@ class SyncService {
       for (const entity in operationsByEntity) {
         const operations = operationsByEntity[entity];
         const endpointPath = entityToEndpointMap[entity];
+        
         if (operations.length > 0 && endpointPath) {
-            const endpoint = `/api/${endpointPath}/sync`;
-            console.log(`[SyncService] Syncing ${operations.length} operations for entity: ${entity} to endpoint: ${endpoint}`);
-
-            const response = await fetch(endpoint, {
+          if (endpointPath.endsWith('/sync')) { // Use batch endpoint if available
+            console.log(`[SyncService] Syncing ${operations.length} operations for entity: ${entity} to batch endpoint: /api/${endpointPath}`);
+            const response = await fetch(`/api/${endpointPath}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(operations.map(({ id, ...op }) => op)),
             });
 
             if (!response.ok) {
-                console.error(`[SyncService] Sync for ${entity} failed with status ${response.status}`);
+                console.error(`[SyncService] Batch sync for ${entity} failed with status ${response.status}`);
                 continue; 
             }
-
             const result = await response.json();
-            if (result.success) {
+             if (result.success) {
                 const processedIds = operations.map(item => item.id).filter(id => id !== undefined) as number[];
                 await db.syncQueue.bulkDelete(processedIds);
-                console.log(`[SyncService] Successfully synced and cleared ${processedIds.length} ${entity} operations.`);
+                console.log(`[SyncService] Successfully synced and cleared ${processedIds.length} ${entity} operations via batch.`);
             } else {
-                console.error(`[SyncService] Backend reported error on ${entity} sync:`, result.error);
+                console.error(`[SyncService] Backend reported error on ${entity} batch sync:`, result.error);
             }
+          } else { // Process one by one for simple endpoints
+            console.log(`[SyncService] Syncing ${operations.length} operations for entity: ${entity} one-by-one to endpoint: /api/${endpointPath}`);
+            for (const item of operations) {
+              try {
+                let endpoint = `/api/${endpointPath}`;
+                let method = 'POST';
+                let body = JSON.stringify(item.data);
+                
+                if (item.operation === 'update') {
+                  method = 'PUT';
+                  endpoint = `${endpoint}/${item.data.id}`;
+                } else if (item.operation === 'delete') {
+                  method = 'DELETE';
+                  endpoint = `${endpoint}/${item.data.id}`;
+                  body = '';
+                }
+
+                const response = await fetch(endpoint, {
+                  method,
+                  headers: { 'Content-Type': 'application/json' },
+                  body: body || undefined,
+                });
+                
+                if (response.ok) {
+                  const result = await response.json();
+                  if (result.success) {
+                    await db.syncQueue.delete(item.id!);
+                    console.log(`[SyncService] Successfully synced ${item.operation} for ${item.entity} ID ${item.data.id || '(new)'}`);
+                  } else {
+                     throw new Error(result.error || `Backend failed to ${item.operation} ${item.entity}`);
+                  }
+                } else {
+                   throw new Error(`API error: ${response.status}`);
+                }
+              } catch (singleError) {
+                  console.error(`[SyncService] Failed to process single operation for ${item.entity} ID ${item.data.id}. Error:`, singleError);
+                  // Don't stop the entire sync for one failed item in one-by-one mode
+              }
+            }
+          }
         }
       }
     } catch (error) {

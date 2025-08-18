@@ -40,8 +40,8 @@ export const AppliedPaymentSchema = new Schema<AppliedPayment>({
 }, { _id: false });
 
 
-export interface SaleTransactionDocument extends SaleTransactionType, Document {
-  id: string;
+export interface SaleTransactionDocument extends Omit<SaleTransactionType, 'id'>, Document {
+  id: string; // Mongoose's default _id will be used, but virtual 'id' will be string
 }
 
 const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
@@ -86,12 +86,14 @@ const SaleTransactionSchema: Schema<SaleTransactionDocument> = new Schema({
   toJSON: { 
     virtuals: true,
     transform: (doc, ret) => {
+        ret.id = ret._id.toString(); // Ensure 'id' is present
         delete ret._id;
     }
    },
   toObject: { 
     virtuals: true,
     transform: (doc, ret) => {
+        ret.id = ret._id.toString(); // Ensure 'id' is present
         delete ret._id;
     }
    },

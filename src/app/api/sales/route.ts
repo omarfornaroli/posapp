@@ -41,8 +41,9 @@ export async function POST(request: NextRequest) {
   session.startTransaction();
   
   try {
-    const body = await request.json() as Omit<SaleTransactionType, 'id'> & { dispatchNow?: boolean };
-    const { dispatchNow, ...saleData } = body;
+    // The body now comes from the sync service, which might have a temporary client-generated ID
+    // We remove it so Mongo can generate its own _id
+    const { id: tempId, dispatchNow, ...saleData } = await request.json() as Omit<SaleTransactionType, 'id'> & { id?: string, dispatchNow?: boolean };
 
     const transactionData = {
       ...saleData,
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
     await session.commitTransaction();
 
     const actorDetails = await getActorDetails(request);
-    const formattedTotal = `${body.currencySymbol || '$'}${newSale.totalAmount.toFixed(body.currencyDecimalPlaces || 2)}`;
+    const formattedTotal = `${newSale.currencySymbol || '$'}${newSale.totalAmount.toFixed(newSale.currencyDecimalPlaces || 2)}`;
     await NotificationService.createNotification({
       messageKey: 'Notifications.saleCreated',
       messageParams: { saleId: newSale.id.substring(newSale.id.length - 6).toUpperCase(), totalAmount: formattedTotal },

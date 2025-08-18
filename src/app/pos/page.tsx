@@ -15,6 +15,8 @@ import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 import { useAuth } from '@/context/AuthContext';
+import { db } from '@/lib/dexie-db';
+import { syncService } from '@/services/sync.service';
 
 import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency, SaleTransaction, PendingCart, AppliedTaxEntry, AppliedPromotionEntry, AppliedPayment } from '@/types';
 
@@ -50,6 +52,7 @@ import { cn } from '@/lib/utils';
 
 
 const generateCartId = () => `cart-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+const generateSaleId = () => `sale-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 
 export default function POSPage() {
@@ -362,13 +365,12 @@ export default function POSPage() {
     setIsProcessingSale(true);
 
     const baseCurrency = currencies.find(c => c.isDefault) || paymentCurrency;
+    const tempId = generateSaleId();
 
-    const saleData: Omit<SaleTransaction, 'id'> = {
+    const saleData: SaleTransaction = {
+      id: tempId,
       date: new Date().toISOString(),
-      items: cart.map(item => ({
-        ...item,
-        productId: item.id, // Ensure productId is set from the cart item's id
-      })),
+      items: cart,
       subtotal,
       totalItemDiscountAmount,
       overallDiscountAmountApplied,
@@ -390,16 +392,8 @@ export default function POSPage() {
     };
 
     try {
-      const response = await fetch('/api/sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(saleData),
-      });
-
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || t('POSPage.errorProcessingPaymentAPI'));
-      }
+      await db.sales.add(saleData);
+      await syncService.addToQueue({ entity: 'sale', operation: 'create', data: saleData });
       
       toast({
         title: t('Toasts.paymentSuccessfulTitle'),
@@ -407,7 +401,7 @@ export default function POSPage() {
       });
       
       clearCart();
-      router.push(`/receipt/${result.data.id}`);
+      router.push(`/receipt/${tempId}`);
 
     } catch (error) {
       toast({

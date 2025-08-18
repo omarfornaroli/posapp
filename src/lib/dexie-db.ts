@@ -5,7 +5,7 @@ import type { Product, Client, SaleTransaction, Tax, Promotion, PaymentMethod, S
 
 export interface SyncQueueItem {
   id?: number;
-  entity: 'product' | 'client' | 'supplier' | 'promotion' | 'tax' | 'paymentMethod' | 'country' | 'currency' | 'appLanguage' | 'theme' | 'user' | 'notification' | 'posSetting' | 'receiptSetting' | 'smtpSetting';
+  entity: 'product' | 'client' | 'supplier' | 'promotion' | 'tax' | 'paymentMethod' | 'country' | 'currency' | 'appLanguage' | 'theme' | 'user' | 'notification' | 'posSetting' | 'receiptSetting' | 'smtpSetting' | 'sale';
   operation: 'create' | 'update' | 'delete';
   data: any;
   timestamp: number;
