@@ -44,45 +44,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json() as Omit<SaleTransactionType, 'id'> & { dispatchNow?: boolean };
     const { dispatchNow, ...saleData } = body;
 
-    const itemsForDb = saleData.items.map(item => ({
-        productId: item.id, 
-        name: item.name,
-        price: item.price,
-        quantity: item.quantity,
-        category: item.category,
-        imageUrl: item.imageUrl,
-        barcode: item.barcode,
-        itemDiscountType: item.itemDiscountType,
-        itemDiscountValue: item.itemDiscountValue,
-    }));
-
-     const appliedTaxesForDb = saleData.appliedTaxes.map(tax => ({
-        taxId: tax.taxId, 
-        name: tax.name,
-        rate: tax.rate,
-        amount: tax.amount,
-    }));
-
-    const appliedPromotionsForDb = saleData.appliedPromotions?.map(promo => ({
-      promotionId: promo.promotionId,
-      name: promo.name,
-      discountType: promo.discountType,
-      discountValue: promo.discountValue,
-      amountDeducted: promo.amountDeducted,
-    })) || [];
-
-    const appliedPaymentsForDb = saleData.appliedPayments.map(p => ({
-        methodId: p.methodId,
-        methodName: p.methodName,
-        amount: p.amount,
-    }));
-
     const transactionData = {
       ...saleData,
-      items: itemsForDb,
-      appliedTaxes: appliedTaxesForDb,
-      appliedPromotions: appliedPromotionsForDb,
-      appliedPayments: appliedPaymentsForDb,
       date: saleData.date ? new Date(saleData.date) : new Date(),
       dispatchStatus: dispatchNow ? 'Dispatched' : 'Pending',
     };
@@ -90,6 +53,7 @@ export async function POST(request: NextRequest) {
     // If dispatching now, update stock within the transaction
     if (dispatchNow) {
       for (const item of transactionData.items) {
+        if (item.isService) continue;
         const product = await Product.findById(item.productId).session(session);
         if (!product) throw new Error(`Product with ID ${item.productId} not found.`);
         if (product.quantity < item.quantity) {

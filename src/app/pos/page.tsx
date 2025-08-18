@@ -94,6 +94,11 @@ export default function POSPage() {
   const [appliedPayments, setAppliedPayments] = useState<AppliedPayment[]>([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<string>('');
+  
+  const formatCurrency = useCallback((amount: number) => {
+    if (!paymentCurrency) return `${amount.toFixed(2)}`;
+    return `${paymentCurrency.symbol || '$'}${(amount).toFixed(paymentCurrency.decimalPlaces || 2)}`;
+  }, [paymentCurrency]);
 
 
   useEffect(() => {
@@ -291,11 +296,6 @@ export default function POSPage() {
   const totalPaid = useMemo(() => appliedPayments.reduce((sum, p) => sum + p.amount, 0), [appliedPayments]);
   const amountRemaining = useMemo(() => totalAmount - totalPaid, [totalAmount, totalPaid]);
 
-  const formatCurrency = useCallback((amount: number) => {
-    if (!paymentCurrency) return `${amount.toFixed(2)}`;
-    return `${paymentCurrency.symbol || '$'}${(amount).toFixed(paymentCurrency.decimalPlaces || 2)}`;
-  }, [paymentCurrency]);
-
   useEffect(() => {
     if (amountRemaining > 0 && amountRemaining < 1000000) {
         setPaymentAmount(amountRemaining.toFixed(paymentCurrency?.decimalPlaces ?? 2));
@@ -365,7 +365,10 @@ export default function POSPage() {
 
     const saleData: Omit<SaleTransaction, 'id'> = {
       date: new Date().toISOString(),
-      items: cart,
+      items: cart.map(item => ({
+        ...item,
+        productId: item.id, // Ensure productId is set from the cart item's id
+      })),
       subtotal,
       totalItemDiscountAmount,
       overallDiscountAmountApplied,
