@@ -252,7 +252,7 @@ export default function POSPage() {
     toast({ title: t('Toasts.cartClearedTitle'), description: t('Toasts.cartClearedDescription') });
   };
   
-  const handleScanSuccess = (barcode: string) => {
+  const handleScanSuccess = useCallback((barcode: string) => {
     const product = products.find(p => p.barcode === barcode);
     if(product) {
       addToCart(product);
@@ -260,7 +260,7 @@ export default function POSPage() {
     } else {
       toast({ variant: 'destructive', title: t('POSPage.productNotFoundByBarcodeToastTitle'), description: t('POSPage.productNotFoundByBarcodeToastDescription', { barcode }) });
     }
-  };
+  }, [products, addToCart, toast, t]);
   
   const handleSelectCart = (cartToLoad: PendingCart) => {
     // ... (implementation for checkout view)
