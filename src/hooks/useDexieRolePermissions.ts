@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieRolePermissions.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -14,11 +15,14 @@ export function useDexieRolePermissions() {
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
 
-    // Permissions can change, so we always fetch on mount but only block on first load
+    // Check count first. If > 0, we can show cached data while we fetch updates.
     const count = await db.rolePermissions.count();
-    if (count === 0) {
-      setIsLoading(true);
+    if (count > 0) {
+      setIsLoading(false);
+    } else {
+      setIsLoading(true); // Only show loader if DB is completely empty.
     }
+
     isPopulating = true;
     
     try {
@@ -26,6 +30,7 @@ export function useDexieRolePermissions() {
       if (!response.ok) throw new Error('Failed to fetch initial role permissions');
       const result = await response.json();
       if (result.success) {
+        // bulkPut will add new items and update existing ones, perfect for this scenario.
         await db.rolePermissions.bulkPut(result.data);
       } else {
         throw new Error(result.error || 'API error fetching initial role permissions');
