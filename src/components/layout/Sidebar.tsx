@@ -42,6 +42,7 @@ interface MenuItemConfig {
   icon: React.ElementType;
   permission?: Permission;
   category?: 'main' | 'sales' | 'catalog' | 'configuration' | 'administration' | 'system';
+  offlineAccess?: boolean; // New property
 }
 
 export default function Sidebar({ toggleSidebar }: SidebarProps) {
@@ -67,35 +68,35 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
 
   const menuItemsConfig: MenuItemConfig[] = useMemo(() => {
     const baseConfig: MenuItemConfig[] = [
-      { href: '/', labelKey: 'Header.dashboardLink', icon: LayoutDashboard, permission: 'access_dashboard_page', category: 'main' },
+      { href: '/', labelKey: 'Header.dashboardLink', icon: LayoutDashboard, permission: 'access_dashboard_page', category: 'main', offlineAccess: true },
       // POS items will be inserted here
-      { href: '/sales-report', labelKey: 'Header.salesReportsLink', icon: FileText, permission: 'manage_sales_reports_page', category: 'sales' },
-      { href: '/reports', labelKey: 'Header.reportsLink', icon: BrainCircuit, permission: 'manage_reports_page', category: 'sales' },
-      { href: '/dispatches', labelKey: 'Header.dispatchesLink', icon: Truck, permission: 'manage_dispatches_page', category: 'sales' },
-      { href: '/products', labelKey: 'Header.productsLink', icon: Package, permission: 'manage_products_page', category: 'catalog' },
-      { href: '/clients', labelKey: 'Header.clientsLink', icon: Users, permission: 'manage_clients_page', category: 'catalog' },
-      { href: '/suppliers', labelKey: 'Header.suppliersLink', icon: Building2, permission: 'manage_suppliers_page', category: 'catalog' },
-      { href: '/promotions', labelKey: 'Header.promotionsLink', icon: TicketPercent, permission: 'manage_promotions_page', category: 'catalog' },
-      { href: '/taxes', labelKey: 'Header.taxManagerLink', icon: Percent, permission: 'manage_taxes_page', category: 'configuration' },
-      { href: '/countries', labelKey: 'Header.countriesLink', icon: MapIcon, permission: 'manage_countries_page', category: 'configuration'},
-      { href: '/currencies', labelKey: 'Header.currenciesLink', icon: Landmark, permission: 'manage_currencies_page', category: 'configuration'}, 
-      { href: '/payment-methods', labelKey: 'Header.paymentMethodsLink', icon: CreditCardIcon, permission: 'manage_payment_methods_page', category: 'configuration' },
-      { href: '/users', labelKey: 'Header.usersManagerLink', icon: UserCog, permission: 'manage_users_page', category: 'administration' },
-      { href: '/roles', labelKey: 'Header.rolesPermissionsLink', icon: Lock, permission: 'view_roles_permissions_page', category: 'administration'},
-      { href: '/notifications', labelKey: 'NotificationsManagerPage.sidebarLink', icon: Bell, permission: 'manage_notifications_page', category: 'administration' },
-      { href: '/themes', labelKey: 'Header.themesManagerLink', icon: Palette, permission: 'manage_themes_page', category: 'system' },
-      { href: '/translations', labelKey: 'Header.translationsManagerLink', icon: Languages, permission: 'manage_translations_page', category: 'system' },
-      { href: '/languages', labelKey: 'Header.languagesManagerLink', icon: Languages, permission: 'manage_languages_page', category: 'system' }, 
-      { href: '/settings', labelKey: 'Header.settingsLink', icon: Cog, permission: 'manage_settings_page', category: 'system' }, 
+      { href: '/sales-report', labelKey: 'Header.salesReportsLink', icon: FileText, permission: 'manage_sales_reports_page', category: 'sales', offlineAccess: true },
+      { href: '/reports', labelKey: 'Header.reportsLink', icon: BrainCircuit, permission: 'manage_reports_page', category: 'sales', offlineAccess: false },
+      { href: '/dispatches', labelKey: 'Header.dispatchesLink', icon: Truck, permission: 'manage_dispatches_page', category: 'sales', offlineAccess: true },
+      { href: '/products', labelKey: 'Header.productsLink', icon: Package, permission: 'manage_products_page', category: 'catalog', offlineAccess: true },
+      { href: '/clients', labelKey: 'Header.clientsLink', icon: Users, permission: 'manage_clients_page', category: 'catalog', offlineAccess: true },
+      { href: '/suppliers', labelKey: 'Header.suppliersLink', icon: Building2, permission: 'manage_suppliers_page', category: 'catalog', offlineAccess: false },
+      { href: '/promotions', labelKey: 'Header.promotionsLink', icon: TicketPercent, permission: 'manage_promotions_page', category: 'catalog', offlineAccess: false },
+      { href: '/taxes', labelKey: 'Header.taxManagerLink', icon: Percent, permission: 'manage_taxes_page', category: 'configuration', offlineAccess: false },
+      { href: '/countries', labelKey: 'Header.countriesLink', icon: MapIcon, permission: 'manage_countries_page', category: 'configuration', offlineAccess: false},
+      { href: '/currencies', labelKey: 'Header.currenciesLink', icon: Landmark, permission: 'manage_currencies_page', category: 'configuration', offlineAccess: false}, 
+      { href: '/payment-methods', labelKey: 'Header.paymentMethodsLink', icon: CreditCardIcon, permission: 'manage_payment_methods_page', category: 'configuration', offlineAccess: false },
+      { href: '/users', labelKey: 'Header.usersManagerLink', icon: UserCog, permission: 'manage_users_page', category: 'administration', offlineAccess: false },
+      { href: '/roles', labelKey: 'Header.rolesPermissionsLink', icon: Lock, permission: 'view_roles_permissions_page', category: 'administration', offlineAccess: false},
+      { href: '/notifications', labelKey: 'NotificationsManagerPage.sidebarLink', icon: Bell, permission: 'manage_notifications_page', category: 'administration', offlineAccess: true },
+      { href: '/themes', labelKey: 'Header.themesManagerLink', icon: Palette, permission: 'manage_themes_page', category: 'system', offlineAccess: true },
+      { href: '/translations', labelKey: 'Header.translationsManagerLink', icon: Languages, permission: 'manage_translations_page', category: 'system', offlineAccess: false },
+      { href: '/languages', labelKey: 'Header.languagesManagerLink', icon: Languages, permission: 'manage_languages_page', category: 'system', offlineAccess: false }, 
+      { href: '/settings', labelKey: 'Header.settingsLink', icon: Cog, permission: 'manage_settings_page', category: 'system', offlineAccess: true }, 
     ];
 
     const posItems: MenuItemConfig[] = [];
 
     if (posSettings?.separateCartAndPayment) {
-        posItems.push({ href: '/pos', labelKey: 'Header.cartLink', icon: ShoppingCart, permission: 'access_pos_page', category: 'main' });
-        posItems.push({ href: '/pos?view=checkout', labelKey: 'Header.checkoutLink', icon: CreditCardIcon, permission: 'access_pos_page', category: 'main' });
+        posItems.push({ href: '/pos', labelKey: 'Header.cartLink', icon: ShoppingCart, permission: 'access_pos_page', category: 'main', offlineAccess: true });
+        posItems.push({ href: '/pos?view=checkout', labelKey: 'Header.checkoutLink', icon: CreditCardIcon, permission: 'access_pos_page', category: 'main', offlineAccess: true });
     } else {
-        posItems.push({ href: '/pos', labelKey: 'Header.posLink', icon: LayoutGrid, permission: 'access_pos_page', category: 'main' });
+        posItems.push({ href: '/pos', labelKey: 'Header.posLink', icon: LayoutGrid, permission: 'access_pos_page', category: 'main', offlineAccess: true });
     }
 
     baseConfig.splice(1, 0, ...posItems); // Insert after Dashboard
@@ -156,7 +157,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
 
   const renderMenuItem = (item: MenuItemConfig & { translatedLabel: string }) => {
     const isOffline = syncStatus === 'offline';
-    const isDisabled = isOffline && item.href === '/reports';
+    const isDisabled = isOffline && !item.offlineAccess;
 
     const linkContent = (
       <Link
