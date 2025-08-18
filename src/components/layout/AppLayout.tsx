@@ -43,7 +43,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
   
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       const swLocation = '/sw.js';
       navigator.serviceWorker.register(swLocation).then(registration => {
         console.log('Service Worker registered with scope:', registration.scope);
