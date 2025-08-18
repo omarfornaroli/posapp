@@ -117,7 +117,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
   if (!authStatusDetermined || (userIsLoggedIn && !user?.permissions)) {
     return (
       <div className="flex min-h-screen bg-background">
-        <aside className="w-64 bg-card p-4 flex flex-col space-y-4 border-r h-screen sticky top-0">
+        <aside className="w-72 bg-card p-4 flex flex-col space-y-4 border-r h-screen sticky top-0">
           <div className="flex flex-col items-center space-y-3 pt-3 pb-1"><Skeleton className="h-20 w-20 rounded-full" /><Skeleton className="h-5 w-28 rounded" /></div>
           <Skeleton className="h-px w-full" />
           <nav className="flex-grow mt-4 space-y-2">{[...Array(6)].map((_, i) => (<Skeleton key={i} className="h-10 w-full rounded-md" />))}</nav>

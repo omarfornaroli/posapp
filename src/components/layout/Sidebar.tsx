@@ -208,7 +208,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
 
   return (
     <TooltipProvider>
-      <aside className={cn("bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50", "no-print")}>
+      <aside className={cn("w-72 bg-card text-card-foreground p-4 flex flex-col space-y-2 border-r h-screen sticky top-0 shadow-md z-50", "no-print")}>
         <div className="flex items-center justify-between shrink-0 pt-3 pb-1">
           <div className="flex-grow flex flex-col items-center space-y-3">
             <Avatar className="h-20 w-20 ring-2 ring-primary/50">
