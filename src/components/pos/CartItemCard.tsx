@@ -87,12 +87,9 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemoveItem, onU
   const displayTotalPrice = displayPriceAfterDiscount * item.quantity;
   // Also convert the fixed discount amount for display
   const displayFixedDiscountValue = (item.itemDiscountType === 'fixedAmount' ? (item.itemDiscountValue || 0) : 0) * exchangeRate;
-
-  // The 'quantity' property on the item from the Product model is the total stock.
-  // The 'quantity' property on the CartItem itself is the quantity in the cart.
-  // The types overlap, so we must be careful.
-  const totalStock = item.quantity; // This is the product's total stock
-  const quantityInCart = item.quantity; // This is the quantity in the cart
+  
+  const totalStock = item.totalStock || item.quantity; // Fallback to item.quantity if totalStock isn't there
+  const quantityInCart = item.quantity;
   const remainingStock = totalStock - quantityInCart;
 
 
@@ -130,7 +127,7 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemoveItem, onU
               )}
             </div>
              { !item.isService && (
-                <p className="text-xs text-muted-foreground">{t('Dashboard.stockRemaining')}: {item.quantity - item.quantity}</p>
+                <p className="text-xs text-muted-foreground">{t('Dashboard.stockRemaining')}: {remainingStock}</p>
             )}
             {item.itemDiscountValue && item.itemDiscountValue > 0 && (
               <p className="text-xs text-primary font-medium">

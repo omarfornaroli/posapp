@@ -206,7 +206,7 @@ export default function POSPage() {
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
         );
       } else {
-        return [...prevCart, { ...product, productId: product.id, quantity: 1 }];
+        return [...prevCart, { ...product, productId: product.id, quantity: 1, totalStock: product.quantity }];
       }
     });
   }, [t, toast]);
@@ -215,15 +215,18 @@ export default function POSPage() {
     setCart(prevCart => {
       const productInCart = prevCart.find(item => item.id === productId);
       if (!productInCart) return prevCart;
+      
+      // Use totalStock if available, otherwise fallback to the product's quantity field
+      const totalStock = productInCart.totalStock ?? productInCart.quantity;
 
-      if (!productInCart.isService && newQuantity > productInCart.quantity) {
+      if (!productInCart.isService && newQuantity > totalStock) {
           toast({
               variant: 'destructive',
               title: t('Toasts.stockLimitReachedTitle'),
-              description: t('Toasts.stockLimitReachedDescription', {productName: productInCart.name, maxStock: productInCart.quantity})
+              description: t('Toasts.stockLimitReachedDescription', {productName: productInCart.name, maxStock: totalStock})
           });
           return prevCart.map(item =>
-              item.id === productId ? { ...item, quantity: item.quantity } : item // Revert to max stock
+              item.id === productId ? { ...item, quantity: totalStock } : item // Revert to max stock
           );
       }
         

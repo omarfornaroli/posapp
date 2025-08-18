@@ -61,7 +61,8 @@ export interface Product {
 
 export interface CartItem extends Product {
   productId: string; 
-  quantity: number; 
+  quantity: number; // In this context, it's the quantity in the cart
+  totalStock?: number; // Preserves the original total stock from the product
   dispatchedQuantity?: number;
   itemDiscountType?: 'percentage' | 'fixedAmount';
   itemDiscountValue?: number;
