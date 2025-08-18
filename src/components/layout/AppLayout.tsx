@@ -41,6 +41,17 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
 
   const publicPaths = ['/login', '/setup-account', '/reset-password'];
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      const swLocation = '/sw.js';
+      navigator.serviceWorker.register(swLocation).then(registration => {
+        console.log('Service Worker registered with scope:', registration.scope);
+      }).catch(error => {
+        console.error('Service Worker registration failed:', error);
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const initialLocale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
