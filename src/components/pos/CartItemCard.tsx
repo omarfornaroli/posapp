@@ -147,7 +147,7 @@ export default function CartItemCard({ item, onUpdateQuantity, onRemoveItem, onU
                     type="number"
                     value={item.quantity}
                     onChange={handleQuantityChange}
-                    className="w-12 text-center h-8 text-sm"
+                    className="w-16 text-center h-8 text-sm"
                     min="0"
                     aria-label={t('CartItemCardComponent.itemQuantityAriaLabel')}
                 />

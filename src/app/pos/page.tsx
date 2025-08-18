@@ -188,6 +188,19 @@ export default function POSPage() {
   const addToCart = useCallback((product: Product) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
+      const currentQuantity = existingItem ? existingItem.quantity : 0;
+      
+      if (!product.isService && currentQuantity >= product.quantity) {
+        toast({
+          variant: 'destructive',
+          title: t('Toasts.stockLimitReachedTitle'),
+          description: t('Toasts.stockLimitReachedDescription', {productName: product.name, maxStock: product.quantity})
+        });
+        return prevCart;
+      }
+      
+      toast({ title: t('Toasts.productAddedTitle'), description: t('Toasts.productAddedDescription', { productName: product.name }) });
+      setSearchTerm('');
       if (existingItem) {
         return prevCart.map(item => 
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
@@ -196,12 +209,24 @@ export default function POSPage() {
         return [...prevCart, { ...product, productId: product.id, quantity: 1 }];
       }
     });
-    setSearchTerm('');
-    toast({ title: t('Toasts.productAddedTitle'), description: t('Toasts.productAddedDescription', { productName: product.name }) });
   }, [t, toast]);
 
   const updateItemQuantity = (productId: string, newQuantity: number) => {
     setCart(prevCart => {
+      const productInCart = prevCart.find(item => item.id === productId);
+      if (!productInCart) return prevCart;
+
+      if (!productInCart.isService && newQuantity > productInCart.quantity) {
+          toast({
+              variant: 'destructive',
+              title: t('Toasts.stockLimitReachedTitle'),
+              description: t('Toasts.stockLimitReachedDescription', {productName: productInCart.name, maxStock: productInCart.quantity})
+          });
+          return prevCart.map(item =>
+              item.id === productId ? { ...item, quantity: item.quantity } : item // Revert to max stock
+          );
+      }
+        
       if (newQuantity <= 0) {
         return prevCart.filter(item => item.id !== productId);
       }
@@ -360,12 +385,11 @@ export default function POSPage() {
       return;
     }
     
-    // Round both values to the currency's precision before comparing
     const decimals = paymentCurrency?.decimalPlaces ?? 2;
     const roundedAmount = parseFloat(amount.toFixed(decimals));
     const roundedAmountRemaining = parseFloat(amountRemaining.toFixed(decimals));
 
-    if (roundedAmount > roundedAmountRemaining) {
+    if (roundedAmount > roundedAmountRemaining + 0.001) { // Add tolerance for floating point issues
       toast({ variant: 'destructive', description: t('POSPage.paymentExceedsTotal', { amount: formatCurrency(amountRemaining) }) });
       return;
     }
@@ -373,10 +397,9 @@ export default function POSPage() {
     setAppliedPayments(prev => [...prev, {
         methodId: selectedPaymentMethod.id,
         methodName: selectedPaymentMethod.name,
-        amount: amount
+        amount: roundedAmount
     }]);
     setPaymentAmount('');
-    // Do not reset the selected payment method, user might want to use it again.
   };
 
   const handleRemovePayment = (index: number) => {
@@ -417,7 +440,7 @@ export default function POSPage() {
     const saleData: SaleTransaction = {
       id: tempId,
       date: new Date().toISOString(),
-      items: cart,
+      items: cart.map(item => ({ ...item, productId: item.id })),
       subtotal,
       totalItemDiscountAmount,
       overallDiscountAmountApplied,
