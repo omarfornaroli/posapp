@@ -108,9 +108,49 @@ export default function POSPage() {
     if(currencies.length > 0) {
         const current = currencies.find(c => c.code === currentCurrencyCode);
         const defaultCurrency = currencies.find(c => c.isDefault);
-        setPaymentCurrency(current || defaultCurrency || null);
+        const storedState = localStorage.getItem('posCartState');
+        const savedCurrencyCode = storedState ? JSON.parse(storedState).paymentCurrencyCode : null;
+        const savedCurrency = savedCurrencyCode ? currencies.find(c => c.code === savedCurrencyCode) : null;
+        
+        setPaymentCurrency(savedCurrency || current || defaultCurrency || null);
     }
   }, [currentCurrencyCode, currencies]);
+  
+  // Load state from localStorage on mount
+  useEffect(() => {
+    const savedStateJSON = localStorage.getItem('posCartState');
+    if (savedStateJSON) {
+      try {
+        const savedState = JSON.parse(savedStateJSON);
+        setCart(savedState.cart || []);
+        setSelectedClient(savedState.selectedClient || null);
+        setAppliedTaxes(savedState.appliedTaxes || []);
+        setOverallDiscountType(savedState.overallDiscountType || undefined);
+        setOverallDiscountValue(savedState.overallDiscountValue || '');
+        setAppliedPayments(savedState.appliedPayments || []);
+      } catch (error) {
+        console.error("Failed to parse cart state from localStorage", error);
+        localStorage.removeItem('posCartState');
+      }
+    }
+  }, []);
+
+  // Save state to localStorage on change
+  useEffect(() => {
+    const stateToSave = {
+      cart,
+      selectedClient,
+      appliedTaxes,
+      overallDiscountType,
+      overallDiscountValue,
+      appliedPayments,
+      paymentCurrencyCode: paymentCurrency?.code
+    };
+    // Only save if the cart has items to avoid overwriting a refreshed page with an empty state before hydration
+    if(cart.length > 0) {
+        localStorage.setItem('posCartState', JSON.stringify(stateToSave));
+    }
+  }, [cart, selectedClient, appliedTaxes, overallDiscountType, overallDiscountValue, appliedPayments, paymentCurrency]);
 
 
   useEffect(() => {
@@ -183,6 +223,7 @@ export default function POSPage() {
     setSelectedClient(null);
     setActiveCartId(null);
     setAppliedPayments([]);
+    localStorage.removeItem('posCartState');
     toast({ title: t('Toasts.cartClearedTitle'), description: t('Toasts.cartClearedDescription') });
   };
   
