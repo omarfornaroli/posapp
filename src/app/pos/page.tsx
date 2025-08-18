@@ -88,6 +88,7 @@ export default function POSPage() {
   const [overallDiscountType, setOverallDiscountType] = useState<'percentage' | 'fixedAmount' | undefined>(undefined);
   const [overallDiscountValue, setOverallDiscountValue] = useState<number | string>('');
   const [isDiscountPopoverOpen, setIsDiscountPopoverOpen] = useState(false);
+  const [isProcessingSale, setIsProcessingSale] = useState(false);
 
   // States for the new payment section
   const [appliedPayments, setAppliedPayments] = useState<AppliedPayment[]>([]);
@@ -202,20 +203,32 @@ export default function POSPage() {
     });
   };
 
-  const { subtotal, totalAmount, appliedPromotions, promotionalDiscountAmount, taxAmount, overallDiscountAmountApplied } = useMemo(() => {
+  const { subtotal, totalAmount, appliedPromotions, promotionalDiscountAmount, taxAmount, overallDiscountAmountApplied, totalItemDiscountAmount } = useMemo(() => {
     const activePromotions = promotions.filter(p => p.isActive && new Date(p.startDate) <= new Date() && (!p.endDate || new Date(p.endDate) >= new Date()));
     let currentSubtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    let currentItemDiscountAmount = 0;
+    cart.forEach(item => {
+        if (item.itemDiscountType && item.itemDiscountValue && item.itemDiscountValue > 0) {
+            if (item.itemDiscountType === 'percentage') {
+                currentItemDiscountAmount += (item.price * item.quantity) * (item.itemDiscountValue / 100);
+            } else { // fixedAmount
+                currentItemDiscountAmount += item.itemDiscountValue * item.quantity;
+            }
+        }
+    });
 
+    const subtotalAfterItemDiscounts = currentSubtotal - currentItemDiscountAmount;
+    
     // 1. Calculate overall sale discount
     let currentOverallDiscountAmount = 0;
     if (overallDiscountType && typeof overallDiscountValue === 'number' && overallDiscountValue > 0) {
       if (overallDiscountType === 'percentage') {
-        currentOverallDiscountAmount = currentSubtotal * (overallDiscountValue / 100);
+        currentOverallDiscountAmount = subtotalAfterItemDiscounts * (overallDiscountValue / 100);
       } else { // fixedAmount
-        currentOverallDiscountAmount = Math.min(currentSubtotal, overallDiscountValue);
+        currentOverallDiscountAmount = Math.min(subtotalAfterItemDiscounts, overallDiscountValue);
       }
     }
-    const subtotalAfterOverallDiscount = currentSubtotal - currentOverallDiscountAmount;
+    const subtotalAfterOverallDiscount = subtotalAfterItemDiscounts - currentOverallDiscountAmount;
     
     // 2. Calculate promotional discount (on the subtotal *after* manual discount)
     let promotionalDiscount = 0;
@@ -256,6 +269,7 @@ export default function POSPage() {
 
     return { 
       subtotal: currentSubtotal,
+      totalItemDiscountAmount: currentItemDiscountAmount,
       overallDiscountAmountApplied: currentOverallDiscountAmount,
       totalAmount: total, 
       appliedPromotions: appliedPromos,
@@ -277,6 +291,11 @@ export default function POSPage() {
   const totalPaid = useMemo(() => appliedPayments.reduce((sum, p) => sum + p.amount, 0), [appliedPayments]);
   const amountRemaining = useMemo(() => totalAmount - totalPaid, [totalAmount, totalPaid]);
 
+  const formatCurrency = useCallback((amount: number) => {
+    if (!paymentCurrency) return `${amount.toFixed(2)}`;
+    return `${paymentCurrency.symbol || '$'}${(amount).toFixed(paymentCurrency.decimalPlaces || 2)}`;
+  }, [paymentCurrency]);
+
   useEffect(() => {
     if (amountRemaining > 0 && amountRemaining < 1000000) {
         setPaymentAmount(amountRemaining.toFixed(paymentCurrency?.decimalPlaces ?? 2));
@@ -285,10 +304,6 @@ export default function POSPage() {
     }
   }, [amountRemaining, paymentCurrency]);
 
-  const formatCurrency = useCallback((amount: number) => {
-    if (!paymentCurrency) return `${amount.toFixed(2)}`;
-    return `${paymentCurrency.symbol}${amount.toFixed(paymentCurrency.decimalPlaces)}`;
-  }, [paymentCurrency]);
 
   const handleAddPayment = () => {
     if (!selectedPaymentMethod || !paymentAmount) {
@@ -328,6 +343,79 @@ export default function POSPage() {
       p.sku?.toLowerCase().includes(lowercasedTerm)
     ).slice(0, 20);
   }, [products, debouncedSearchTerm]);
+
+
+  const handleProcessSale = async () => {
+    if (cart.length === 0) {
+      toast({ variant: 'destructive', title: t('Toasts.emptyCartTitle'), description: t('Toasts.emptyCartDescription') });
+      return;
+    }
+    if (amountRemaining > 0.001) {
+      toast({ variant: 'destructive', title: t('Common.error'), description: t('POSPage.amountRemainingError', { amount: formatCurrency(amountRemaining) }) });
+      return;
+    }
+    if (appliedPayments.length === 0) {
+      toast({ variant: 'destructive', title: t('Common.error'), description: t('POSPage.noPaymentMethodsAppliedError') });
+      return;
+    }
+
+    setIsProcessingSale(true);
+
+    const baseCurrency = currencies.find(c => c.isDefault) || paymentCurrency;
+
+    const saleData: Omit<SaleTransaction, 'id'> = {
+      date: new Date().toISOString(),
+      items: cart,
+      subtotal,
+      totalItemDiscountAmount,
+      overallDiscountAmountApplied,
+      promotionalDiscountAmount,
+      taxAmount,
+      totalAmount,
+      appliedPayments,
+      appliedTaxes,
+      appliedPromotions,
+      clientId: selectedClient?.id,
+      clientName: selectedClient?.name,
+      currencyCode: paymentCurrency!.code,
+      currencySymbol: paymentCurrency!.symbol,
+      currencyDecimalPlaces: paymentCurrency!.decimalPlaces,
+      baseCurrencyCode: baseCurrency!.code,
+      exchangeRate: paymentCurrency!.exchangeRate || 1,
+      totalInBaseCurrency: totalAmount / (paymentCurrency!.exchangeRate || 1),
+      dispatchStatus: 'Pending', // Or based on a UI switch
+    };
+
+    try {
+      const response = await fetch('/api/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(saleData),
+      });
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || t('POSPage.errorProcessingPaymentAPI'));
+      }
+      
+      toast({
+        title: t('Toasts.paymentSuccessfulTitle'),
+        description: t('Toasts.paymentSuccessfulDescription', { totalAmount: formatCurrency(totalAmount) }),
+      });
+      
+      clearCart();
+      router.push(`/receipt/${result.data.id}`);
+
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: t('POSPage.errorProcessingPayment'),
+        description: error instanceof Error ? error.message : String(error),
+      });
+    } finally {
+      setIsProcessingSale(false);
+    }
+  };
 
 
   const renderCartView = () => (
@@ -526,10 +614,11 @@ export default function POSPage() {
             </CardContent>
             {cart.length > 0 && (
                 <div className="p-3 flex flex-col gap-2 border-t mt-auto">
-                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90" disabled={amountRemaining > 0.001}>
-                        <CreditCard className="mr-2" /> {t('POSPage.processPaymentButton')}
+                    <Button size="lg" className="w-full bg-primary hover:bg-primary/90" onClick={handleProcessSale} disabled={amountRemaining > 0.001 || isProcessingSale}>
+                      {isProcessingSale ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2" />}
+                      {isProcessingSale ? t('POSPage.processingPaymentButton') : t('POSPage.processPaymentButton')}
                     </Button>
-                    <Button variant="outline" size="lg" className="w-full" onClick={clearCart}>
+                    <Button variant="outline" size="lg" className="w-full" onClick={clearCart} disabled={isProcessingSale}>
                         <XCircle className="mr-2" /> {t('POSPage.clearCartButton')}
                     </Button>
                 </div>
