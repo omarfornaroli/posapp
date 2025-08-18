@@ -8,6 +8,7 @@ const pwaConfig = {
     register: true,
     skipWaiting: true,
     disable: process.env.NODE_ENV === 'development',
+    buildExcludes: [/app-build-manifest\.json$/], // Exclude this file from precaching
     runtimeCaching: [
       {
         urlPattern: /(\/login|\/setup-account|\/reset-password|\/reports)/,
