@@ -86,7 +86,11 @@ export async function runSeedOperations() {
   const Currency = mongoose.model('Currency'); 
   const Supplier = mongoose.model('Supplier');
 
-  // Seed Admin user with a hashed password
+  const shouldLoadDemoData = process.env.LOAD_DEMO_DATA === 'true';
+
+  // --- ESSENTIAL DATA ---
+  console.log('Seeding essential data...');
+
   const adminUserData = mockUsers.find(u => u.email === 'admin@example.com');
   if (!adminUserData) {
     throw new Error("Admin user not found in mock data. Seeding cannot proceed.");
@@ -102,35 +106,13 @@ export async function runSeedOperations() {
 
   const adminId = adminUser._id;
   
-  // Seed other users without a password (status will default to 'pending')
   const otherUsers = mockUsers.filter(u => u.email !== 'admin@example.com');
   await Promise.all(
     otherUsers.map(data => User.findOneAndUpdate({ email: data.email }, { ...data, status: 'pending' }, { upsert: true, new: true, runValidators: true }))
   );
   console.log('Users seeded/updated.');
-
-  // Seed Suppliers first to get their ObjectIds
-  const seededSuppliers = await Promise.all(
-    mockSuppliers.map(data => Supplier.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true }))
-  );
-  const supplierMap = new Map(seededSuppliers.map(s => [s.name, s._id]));
-  console.log('Suppliers seeded/updated.');
-
-  // Prepare product data with supplier ObjectIds
-  const productsWithSupplierIds = mockProducts.map(productData => {
-    const supplierId = supplierMap.get(productData.supplier as string);
-    return {
-      ...productData,
-      supplier: supplierId, // This is now an ObjectId or undefined
-    };
-  });
-
-  // Use Promise.all for other idempotent seeding operations
+  
   await Promise.all([
-    ...productsWithSupplierIds.map((data: Partial<ProductType>) => Product.findOneAndUpdate({ barcode: data.barcode }, data, { upsert: true, new: true, runValidators: true })),
-    ...mockClients.map(data => Client.findOneAndUpdate({ email: data.email }, data, { upsert: true, new: true, runValidators: true })),
-    ...mockTaxes.map(data => Tax.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
-    ...mockPromotions.map(data => Promotion.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
     ...mockThemes.map(data => Theme.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
     ...mockPaymentMethods.map(data => PaymentMethod.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
     ...mockCountries.map(data => Country.findOneAndUpdate({ codeAlpha2: data.codeAlpha2 }, data, { upsert: true, new: true, runValidators: true })),
@@ -142,20 +124,15 @@ export async function runSeedOperations() {
         RolePermissionModel.findOneAndUpdate({ role }, { role, permissions: DEFAULT_ROLE_PERMISSIONS[role] }, { upsert: true, new: true, runValidators: true })
     )
   ]);
-  console.log('Core data (Products, Clients, etc.) seeded/updated.');
-
-  // For data that must be pristine on each seed, clear and re-insert.
-  console.log('Clearing and re-seeding transactional or complex data...');
-
-  // Languages - to ensure default settings are correct
+  console.log('Core configuration data seeded/updated.');
+  
   await AppLanguage.deleteMany({});
   await AppLanguage.insertMany([
     { code: 'en', name: 'English', isDefault: false, isEnabled: true },
     { code: 'es', name: 'Español', isDefault: true, isEnabled: true },
   ]);
   console.log('App Languages seeded.');
-
-  // Translations
+  
   await Translation.deleteMany({});
   const flatEnMessages = flattenMessages(enMessages as NestedMessages);
   const flatEsMessages = flattenMessages(esMessages as NestedMessages);
@@ -170,17 +147,50 @@ export async function runSeedOperations() {
   await Translation.insertMany(translationRecords);
   console.log(`${translationRecords.length} Translation records seeded.`);
   
-  // Sales Transactions
-  await SaleTransaction.deleteMany({});
-  const salesToSeed = mockSalesTransactions.map(sale => ({
-    ...sale,
-    date: new Date(sale.date)
-  }));
-  await SaleTransaction.insertMany(salesToSeed);
-  console.log(`${salesToSeed.length} Sale Transactions seeded.`);
-
-  // Clear previous seed notifications to avoid clutter
   await mongoose.model('Notification').deleteMany({});
+
+  // --- DEMO DATA (Conditional) ---
+  if (shouldLoadDemoData) {
+    console.log('LOAD_DEMO_DATA is true. Seeding demo data...');
+    
+    const seededSuppliers = await Promise.all(
+      mockSuppliers.map(data => Supplier.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true }))
+    );
+    const supplierMap = new Map(seededSuppliers.map(s => [s.name, s._id]));
+    console.log('Demo Suppliers seeded/updated.');
+    
+    const productsWithSupplierIds = mockProducts.map(productData => {
+      const supplierId = supplierMap.get(productData.supplier as string);
+      return { ...productData, supplier: supplierId };
+    });
+    
+    await Promise.all([
+      ...productsWithSupplierIds.map((data: Partial<ProductType>) => Product.findOneAndUpdate({ barcode: data.barcode }, data, { upsert: true, new: true, runValidators: true })),
+      ...mockClients.map(data => Client.findOneAndUpdate({ email: data.email }, data, { upsert: true, new: true, runValidators: true })),
+      ...mockTaxes.map(data => Tax.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
+      ...mockPromotions.map(data => Promotion.findOneAndUpdate({ name: data.name }, data, { upsert: true, new: true, runValidators: true })),
+    ]);
+    console.log('Demo catalog data (Products, Clients, Taxes, Promotions) seeded/updated.');
+    
+    await SaleTransaction.deleteMany({});
+    const salesToSeed = mockSalesTransactions.map(sale => ({ ...sale, date: new Date(sale.date) }));
+    await SaleTransaction.insertMany(salesToSeed);
+    console.log(`${salesToSeed.length} Demo Sale Transactions seeded.`);
+    
+  } else {
+    console.log('LOAD_DEMO_DATA is not true. Skipping demo data.');
+    // Ensure collections for demo data are empty if not loading them
+    await Promise.all([
+      Supplier.deleteMany({}),
+      Product.deleteMany({}),
+      Client.deleteMany({}),
+      Tax.deleteMany({}),
+      Promotion.deleteMany({}),
+      SaleTransaction.deleteMany({}),
+      mongoose.model('Report').deleteMany({})
+    ]);
+    console.log('Cleared demo data collections.');
+  }
   
   console.log('Seed operations completed.');
 }
