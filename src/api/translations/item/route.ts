@@ -13,9 +13,9 @@ interface UpdateTranslationRequestBody {
 
 export async function PUT(request: Request) {
   await dbConnect();
-  const isTranslateKeySet = !!process.env.GOOGLE_TRANSLATE_API_KEY;
 
   try {
+    const isTranslateKeySet = !!process.env.GEMINI_API_KEY;
     const body = await request.json() as UpdateTranslationRequestBody;
     const { keyPath, valuesToUpdate } = body;
 

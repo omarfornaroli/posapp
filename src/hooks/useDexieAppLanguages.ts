@@ -92,7 +92,7 @@ export function useDexieAppLanguages() {
     await syncService.addToQueue({ entity: 'appLanguage', operation: 'create', data: langWithId });
 
     // Trigger auto-translation
-    const keyRes = await fetch('/api/settings/translate');
+    const keyRes = await fetch('/api/settings/ai');
     const keyData = await keyRes.json();
     if(keyData.success && keyData.data.isKeySet) {
         toast({ title: "Auto-translation started", description: `Translating all keys to ${newLang.name}...` });

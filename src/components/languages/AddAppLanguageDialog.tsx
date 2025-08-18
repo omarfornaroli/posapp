@@ -31,7 +31,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Languages } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 const appLanguageFormSchema = (t: Function, tCommonErrors: Function, existingCodes: string[]) => z.object({
   code: z.string()
@@ -62,7 +62,7 @@ export default function AddAppLanguageDialog({ open, onOpenChange, onAddLanguage
   useEffect(() => {
     async function checkKey() {
       if (open) {
-        const res = await fetch('/api/settings/translate');
+        const res = await fetch('/api/settings/ai');
         const data = await res.json();
         setIsApiKeySet(data.success && data.data.isKeySet);
       }
@@ -109,7 +109,7 @@ export default function AddAppLanguageDialog({ open, onOpenChange, onAddLanguage
                 <div className="space-y-4 py-4 pr-6">
                   {isApiKeySet && (
                      <Alert variant="default" className="bg-blue-50 border-blue-200">
-                        <Languages className="h-4 w-4 !text-blue-600" />
+                        <Sparkles className="h-4 w-4 !text-blue-600" />
                         <AlertTitle className="text-blue-800">{t('AddAppLanguageDialog.autoTranslateTitle')}</AlertTitle>
                         <AlertDescription className="text-blue-700">
                           {t('AddAppLanguageDialog.autoTranslateDescription')}
