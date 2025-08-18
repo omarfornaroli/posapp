@@ -2,6 +2,50 @@
 
 This is a NextJS starter in Firebase Studio, evolved into a Point of Sale Application (POSAPP).
 
+## Getting Started
+
+There are two primary ways to run this application: locally using Node.js or in a containerized environment using Docker.
+
+### Running with Docker (Recommended)
+
+Using Docker is the recommended method as it sets up both the application and a MongoDB database in a consistent environment with a single command.
+
+**Prerequisites:**
+- Docker and Docker Compose must be installed on your system.
+
+**Steps:**
+1.  Ensure Docker is running on your machine.
+2.  Open a terminal in the root directory of the project.
+3.  Run the following command:
+    ```bash
+    docker-compose up --build
+    ```
+4.  The application will be available at `http://localhost:9002`. The MongoDB database will be accessible on `localhost:27017`.
+
+The Docker configuration uses a volume for the MongoDB data, so your data will persist across container restarts.
+
+### Running Locally
+
+**Prerequisites:**
+- Node.js (v18 or later recommended)
+- A running MongoDB instance.
+
+**Steps:**
+1.  Install project dependencies:
+    ```bash
+    npm install
+    ```
+2.  Create a `.env.local` file in the root directory and add your MongoDB connection string:
+    ```env
+    MONGODB_URI=mongodb://localhost:27017/posapp
+    LOAD_DEMO_DATA=true # Optional: set to false for a clean database
+    ```
+3.  Run the development server:
+    ```bash
+    npm run dev
+    ```
+4.  The application will typically be available at `http://localhost:9002`.
+
 ## Features Overview
 
 The POSAPP is designed to provide a comprehensive solution for managing sales, inventory, and related business operations. Below is an overview of its key features:
@@ -146,15 +190,3 @@ The POSAPP is designed to provide a comprehensive solution for managing sales, i
 - **React Hook Form**: For managing form state and validation.
 - **Lucide React**: Icon library.
 - **RxJS**: For reactive programming, especially used in the translation service.
-
-To get started, run the development server:
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
-The application will typically be available at `http://localhost:9002`.
-Seed data (including mock products, clients, users, etc.) is automatically populated on the first database connection if certain collections are empty.
-

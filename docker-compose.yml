@@ -1,0 +1,35 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: posapp-nextjs
+    ports:
+      - "9002:9002"
+    environment:
+      # This is the connection string for the mongo service defined below.
+      - MONGODB_URI=mongodb://mongo:27017/posapp
+      # Load demo data for a full experience out-of-the-box.
+      # Set to 'false' for a clean install with only essential data.
+      - LOAD_DEMO_DATA=true
+      # Add your Gemini API key here to enable AI features.
+      - GEMINI_API_KEY=
+    depends_on:
+      - mongo
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:latest
+    container_name: posapp-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+    driver: local
