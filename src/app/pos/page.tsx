@@ -98,12 +98,6 @@ export default function POSPage() {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<string>('');
   
-  const formatCurrency = useCallback((amount: number) => {
-    if (!paymentCurrency) return `${amount.toFixed(2)}`;
-    return `${paymentCurrency.symbol || '$'}${(amount).toFixed(paymentCurrency.decimalPlaces || 2)}`;
-  }, [paymentCurrency]);
-
-
   useEffect(() => {
     if(currencies.length > 0) {
         const current = currencies.find(c => c.code === currentCurrencyCode);
@@ -184,23 +178,23 @@ export default function POSPage() {
     }
   }, [currentView, posSettings]);
 
-
   const addToCart = useCallback((product: Product) => {
+    const existingItem = cart.find(item => item.id === product.id);
+    const currentQuantity = existingItem ? existingItem.quantity : 0;
+    
+    if (!product.isService && currentQuantity >= product.quantity) {
+      toast({
+        variant: 'destructive',
+        title: t('Toasts.stockLimitReachedTitle'),
+        description: t('Toasts.stockLimitReachedDescription', {productName: product.name, maxStock: product.quantity})
+      });
+      return; 
+    }
+    
+    toast({ title: t('Toasts.productAddedTitle'), description: t('Toasts.productAddedDescription', { productName: product.name }) });
+    setSearchTerm('');
+
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
-      const currentQuantity = existingItem ? existingItem.quantity : 0;
-      
-      if (!product.isService && currentQuantity >= product.quantity) {
-        toast({
-          variant: 'destructive',
-          title: t('Toasts.stockLimitReachedTitle'),
-          description: t('Toasts.stockLimitReachedDescription', {productName: product.name, maxStock: product.quantity})
-        });
-        return prevCart;
-      }
-      
-      toast({ title: t('Toasts.productAddedTitle'), description: t('Toasts.productAddedDescription', { productName: product.name }) });
-      setSearchTerm('');
       if (existingItem) {
         return prevCart.map(item => 
           item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
@@ -209,14 +203,13 @@ export default function POSPage() {
         return [...prevCart, { ...product, productId: product.id, quantity: 1, totalStock: product.quantity }];
       }
     });
-  }, [t, toast]);
+  }, [cart, t, toast]);
 
   const updateItemQuantity = (productId: string, newQuantity: number) => {
     setCart(prevCart => {
       const productInCart = prevCart.find(item => item.id === productId);
       if (!productInCart) return prevCart;
       
-      // Use totalStock if available, otherwise fallback to the product's quantity field
       const totalStock = productInCart.totalStock ?? productInCart.quantity;
 
       if (!productInCart.isService && newQuantity > totalStock) {
@@ -372,6 +365,11 @@ export default function POSPage() {
   const totalPaid = useMemo(() => appliedPayments.reduce((sum, p) => sum + p.amount, 0), [appliedPayments]);
   const amountRemaining = useMemo(() => totalAmount - totalPaid, [totalAmount, totalPaid]);
 
+  const formatCurrency = useCallback((amount: number) => {
+    if (!paymentCurrency) return `${amount.toFixed(2)}`;
+    return `${paymentCurrency.symbol || '$'}${(amount).toFixed(paymentCurrency.decimalPlaces || 2)}`;
+  }, [paymentCurrency]);
+
   useEffect(() => {
     if (amountRemaining > 0 && amountRemaining < 1000000) {
         setPaymentAmount(amountRemaining.toFixed(paymentCurrency?.decimalPlaces ?? 2));
@@ -381,7 +379,7 @@ export default function POSPage() {
   }, [amountRemaining, paymentCurrency]);
 
 
-  const handleAddPayment = () => {
+  const handleAddPayment = useCallback(() => {
     if (!selectedPaymentMethod || !paymentAmount) {
       toast({ variant: 'destructive', description: t('POSPage.invalidPaymentAmount') });
       return;
@@ -407,7 +405,7 @@ export default function POSPage() {
         amount: roundedAmount
     }]);
     setPaymentAmount('');
-  };
+  }, [selectedPaymentMethod, paymentAmount, amountRemaining, paymentCurrency, t, toast, formatCurrency]);
 
   const handleRemovePayment = (index: number) => {
     setAppliedPayments(prev => prev.filter((_, i) => i !== index));
@@ -430,7 +428,10 @@ export default function POSPage() {
       toast({ variant: 'destructive', title: t('Toasts.emptyCartTitle'), description: t('Toasts.emptyCartDescription') });
       return;
     }
-    if (amountRemaining > 0.001) {
+    
+    const decimals = paymentCurrency?.decimalPlaces ?? 2;
+    const roundedAmountRemaining = parseFloat(amountRemaining.toFixed(decimals));
+    if (roundedAmountRemaining > 0.001) {
       toast({ variant: 'destructive', title: t('Common.error'), description: t('POSPage.amountRemainingError', { amount: formatCurrency(amountRemaining) }) });
       return;
     }
