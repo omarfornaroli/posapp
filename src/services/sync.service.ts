@@ -1,4 +1,3 @@
-
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -23,7 +22,8 @@ const entityToEndpointMap: Record<string, string> = {
   posSetting: 'pos-settings',
   receiptSetting: 'receipt-settings',
   smtpSetting: 'settings/smtp',
-  sale: 'sales', // Added sale endpoint
+  sale: 'sales',
+  rolePermission: 'role-permissions',
 };
 
 const singletonEntities = ['posSetting', 'receiptSetting', 'smtpSetting'];
@@ -131,18 +131,18 @@ class SyncService {
                 let body = JSON.stringify(item.data);
                 
                 // Handle standard CRUD operations
-                if (item.operation === 'update' && !singletonEntities.includes(item.entity)) {
+                if (item.operation === 'update' && !singletonEntities.includes(item.entity) && item.entity !== 'rolePermission') {
                   method = 'PUT';
                   endpoint = `${endpoint}/${item.data.id}`;
                 } else if (item.operation === 'delete') {
                   method = 'DELETE';
                   endpoint = `${endpoint}/${item.data.id}`;
                   body = '';
-                }
-                // For singleton settings, 'update' is always a 'POST' to the base endpoint
-                else if (item.operation === 'update' && singletonEntities.includes(item.entity)) {
+                } else if (item.operation === 'update' && singletonEntities.includes(item.entity)) {
                     method = 'POST';
-                    // endpoint is already correct
+                } else if (item.operation === 'update' && item.entity === 'rolePermission') {
+                  method = 'PUT';
+                  endpoint = `${endpoint}/${item.data.role}`; // Use role name for URL
                 }
 
 
@@ -156,7 +156,7 @@ class SyncService {
                   const result = await response.json();
                   if (result.success) {
                     await db.syncQueue.delete(item.id!);
-                    console.log(`[SyncService] Successfully synced ${item.operation} for ${item.entity} ID ${item.data.id || '(new)'}`);
+                    console.log(`[SyncService] Successfully synced ${item.operation} for ${item.entity} ID ${item.data.id || item.data.role || '(new)'}`);
                   } else {
                      throw new Error(result.error || `Backend failed to ${item.operation} ${item.entity}`);
                   }
@@ -165,7 +165,6 @@ class SyncService {
                 }
               } catch (singleError) {
                   console.error(`[SyncService] Failed to process single operation for ${item.entity} ID ${item.data.id || ''}. Error:`, singleError);
-                  // Don't stop the entire sync for one failed item in one-by-one mode
               }
             }
           }
