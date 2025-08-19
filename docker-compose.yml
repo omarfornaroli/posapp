@@ -12,11 +12,14 @@ services:
     environment:
       # This is the connection string for the mongo service defined below.
       - MONGODB_URI=mongodb://mongo:27017/posapp
-      # Load demo data for a full experience out-of-the-box.
-      # Set to 'false' for a clean install with only essential data.
-      - LOAD_DEMO_DATA=true
+      # Demo data is disabled for this Docker setup.
+      # Change to 'true' if you want to load demo data on first run.
+      - LOAD_DEMO_DATA=false
       # Add your Gemini API key here to enable AI features.
       - GEMINI_API_KEY=
+    volumes:
+      # Mount the current directory into the container to allow git pull
+      - .:/app
     depends_on:
       - mongo
     restart: unless-stopped
