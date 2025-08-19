@@ -30,8 +30,13 @@ export function useDexieRolePermissions() {
       if (!response.ok) throw new Error('Failed to fetch initial role permissions');
       const result = await response.json();
       if (result.success) {
-        // bulkPut will add new items and update existing ones, perfect for this scenario.
-        await db.rolePermissions.bulkPut(result.data);
+        // The API now returns an 'id' but our Dexie table uses 'role' as PK.
+        // We ensure the objects being put match the Dexie schema.
+        const permsToSave: RolePermission[] = result.data.map((p: any) => ({
+          role: p.role,
+          permissions: p.permissions
+        }));
+        await db.rolePermissions.bulkPut(permsToSave);
       } else {
         throw new Error(result.error || 'API error fetching initial role permissions');
       }

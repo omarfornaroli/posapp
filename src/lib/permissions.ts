@@ -1,5 +1,5 @@
 
-import type { UserRole, Permission } from '@/types';
+import type { UserRole, Permission, RolePermission as RolePermissionType } from '@/types';
 import dbConnect from './dbConnect';
 import RolePermissionModel from '@/models/RolePermission';
 import { ALL_PERMISSIONS } from './permissionKeys'; 
@@ -69,16 +69,25 @@ export async function getUserPermissions(userRole: UserRole | undefined): Promis
   }
 }
 
-export async function getAllRolesWithAssignedPermissions(): Promise<{ role: UserRole; permissions: Permission[] }[]> {
+export async function getAllRolesWithAssignedPermissions(): Promise<RolePermissionType[]> {
   try {
     await dbConnect();
     const allRoleConfigs = await RolePermissionModel.find({}).lean();
     
-    const result = (Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]).map(roleName => {
+    const result: RolePermissionType[] = (Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]).map(roleName => {
       const dbConfig = allRoleConfigs.find(rc => rc.role === roleName);
+      if (dbConfig) {
+        return {
+          id: dbConfig._id.toString(),
+          role: dbConfig.role,
+          permissions: dbConfig.permissions,
+        };
+      }
+      // This part is a fallback and ideally should not be hit if the DB is seeded correctly.
       return {
+        id: roleName, // Use role name as a temporary ID for default entries
         role: roleName,
-        permissions: dbConfig ? dbConfig.permissions : (DEFAULT_ROLE_PERMISSIONS[roleName] || []),
+        permissions: DEFAULT_ROLE_PERMISSIONS[roleName] || [],
       };
     });
     return result;
@@ -86,6 +95,7 @@ export async function getAllRolesWithAssignedPermissions(): Promise<{ role: User
   } catch (error) {
     console.error('[Permissions] Error fetching all roles with permissions from DB:', error);
     return (Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]).map(role => ({
+      id: role,
       role,
       permissions: DEFAULT_ROLE_PERMISSIONS[role],
     }));

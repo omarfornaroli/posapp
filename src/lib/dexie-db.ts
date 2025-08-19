@@ -59,7 +59,7 @@ export class AppDexieDB extends Dexie {
     });
     this.version(4).stores({
         users: 'id, email, role',
-        rolePermissions: 'id, role',
+        rolePermissions: 'role', // Switched primary key to 'role'
         notifications: 'id, createdAt, isRead'
     });
     this.version(5).stores({

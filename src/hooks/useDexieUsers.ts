@@ -3,7 +3,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import { syncService } from '@/services/sync.service';
-import type { User, Permission } from '@/types';
+import type { User, Permission, RolePermission } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const generateId = () => `temp-${crypto.randomUUID()}`;
@@ -53,7 +53,12 @@ export function useDexieUsers() {
        if (!permsResponse.ok) throw new Error('Failed to fetch initial role permissions');
       const permsResult = await permsResponse.json();
       if(permsResult.success) {
-        await db.rolePermissions.bulkPut(permsResult.data);
+        // The role itself is the primary key now, so we don't need a separate id
+        const permsToSave: RolePermission[] = permsResult.data.map((p: any) => ({
+            role: p.role,
+            permissions: p.permissions
+        }));
+        await db.rolePermissions.bulkPut(permsToSave);
       }
 
     } catch (error) {

@@ -22,8 +22,19 @@ const RolePermissionSchema: Schema<RolePermissionDocument> = new Schema({
   }],
 }, {
   timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
+  toJSON: { 
+    virtuals: true,
+    transform: (doc, ret) => {
+      // The virtual 'id' will be included.
+      // We don't want to delete _id as it's needed by Mongoose.
+    }
+  },
+  toObject: { 
+    virtuals: true,
+    transform: (doc, ret) => {
+      // The virtual 'id' will be included.
+    }
+  },
   collection: 'pos_role_permissions'
 });
 

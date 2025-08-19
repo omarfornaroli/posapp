@@ -9,7 +9,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import SessionExpirationDialog from './SessionExpirationDialog';
 import { syncService } from '@/services/sync.service';
-import type { User, Permission } from '@/types';
+import type { User, Permission, RolePermission } from '@/types';
 import { translationRxService } from '@/services/translation.rx.service';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toaster";
@@ -179,7 +179,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         const loadFromDexie = async () => {
             const userFromDb = await db.users.where('email').equalsIgnoreCase(email).first();
             if (userFromDb) {
-                const permissions = await db.rolePermissions.where('role').equals(userFromDb.role).first();
+                const permissions = await db.rolePermissions.get(userFromDb.role);
                 setUser({ ...userFromDb, permissions: permissions?.permissions || [] });
                 setUserSessionKey(email);
                 return true;
@@ -199,11 +199,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 const result = await response.json();
                 if (result.success && result.data) {
                     setUser(result.data as UserWithPermissions);
-                    await db.users.put(result.data); // Update local user data
-                    const rolePerms = await fetch(`/api/role-permissions`);
-                    const rolePermsResult = await rolePerms.json();
+                    const { permissions, ...userToSave } = result.data;
+                    await db.users.put(userToSave); // Update local user data
+                    const rolePermsResponse = await fetch(`/api/role-permissions`);
+                    const rolePermsResult = await rolePermsResponse.json();
                     if(rolePermsResult.success) {
-                        await db.rolePermissions.bulkPut(rolePermsResult.data);
+                         const permsWithId: RolePermission[] = rolePermsResult.data.map((p: any) => ({ ...p, id: p.role }));
+                         await db.rolePermissions.bulkPut(permsWithId);
                     }
                     if (userSessionKey !== email) setUserSessionKey(email); 
                 } else {
