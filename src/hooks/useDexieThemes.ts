@@ -23,13 +23,13 @@ export function useDexieThemes() {
   }, []);
 
   const populateInitialData = useCallback(async () => {
-    if (hasInitiallyPopulated) {
-        if (isMounted.current) setIsLoading(false);
-        return;
+    if (isPopulating || hasInitiallyPopulated) {
+      if (isMounted.current) setIsLoading(false);
+      return;
     }
-    
-    isPopulating = true;
+
     if (isMounted.current) setIsLoading(true);
+    isPopulating = true;
     
     try {
       const response = await fetch('/api/themes');
@@ -39,14 +39,19 @@ export function useDexieThemes() {
       if (!result.success) throw new Error(result.error || 'API error fetching themes');
 
       const serverThemes: Theme[] = result.data;
-      await db.themes.bulkPut(serverThemes);
-
+      
+      // Clear the table first to prevent duplicates, then add fresh data
+      await db.themes.clear();
+      await db.themes.bulkAdd(serverThemes);
+      console.log(`[useDexieThemes] Cleared and re-populated ${serverThemes.length} themes.`);
+      
+      hasInitiallyPopulated = true;
     } catch (error) {
       console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
+      // If API fails, we rely on whatever is in Dexie, so we stop loading.
     } finally {
       if (isMounted.current) setIsLoading(false);
       isPopulating = false;
-      hasInitiallyPopulated = true;
     }
   }, []);
 

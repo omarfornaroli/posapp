@@ -29,7 +29,7 @@ export interface ThemeDocument extends ThemeType, Document {
 }
 
 const ThemeSchema: Schema<ThemeDocument> = new Schema({
-  name: { type: String, required: true, unique: true },
+  name: { type: String, required: true, unique: true, index: true },
   isDefault: { type: Boolean, default: false },
   colors: { type: ThemeColorsSchema, required: true },
   fontBody: { type: String, required: true, default: 'Inter' },
