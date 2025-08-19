@@ -26,6 +26,8 @@ const entityToEndpointMap: Record<string, string> = {
   sale: 'sales', // Added sale endpoint
 };
 
+const singletonEntities = ['posSetting', 'receiptSetting', 'smtpSetting'];
+
 type SyncStatus = 'idle' | 'syncing' | 'offline';
 
 class SyncService {
@@ -128,7 +130,8 @@ class SyncService {
                 let method = 'POST';
                 let body = JSON.stringify(item.data);
                 
-                if (item.operation === 'update') {
+                // Handle standard CRUD operations
+                if (item.operation === 'update' && !singletonEntities.includes(item.entity)) {
                   method = 'PUT';
                   endpoint = `${endpoint}/${item.data.id}`;
                 } else if (item.operation === 'delete') {
@@ -136,6 +139,12 @@ class SyncService {
                   endpoint = `${endpoint}/${item.data.id}`;
                   body = '';
                 }
+                // For singleton settings, 'update' is always a 'POST' to the base endpoint
+                else if (item.operation === 'update' && singletonEntities.includes(item.entity)) {
+                    method = 'POST';
+                    // endpoint is already correct
+                }
+
 
                 const response = await fetch(endpoint, {
                   method,
@@ -155,7 +164,7 @@ class SyncService {
                    throw new Error(`API error: ${response.status}`);
                 }
               } catch (singleError) {
-                  console.error(`[SyncService] Failed to process single operation for ${item.entity} ID ${item.data.id}. Error:`, singleError);
+                  console.error(`[SyncService] Failed to process single operation for ${item.entity} ID ${item.data.id || ''}. Error:`, singleError);
                   // Don't stop the entire sync for one failed item in one-by-one mode
               }
             }
