@@ -24,8 +24,11 @@ export function useDexieThemes() {
     if (isPopulating) return;
     isPopulating = true;
     
-    // Always start by assuming we are loading, to ensure we get fresh data
-    if(isMounted.current) setIsLoading(true);
+    // Check if we already have themes. If not, set loading to true.
+    const count = await db.themes.count();
+    if(count === 0 && isMounted.current) {
+      setIsLoading(true);
+    }
     
     try {
       // Attempt to fetch from network regardless of cache, to get updates
@@ -89,5 +92,10 @@ export function useDexieThemes() {
     await syncService.addToQueue({ entity: 'theme', operation: 'delete', data: { id } });
   };
 
-  return { themes: themes || [], isLoading: isLoading || themes === undefined, refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
+  // The final loading state depends on both the Dexie hook and our initial fetch.
+  // isLoading is true if we are performing the initial fetch and have no data yet.
+  // themes === undefined means the useLiveQuery has not run for the first time yet.
+  const finalIsLoading = isLoading && (themes === undefined || themes.length === 0);
+
+  return { themes: themes || [], isLoading: finalIsLoading, refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
 }
