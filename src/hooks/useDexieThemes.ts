@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieThemes.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -22,16 +23,17 @@ export function useDexieThemes() {
 
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
-    isPopulating = true;
     
-    // Check if we already have themes. If not, set loading to true.
+    isPopulating = true;
     const count = await db.themes.count();
-    if(count === 0 && isMounted.current) {
-      setIsLoading(true);
+    if (count === 0 && isMounted.current) {
+        setIsLoading(true);
+    } else {
+        // If we have data, show it immediately while we fetch updates.
+        setIsLoading(false);
     }
     
     try {
-      // Attempt to fetch from network regardless of cache, to get updates
       const response = await fetch('/api/themes');
       if (!response.ok) throw new Error('Failed to fetch themes');
       
@@ -39,15 +41,11 @@ export function useDexieThemes() {
       if (!result.success) throw new Error(result.error || 'API error fetching themes');
 
       const serverThemes: Theme[] = result.data;
-      // bulkPut is an "upsert" - it will add new themes and update existing ones.
       await db.themes.bulkPut(serverThemes);
 
     } catch (error) {
-      // If fetching fails (e.g., offline), we log the error but continue.
-      // The useLiveQuery hook will still serve data from Dexie if it exists.
       console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
     } finally {
-      // Whether the fetch succeeded or failed, the initial data loading process is complete.
       if (isMounted.current) {
         setIsLoading(false);
       }
@@ -73,12 +71,18 @@ export function useDexieThemes() {
   const updateTheme = async (updatedTheme: Theme) => {
      try {
         if (updatedTheme.isDefault) {
+          // Find the current default theme in the database.
           const oldDefault = await db.themes.where('isDefault').equals(1).first();
+          
+          // If there is an old default and it's not the one we're currently updating, unset it.
           if (oldDefault && oldDefault.id !== updatedTheme.id) {
               await db.themes.update(oldDefault.id, { isDefault: false });
+              // Also queue this change for sync.
               await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...oldDefault, isDefault: false } });
           }
         }
+        
+        // Now, save the updated theme (which might be the new default).
         await db.themes.put(updatedTheme);
         await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
      } catch (e) {
@@ -92,10 +96,7 @@ export function useDexieThemes() {
     await syncService.addToQueue({ entity: 'theme', operation: 'delete', data: { id } });
   };
 
-  // The final loading state depends on both the Dexie hook and our initial fetch.
-  // isLoading is true if we are performing the initial fetch and have no data yet.
-  // themes === undefined means the useLiveQuery has not run for the first time yet.
-  const finalIsLoading = isLoading && (themes === undefined || themes.length === 0);
+  const finalIsLoading = isLoading || themes === undefined;
 
   return { themes: themes || [], isLoading: finalIsLoading, refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
 }
