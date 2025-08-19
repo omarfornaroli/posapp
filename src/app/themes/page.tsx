@@ -76,17 +76,12 @@ export default function ThemesPage() {
   const handleSetDefault = async (themeId: string) => {
      setIsUpdating(true);
      try {
-       const response = await fetch(`/api/themes/${themeId}/set-default`, {
-        method: 'PUT',
-      });
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || t('ThemeManagerPage.errorSettingDefaultTheme'));
-      }
-       
+       const themeToUpdate = themes.find(t => t.id === themeId);
+       if (!themeToUpdate) throw new Error("Theme not found locally");
+       await updateTheme({ ...themeToUpdate, isDefault: true });
        toast({
           title: t('Toasts.themeDefaultSetTitle'),
-          description: t('Toasts.themeDefaultSetDescription', { themeName: result.data.name }),
+          description: t('Toasts.themeDefaultSetDescription', { themeName: themeToUpdate.name }),
        });
        window.location.reload();
     } catch (error) {

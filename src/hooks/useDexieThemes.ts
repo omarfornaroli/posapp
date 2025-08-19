@@ -15,9 +15,16 @@ export function useDexieThemes() {
 
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
-    isPopulating = true;
-    setIsLoading(true);
+    
+    const count = await db.themes.count();
+    if (count > 0) {
+      setIsLoading(false);
+    } else {
+      setIsLoading(true);
+    }
 
+    isPopulating = true;
+    
     try {
       const response = await fetch('/api/themes');
       if (!response.ok) throw new Error('Failed to fetch themes');
@@ -25,18 +32,7 @@ export function useDexieThemes() {
       if (!result.success) throw new Error(result.error || 'API error fetching themes');
 
       const serverThemes: Theme[] = result.data;
-      const localThemes = await db.themes.toArray();
-
-      const serverIds = new Set(serverThemes.map(t => t.id));
-      
-      // Add or update themes from the server
       await db.themes.bulkPut(serverThemes);
-
-      // Remove local themes that are no longer on the server (and are not temp)
-      const themesToDelete = localThemes.filter(lt => !lt.id.startsWith('temp-') && !serverIds.has(lt.id)).map(lt => lt.id);
-      if (themesToDelete.length > 0) {
-        await db.themes.bulkDelete(themesToDelete);
-      }
 
     } catch (error) {
       console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
@@ -58,30 +54,18 @@ export function useDexieThemes() {
       isDefault: false,
     };
     await db.themes.add(themeWithId);
-    // Let the API handle creation. No need for a sync queue item for create.
-    // The server will assign a permanent ID, which will be synced back.
-    const response = await fetch('/api/themes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTheme),
-    });
-    const result = await response.json();
-    if (result.success) {
-        // Replace temp record with the one from the server
-        await db.transaction('rw', db.themes, async () => {
-            await db.themes.delete(tempId);
-            await db.themes.put(result.data);
-        });
-    } else {
-       console.error("Failed to save new theme to server:", result.error);
-       // The theme remains in Dexie with a temp ID and will need a more robust sync/retry strategy
-       // For now, we leave it for the user to potentially try again.
-       throw new Error(result.error);
-    }
+    await syncService.addToQueue({ entity: 'theme', operation: 'create', data: themeWithId });
   };
 
   const updateTheme = async (updatedTheme: Theme) => {
      try {
+        if (updatedTheme.isDefault) {
+          const oldDefault = await db.themes.where('isDefault').equals(1).first();
+          if (oldDefault && oldDefault.id !== updatedTheme.id) {
+              await db.themes.update(oldDefault.id, { isDefault: false });
+              await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...oldDefault, isDefault: false } });
+          }
+        }
         await db.themes.put(updatedTheme);
         await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
      } catch (e) {

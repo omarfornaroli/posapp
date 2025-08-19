@@ -68,8 +68,8 @@ export default function Header({ toggleSidebar }: HeaderProps) {
       await updateTheme({ ...themeToSet, isDefault: true });
 
       toast({
-        title: t('ThemeManagerPage.themeSetDefaultSuccessTitle'),
-        description: t('ThemeManagerPage.themeSetDefaultSuccessDescription', { themeName: themeToSet.name }),
+        title: t('Toasts.themeDefaultSetTitle'),
+        description: t('Toasts.themeDefaultSetDescription', { themeName: themeToSet.name }),
       });
       // The Dexie hook will trigger a re-render. A full reload re-fetches everything,
       // which is slow and against the offline-first approach.
