@@ -3,7 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import { syncService } from '@/services/sync.service';
 import type { Theme } from '@/types';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const generateId = () => `temp-${crypto.randomUUID()}`;
 let isPopulating = false;
@@ -11,32 +11,43 @@ let isPopulating = false;
 export function useDexieThemes() {
   const [isLoading, setIsLoading] = useState(true);
   const themes = useLiveQuery(() => db.themes.toArray(), []);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   const populateInitialData = useCallback(async () => {
-    // Prevent multiple concurrent fetches
     if (isPopulating) return;
     isPopulating = true;
-
-    // Set loading to true only if there's no data to show, makes for a better UX.
-    const count = await db.themes.count();
-    if (count === 0) {
-      setIsLoading(true);
-    }
+    
+    // Always start by assuming we are loading, to ensure we get fresh data
+    if(isMounted.current) setIsLoading(true);
     
     try {
+      // Attempt to fetch from network regardless of cache, to get updates
       const response = await fetch('/api/themes');
       if (!response.ok) throw new Error('Failed to fetch themes');
+      
       const result = await response.json();
       if (!result.success) throw new Error(result.error || 'API error fetching themes');
 
       const serverThemes: Theme[] = result.data;
+      // bulkPut is an "upsert" - it will add new themes and update existing ones.
       await db.themes.bulkPut(serverThemes);
 
     } catch (error) {
+      // If fetching fails (e.g., offline), we log the error but continue.
+      // The useLiveQuery hook will still serve data from Dexie if it exists.
       console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
     } finally {
-      // Always set loading to false and reset the populating flag
-      setIsLoading(false);
+      // Whether the fetch succeeded or failed, the initial data loading process is complete.
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
       isPopulating = false;
     }
   }, []);
