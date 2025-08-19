@@ -131,7 +131,7 @@ class SyncService {
                 let body = JSON.stringify(item.data);
                 
                 // Handle standard CRUD operations
-                if (item.operation === 'update' && !singletonEntities.includes(item.entity) && item.entity !== 'rolePermission') {
+                if (item.operation === 'update' && !singletonEntities.includes(item.entity) && item.entity !== 'rolePermission' && item.entity !== 'notification') {
                   method = 'PUT';
                   endpoint = `${endpoint}/${item.data.id}`;
                 } else if (item.operation === 'delete') {
@@ -143,6 +143,10 @@ class SyncService {
                 } else if (item.operation === 'update' && item.entity === 'rolePermission') {
                   method = 'PUT';
                   endpoint = `${endpoint}/${item.data.role}`; // Use role name for URL
+                } else if (item.operation === 'update' && item.entity === 'notification') {
+                    method = 'POST';
+                    endpoint = `${endpoint}/${item.data.id}/toggle-read`;
+                    body = ''; // Body is not needed for this endpoint
                 }
 
 
