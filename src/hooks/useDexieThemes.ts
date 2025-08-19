@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 const generateId = () => `temp-${crypto.randomUUID()}`;
 let isPopulating = false;
+let hasInitiallyPopulated = false;
 
 export function useDexieThemes() {
   const [isLoading, setIsLoading] = useState(true);
@@ -22,15 +23,15 @@ export function useDexieThemes() {
   }, []);
 
   const populateInitialData = useCallback(async () => {
-    if (isPopulating) return;
+    // Only run the population logic once per app lifecycle
+    if (hasInitiallyPopulated) {
+        setIsLoading(false);
+        return;
+    }
     
     isPopulating = true;
-    const count = await db.themes.count();
-    if (count === 0 && isMounted.current) {
+    if (isMounted.current) {
         setIsLoading(true);
-    } else {
-        // If we have data, show it immediately while we fetch updates.
-        setIsLoading(false);
     }
     
     try {
@@ -50,6 +51,7 @@ export function useDexieThemes() {
         setIsLoading(false);
       }
       isPopulating = false;
+      hasInitiallyPopulated = true;
     }
   }, []);
 
