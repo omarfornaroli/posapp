@@ -37,8 +37,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   await dbConnect();
-  const session = await mongoose.startSession();
-  session.startTransaction();
   
   try {
     // The body now comes from the sync service, which might have a temporary client-generated ID
@@ -55,20 +53,17 @@ export async function POST(request: NextRequest) {
     if (dispatchNow) {
       for (const item of transactionData.items) {
         if (item.isService) continue;
-        const product = await Product.findById(item.productId).session(session);
+        const product = await Product.findById(item.productId);
         if (!product) throw new Error(`Product with ID ${item.productId} not found.`);
         if (product.quantity < item.quantity) {
           throw new Error(`Insufficient stock for product: ${product.name}. Required: ${item.quantity}, Available: ${product.quantity}.`);
         }
         product.quantity -= item.quantity;
-        await product.save({ session });
+        await product.save();
       }
     }
 
-    const newSaleArray = await SaleTransaction.create([transactionData], { session });
-    const newSale = newSaleArray[0];
-
-    await session.commitTransaction();
+    const newSale = await SaleTransaction.create(transactionData);
 
     const actorDetails = await getActorDetails(request);
     const formattedTotal = `${newSale.currencySymbol || '$'}${newSale.totalAmount.toFixed(newSale.currencyDecimalPlaces || 2)}`;
@@ -92,7 +87,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: newSale }, { status: 201 });
   } catch (error) {
-    await session.abortTransaction();
     console.error("Error creating sale:", error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error during sale creation';
     const actorDetails = await getActorDetails(request);
@@ -103,7 +97,5 @@ export async function POST(request: NextRequest) {
         ...actorDetails
     });
     return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
-  } finally {
-    session.endSession();
   }
 }

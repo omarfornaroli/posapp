@@ -47,11 +47,11 @@ export async function POST(request: Request, { params }: any) {
   }
 
   await dbConnect();
-  const session = await mongoose.startSession();
-  session.startTransaction();
 
   try {
-    const sale = await SaleTransaction.findById(id).session(session);
+    // Using a transaction for this operation is complex in a standalone Mongo setup.
+    // We will perform operations sequentially with checks.
+    const sale = await SaleTransaction.findById(id);
 
     if (!sale) {
       throw new Error('Sale transaction not found');
@@ -59,6 +59,16 @@ export async function POST(request: Request, { params }: any) {
 
     if (sale.dispatchStatus === 'Dispatched') {
       throw new Error('This sale has already been fully dispatched.');
+    }
+    
+    // Check all stock levels first before making any changes
+    for (const dispatchItem of validItems) {
+       const saleItem = sale.items.find(item => item.productId === dispatchItem.productId);
+       if (saleItem && !saleItem.isService) {
+           const product = await Product.findById(dispatchItem.productId);
+           if (!product) throw new Error(`Product with ID ${dispatchItem.productId} not found in inventory.`);
+           if (product.quantity < dispatchItem.quantity) throw new Error(`Insufficient stock for product: ${product.name}.`);
+       }
     }
 
     for (const dispatchItem of validItems) {
@@ -73,26 +83,9 @@ export async function POST(request: Request, { params }: any) {
         throw new Error(`Cannot dispatch ${dispatchItem.quantity} of ${saleItem.name}. Only ${remainingToDispatch} remaining.`);
       }
 
-      if (!saleItem.barcode) {
-        // Services might not have a barcode, skip stock deduction for them.
-        if (!saleItem.isService) {
-           throw new Error(`Product "${saleItem.name}" in this sale is missing a barcode and cannot be dispatched.`);
-        }
-      }
-
-      // Only deduct stock for non-service items
-      if (!saleItem.isService && saleItem.barcode) {
-        const product = await Product.findOne({ barcode: saleItem.barcode }).session(session);
-        if (!product) {
-          throw new Error(`Product with barcode ${saleItem.barcode} (${saleItem.name}) not found in inventory.`);
-        }
-
-        if (product.quantity < dispatchItem.quantity) {
-          throw new Error(`Insufficient stock for product: ${product.name}. Required: ${dispatchItem.quantity}, Available: ${product.quantity}.`);
-        }
-        
-        product.quantity -= dispatchItem.quantity;
-        await product.save({ session });
+      // Deduct stock for non-service items
+      if (!saleItem.isService) {
+        await Product.findByIdAndUpdate(dispatchItem.productId, { $inc: { quantity: -dispatchItem.quantity } });
       }
       
       saleItem.dispatchedQuantity = (saleItem.dispatchedQuantity || 0) + dispatchItem.quantity;
@@ -106,10 +99,8 @@ export async function POST(request: Request, { params }: any) {
       sale.dispatchStatus = 'Partially Dispatched';
     }
 
-    await sale.save({ session });
+    await sale.save();
     
-    await session.commitTransaction();
-
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
       messageKey: allItemsFullyDispatched ? 'Notifications.saleFullyDispatched' : 'Notifications.salePartiallyDispatched',
@@ -122,7 +113,6 @@ export async function POST(request: Request, { params }: any) {
     return NextResponse.json({ success: true, data: sale.toObject() });
 
   } catch (error) {
-    await session.abortTransaction();
     const errorMessage = error instanceof Error ? error.message : 'Unknown error during dispatch.';
     console.error(`[API/sales/${id}/dispatch POST] Error:`, error);
     const actorDetails = await getActorDetails(request);
@@ -133,9 +123,5 @@ export async function POST(request: Request, { params }: any) {
       ...actorDetails,
     });
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
-  } finally {
-    session.endSession();
   }
 }
-
-    
