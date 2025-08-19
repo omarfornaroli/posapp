@@ -8,7 +8,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 const generateId = () => `temp-${crypto.randomUUID()}`;
 let isPopulating = false;
-let hasInitiallyPopulated = false;
 
 export function useDexieThemes() {
   const [isLoading, setIsLoading] = useState(true);
@@ -23,12 +22,13 @@ export function useDexieThemes() {
   }, []);
 
   const populateInitialData = useCallback(async () => {
-    if (isPopulating || hasInitiallyPopulated) {
-      if (isMounted.current) setIsLoading(false);
+    if (isPopulating) {
       return;
     }
-
-    if (isMounted.current) setIsLoading(true);
+    
+    if (isMounted.current) {
+        setIsLoading(true);
+    }
     isPopulating = true;
     
     try {
@@ -45,12 +45,12 @@ export function useDexieThemes() {
       await db.themes.bulkAdd(serverThemes);
       console.log(`[useDexieThemes] Cleared and re-populated ${serverThemes.length} themes.`);
       
-      hasInitiallyPopulated = true;
     } catch (error) {
       console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
-      // If API fails, we rely on whatever is in Dexie, so we stop loading.
     } finally {
-      if (isMounted.current) setIsLoading(false);
+      if (isMounted.current) {
+        setIsLoading(false);
+      }
       isPopulating = false;
     }
   }, []);

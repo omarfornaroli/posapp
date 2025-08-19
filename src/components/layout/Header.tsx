@@ -135,7 +135,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                             <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" aria-label={t('Header.switchThemeButton')} disabled={isLoadingThemes || isSwitchingTheme}>
-                                {isSwitchingTheme ? <Loader2 className="h-5 w-5 animate-spin" /> : <Palette className="h-5 w-5" />}
+                                {isLoadingThemes || isSwitchingTheme ? <Loader2 className="h-5 w-5 animate-spin" /> : <Palette className="h-5 w-5" />}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
