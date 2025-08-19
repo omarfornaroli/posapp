@@ -1,4 +1,3 @@
-
 // src/hooks/useDexieThemes.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -14,16 +13,15 @@ export function useDexieThemes() {
   const themes = useLiveQuery(() => db.themes.toArray(), []);
 
   const populateInitialData = useCallback(async () => {
+    // Prevent multiple concurrent fetches
     if (isPopulating) return;
-    
+    isPopulating = true;
+
+    // Set loading to true only if there's no data to show, makes for a better UX.
     const count = await db.themes.count();
-    if (count > 0) {
-      setIsLoading(false);
-    } else {
+    if (count === 0) {
       setIsLoading(true);
     }
-
-    isPopulating = true;
     
     try {
       const response = await fetch('/api/themes');
@@ -37,6 +35,7 @@ export function useDexieThemes() {
     } catch (error) {
       console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
     } finally {
+      // Always set loading to false and reset the populating flag
       setIsLoading(false);
       isPopulating = false;
     }
