@@ -23,16 +23,13 @@ export function useDexieThemes() {
   }, []);
 
   const populateInitialData = useCallback(async () => {
-    // Only run the population logic once per app lifecycle
     if (hasInitiallyPopulated) {
-        setIsLoading(false);
+        if (isMounted.current) setIsLoading(false);
         return;
     }
     
     isPopulating = true;
-    if (isMounted.current) {
-        setIsLoading(true);
-    }
+    if (isMounted.current) setIsLoading(true);
     
     try {
       const response = await fetch('/api/themes');
@@ -47,9 +44,7 @@ export function useDexieThemes() {
     } catch (error) {
       console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
     } finally {
-      if (isMounted.current) {
-        setIsLoading(false);
-      }
+      if (isMounted.current) setIsLoading(false);
       isPopulating = false;
       hasInitiallyPopulated = true;
     }
@@ -73,18 +68,13 @@ export function useDexieThemes() {
   const updateTheme = async (updatedTheme: Theme) => {
      try {
         if (updatedTheme.isDefault) {
-          // Find the current default theme in the database.
           const oldDefault = await db.themes.where('isDefault').equals(1).first();
-          
-          // If there is an old default and it's not the one we're currently updating, unset it.
           if (oldDefault && oldDefault.id !== updatedTheme.id) {
               await db.themes.update(oldDefault.id, { isDefault: false });
-              // Also queue this change for sync.
               await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...oldDefault, isDefault: false } });
           }
         }
         
-        // Now, save the updated theme (which might be the new default).
         await db.themes.put(updatedTheme);
         await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
      } catch (e) {
