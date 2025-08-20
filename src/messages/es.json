@@ -611,7 +611,7 @@
     "disableAriaLabel": "Deshabilitar {langName}",
     "setDefaultAriaLabel": "Establecer {langName} como predeterminado",
     "isDefaultBadge": "Predeterminado",
-    "setDefaultButton": "Predeterminado"
+    "setDefaultButton": "Predeterminar"
   },
   "Toasts": {
     "stockLimitReachedTitle": "Límite de Stock Alcanzado",
@@ -752,7 +752,7 @@
     "themeAddedTitle": "Tema Agregado",
     "themeAddedDescription": "El tema \"{themeName}\" ha sido agregado exitosamente.",
     "themeDefaultSetTitle": "Tema Establecido como Predeterminado",
-    "themeDefaultSetDescription": "\"{themeName}\" ahora es el tema predeterminado. Recargando para aplicar los cambios."
+    "themeDefaultSetDescription": "El tema \"{themeName}\" ahora es el tema predeterminado."
   },
   "Notifications": {
     "dropdownTitle": "Notificaciones",
@@ -870,7 +870,7 @@
     "themeAddedTitle": "Tema Agregado",
     "themeAddedDescription": "El tema \"{themeName}\" ha sido agregado exitosamente.",
     "themeDefaultSetTitle": "Tema Establecido como Predeterminado",
-    "themeDefaultSetDescription": "\"{themeName}\" ahora es el tema predeterminado. Recargando para aplicar los cambios.",
+    "themeDefaultSetDescription": "El tema \"{themeName}\" ahora es el tema predeterminado.",
     "saleDispatched": "La venta #{saleId} ha sido despachada."
   },
   "NotificationsManagerPage": {
