@@ -198,8 +198,7 @@ export class AppDexieDB extends Dexie {
       syncQueue: '++id, entity, timestamp',
     });
     this.version(10).stores({
-        rolePermissions: 'id, role', // Correct primary key
-        // Re-declare all other tables from version 9 to keep them
+        // All tables from version 9
         products: 'id, name, barcode, sku, category, supplier',
         clients: 'id, name, email',
         suppliers: 'id, name, email',
@@ -211,6 +210,30 @@ export class AppDexieDB extends Dexie {
         appLanguages: 'id, code',
         themes: 'id, name, isDefault',
         users: 'id, email, role',
+        rolePermissions: 'id, role', // Mistakenly changed PK
+        notifications: 'id, createdAt, isRead',
+        sales: 'id, date, clientId, dispatchStatus',
+        reports: 'id, createdAt',
+        translations: 'keyPath',
+        posSettings: 'key',
+        receiptSettings: 'key',
+        smtpSettings: 'key',
+        syncQueue: '++id, entity, timestamp',
+    });
+     this.version(11).stores({
+        // All tables from version 10, with corrected rolePermissions PK
+        products: 'id, name, barcode, sku, category, supplier',
+        clients: 'id, name, email',
+        suppliers: 'id, name, email',
+        promotions: 'id, name, isActive',
+        taxes: 'id, name',
+        paymentMethods: 'id, name',
+        countries: 'id, name, codeAlpha2',
+        currencies: 'id, name, code, isDefault',
+        appLanguages: 'id, code',
+        themes: 'id, name, isDefault',
+        users: 'id, email, role',
+        rolePermissions: 'role', // Correct primary key is 'role'
         notifications: 'id, createdAt, isRead',
         sales: 'id, date, clientId, dispatchStatus',
         reports: 'id, createdAt',

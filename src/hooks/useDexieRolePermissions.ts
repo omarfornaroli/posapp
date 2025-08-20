@@ -14,12 +14,11 @@ export function useDexieRolePermissions() {
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
 
-    // Check count first. If > 0, we can show cached data while we fetch updates.
     const count = await db.rolePermissions.count();
     if (count > 0) {
       setIsLoading(false);
     } else {
-      setIsLoading(true); // Only show loader if DB is completely empty.
+      setIsLoading(true); 
     }
 
     isPopulating = true;
@@ -29,11 +28,11 @@ export function useDexieRolePermissions() {
       if (!response.ok) throw new Error('Failed to fetch initial role permissions');
       const result = await response.json();
       if (result.success) {
-        // The API now returns an 'id' but our Dexie table uses 'role' as PK.
-        // We ensure the objects being put match the Dexie schema.
+        // The API returns an 'id' but our Dexie table uses 'role' as PK.
+        // We ensure the objects being put match the Dexie schema by removing the 'id'.
         const permsToSave: RolePermission[] = result.data.map((p: any) => ({
-          ...p,
-          id: p.role, // Use the role as the 'id' for the primary key
+          role: p.role,
+          permissions: p.permissions,
         }));
         await db.rolePermissions.bulkPut(permsToSave);
       } else {
