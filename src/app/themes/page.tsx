@@ -70,13 +70,11 @@ export default function ThemesPage() {
      try {
        const themeToSet = themes.find(t => t.id === themeId);
        if (!themeToSet) throw new Error("Theme not found locally");
-       // No need to check if it's already default, the button is always enabled now.
        await updateTheme({ ...themeToSet, isDefault: true });
        toast({
           title: t('Toasts.themeDefaultSetTitle'),
           description: t('Toasts.themeDefaultSetDescription', { themeName: themeToSet.name }),
        });
-       window.location.reload();
     } catch (error) {
        toast({ variant: 'destructive', title: t('Common.error'), description: error instanceof Error ? error.message : t('ThemeManagerPage.errorSettingDefaultTheme') });
     }
@@ -126,7 +124,7 @@ export default function ThemesPage() {
                     </div>
                     <div className="flex mt-4 gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleEditTrigger(theme)}>{t('Common.edit')}</Button>
-                        <Button size="sm" onClick={() => handleSetDefault(theme.id)}>
+                        <Button size="sm" onClick={() => handleSetDefault(theme.id)} disabled={theme.isDefault}>
                             {theme.isDefault ? t('ThemeManagerPage.isDefaultBadge') : t('ThemeManagerPage.setDefaultButton')}
                         </Button>
                     </div>

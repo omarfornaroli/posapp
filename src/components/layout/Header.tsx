@@ -60,7 +60,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
   const handleThemeSwitch = async (themeId: string) => {
     const themeToSet = themes.find(t => t.id === themeId);
-    if (!themeToSet) return;
+    if (!themeToSet || themeToSet.isDefault) return;
     
     try {
       await updateTheme({ ...themeToSet, isDefault: true });
@@ -68,7 +68,6 @@ export default function Header({ toggleSidebar }: HeaderProps) {
         title: t('Toasts.themeDefaultSetTitle'),
         description: t('Toasts.themeDefaultSetDescription', { themeName: themeToSet.name }),
       });
-      window.location.reload(); 
     } catch (error) {
       toast({
         variant: 'destructive',
@@ -139,6 +138,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                                     key={theme.id}
                                     onClick={() => handleThemeSwitch(theme.id)}
                                     className="flex justify-between items-center"
+                                    disabled={theme.isDefault}
                                 >
                                     <span>{theme.name}</span>
                                     {activeTheme?.id === theme.id && <Check className="h-4 w-4 text-primary" />}

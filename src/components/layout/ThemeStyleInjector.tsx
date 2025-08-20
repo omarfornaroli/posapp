@@ -18,8 +18,13 @@ export default function ThemeStyleInjector() {
 
   useEffect(() => {
     if (activeTheme) {
-      const styleElement = document.createElement('style');
-      styleElement.id = 'dynamic-theme-styles';
+      const styleElementId = 'dynamic-theme-styles';
+      let styleElement = document.getElementById(styleElementId) as HTMLStyleElement | null;
+      if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = styleElementId;
+        document.head.appendChild(styleElement);
+      }
       
       const cssVariables = `
         :root {
@@ -49,13 +54,6 @@ export default function ThemeStyleInjector() {
       `;
       
       styleElement.innerHTML = cssVariables.replace(/\s\s+/g, ' ').trim();
-      
-      const existingStyleElement = document.getElementById('dynamic-theme-styles');
-      if (existingStyleElement) {
-        document.head.removeChild(existingStyleElement);
-      }
-      
-      document.head.appendChild(styleElement);
     }
   }, [activeTheme]);
 
