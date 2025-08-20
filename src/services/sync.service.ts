@@ -25,7 +25,7 @@ const entityToEndpointMap: Record<string, string> = {
   smtpSetting: 'settings/smtp',
   sale: 'sales',
   rolePermission: 'role-permissions',
-  translation: 'translations', // Added translation endpoint
+  translation: 'translations',
 };
 
 const singletonEntities = ['posSetting', 'receiptSetting', 'smtpSetting'];
@@ -129,7 +129,6 @@ class SyncService {
                   } else if (item.entity === 'translation') {
                       method = 'PUT';
                       endpoint = `${endpoint}/item`;
-                      // Body is already { keyPath, valuesToUpdate }, which is correct
                   } else {
                       method = 'PUT';
                       endpoint = `${endpoint}/${item.data.id}`;
@@ -138,6 +137,10 @@ class SyncService {
                   method = 'DELETE';
                   endpoint = `${endpoint}/${item.data.id}`;
                   body = '';
+                } else if (item.operation === 'create' && item.entity === 'sale') {
+                  // Sale creation does not include an ID in the path
+                  method = 'POST';
+                  endpoint = `/api/sales`;
                 }
 
                 const response = await fetch(endpoint, {
@@ -158,7 +161,7 @@ class SyncService {
                    throw new Error(`API error: ${response.status}`);
                 }
               } catch (singleError) {
-                  console.error(`[SyncService] Failed to process single operation for ${item.entity} ID ${item.data.id || ''}. Error:`, singleError);
+                  console.error(`[SyncService] Failed to process single operation for ${item.entity} ID ${item.data?.id || ''}. Error:`, singleError);
               }
             }
           }
