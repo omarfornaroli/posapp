@@ -71,9 +71,12 @@ class SyncService {
   }
 
   async syncWithBackend() {
-    if (this.isSyncing || typeof navigator !== 'undefined' && !navigator.onLine) {
-      console.log(`[SyncService] Skipping sync. Syncing: ${this.isSyncing}, Online: ${typeof navigator !== 'undefined' ? navigator.onLine : false}`);
-      if (typeof navigator !== 'undefined' && !navigator.onLine) this.updateStatus('offline');
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+        this.updateStatus('offline');
+        return;
+    }
+    if (this.isSyncing) {
+      console.log(`[SyncService] Skipping sync. A sync process is already running.`);
       return;
     }
 

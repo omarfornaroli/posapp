@@ -69,18 +69,15 @@ export function useDexieThemes() {
     try {
       await db.transaction('rw', db.themes, async () => {
         if (updatedTheme.isDefault) {
-          // Use filter() for robust boolean querying
           const currentDefault = await db.themes.filter(theme => theme.isDefault === true).first();
           if (currentDefault && currentDefault.id !== updatedTheme.id) {
             await db.themes.update(currentDefault.id, { isDefault: false });
-            // Queue the update for the old default
             await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...currentDefault, isDefault: false } });
           }
         }
         await db.themes.put(updatedTheme);
+        await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
       });
-      // Queue the update for the new theme
-      await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
     } catch (e) {
       console.error("Failed to update theme in Dexie:", e);
       throw e;
