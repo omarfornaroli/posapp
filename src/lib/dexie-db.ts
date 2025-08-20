@@ -1,3 +1,4 @@
+
 // src/lib/dexie-db.ts
 import Dexie, { type Table } from 'dexie';
 import type { Product, Client, SaleTransaction, Tax, Promotion, PaymentMethod, Supplier, User, Currency, Country, Theme, GridSetting, RolePermission, Notification, Report, POSSetting, ReceiptSetting, SmtpSetting, PendingCart, AppLanguage } from '@/types';
@@ -74,7 +75,7 @@ export class AppDexieDB extends Dexie {
     });
     this.version(4).stores({
         users: 'id, email, role',
-        rolePermissions: 'role', // Switched primary key to 'role'
+        rolePermissions: 'id, role', 
         notifications: 'id, createdAt, isRead',
         // Keep previous tables
         products: 'id, name, barcode, sku, category, supplier',
@@ -105,7 +106,7 @@ export class AppDexieDB extends Dexie {
         appLanguages: 'id, code',
         themes: 'id, name',
         users: 'id, email, role',
-        rolePermissions: 'role',
+        rolePermissions: 'id, role',
         notifications: 'id, createdAt, isRead',
     });
     this.version(6).stores({
@@ -123,7 +124,7 @@ export class AppDexieDB extends Dexie {
       appLanguages: 'id, code',
       themes: 'id, name',
       users: 'id, email, role',
-      rolePermissions: 'role',
+      rolePermissions: 'id, role',
       notifications: 'id, createdAt, isRead',
       sales: 'id, date, clientId, dispatchStatus',
       reports: 'id, createdAt',
@@ -145,7 +146,7 @@ export class AppDexieDB extends Dexie {
         appLanguages: 'id, code',
         themes: 'id, name',
         users: 'id, email, role',
-        rolePermissions: 'role',
+        rolePermissions: 'id, role',
         notifications: 'id, createdAt, isRead',
         sales: 'id, date, clientId, dispatchStatus',
         reports: 'id, createdAt',
@@ -165,7 +166,7 @@ export class AppDexieDB extends Dexie {
       countries: 'id, name, codeAlpha2',
       appLanguages: 'id, code',
       users: 'id, email, role',
-      rolePermissions: 'role',
+      rolePermissions: 'id, role',
       notifications: 'id, createdAt, isRead',
       sales: 'id, date, clientId, dispatchStatus',
       reports: 'id, createdAt',
@@ -187,7 +188,7 @@ export class AppDexieDB extends Dexie {
       appLanguages: 'id, code',
       themes: 'id, name, isDefault',
       users: 'id, email, role',
-      rolePermissions: 'role',
+      rolePermissions: 'id, role',
       notifications: 'id, createdAt, isRead',
       sales: 'id, date, clientId, dispatchStatus',
       reports: 'id, createdAt',
@@ -210,7 +211,7 @@ export class AppDexieDB extends Dexie {
         appLanguages: 'id, code',
         themes: 'id, name, isDefault',
         users: 'id, email, role',
-        rolePermissions: 'id, role', // Mistakenly changed PK
+        rolePermissions: 'id, role',
         notifications: 'id, createdAt, isRead',
         sales: 'id, date, clientId, dispatchStatus',
         reports: 'id, createdAt',
@@ -233,7 +234,7 @@ export class AppDexieDB extends Dexie {
         appLanguages: 'id, code',
         themes: 'id, name, isDefault',
         users: 'id, email, role',
-        rolePermissions: 'role', // Correct primary key is 'role'
+        rolePermissions: 'id, role', // Reverted back to ID as primary key.
         notifications: 'id, createdAt, isRead',
         sales: 'id, date, clientId, dispatchStatus',
         reports: 'id, createdAt',

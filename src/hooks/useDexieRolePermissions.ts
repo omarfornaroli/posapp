@@ -1,3 +1,4 @@
+
 // src/hooks/useDexieRolePermissions.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -28,11 +29,12 @@ export function useDexieRolePermissions() {
       if (!response.ok) throw new Error('Failed to fetch initial role permissions');
       const result = await response.json();
       if (result.success) {
-        // The API returns an 'id' but our Dexie table uses 'role' as PK.
-        // We ensure the objects being put match the Dexie schema by removing the 'id'.
+        // The API returns an 'id' (mongoose _id) which we will use as the primary key.
+        // The data structure now directly matches the Dexie schema 'id, role'.
         const permsToSave: RolePermission[] = result.data.map((p: any) => ({
-          role: p.role,
-          permissions: p.permissions,
+            id: p.id,
+            role: p.role,
+            permissions: p.permissions
         }));
         await db.rolePermissions.bulkPut(permsToSave);
       } else {
