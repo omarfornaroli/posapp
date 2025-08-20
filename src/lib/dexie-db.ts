@@ -82,7 +82,6 @@ export class AppDexieDB extends Dexie {
         taxes: 'id, name',
         paymentMethods: 'id, name',
         countries: 'id, name, codeAlpha2',
-        currencies: 'id, name, code',
         appLanguages: 'id, code',
         themes: 'id, name',
     });
