@@ -1,4 +1,3 @@
-
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -65,16 +64,16 @@ class SyncService {
         timestamp: Date.now(),
       });
       console.log(`[SyncService] Added ${item.operation} for ${item.entity} to queue.`);
-      this.syncWithBackend();
+      // No need to trigger sync immediately, interval will handle it
     } catch (error) {
       console.error("[SyncService] Error adding to queue:", error);
     }
   }
 
   async syncWithBackend() {
-    if (this.isSyncing || !navigator.onLine) {
-      console.log(`[SyncService] Skipping sync. Syncing: ${this.isSyncing}, Online: ${navigator.onLine}`);
-      if (!navigator.onLine) this.updateStatus('offline');
+    if (this.isSyncing || typeof navigator !== 'undefined' && !navigator.onLine) {
+      console.log(`[SyncService] Skipping sync. Syncing: ${this.isSyncing}, Online: ${typeof navigator !== 'undefined' ? navigator.onLine : false}`);
+      if (typeof navigator !== 'undefined' && !navigator.onLine) this.updateStatus('offline');
       return;
     }
 
@@ -89,91 +88,62 @@ class SyncService {
       this.updateStatus('idle');
       return;
     }
+    
+    console.log(`[SyncService] Found ${queueItems.length} items to sync.`);
 
-    const operationsByEntity: Record<string, SyncQueueItem[]> = {};
     for (const item of queueItems) {
-        if (!operationsByEntity[item.entity]) {
-            operationsByEntity[item.entity] = [];
-        }
-        operationsByEntity[item.entity].push(item);
-    }
-
-    try {
-      for (const entity in operationsByEntity) {
-        const operations = operationsByEntity[entity];
-        const endpointPath = entityToEndpointMap[entity];
-        
-        if (operations.length > 0 && endpointPath) {
-          const batchEndpoint = entityToEndpointMap[entity] ? `${entityToEndpointMap[entity]}/sync` : null;
-
-          if (batchEndpoint && false) { // Batch sync logic disabled for now
-            // Future implementation for batching
-          } else { // Process one by one for simple endpoints
-            console.log(`[SyncService] Syncing ${operations.length} operations for entity: ${entity} one-by-one to endpoint: /api/${endpointPath}`);
-            for (const item of operations) {
-              try {
-                let endpoint = `/api/${endpointPath}`;
-                let method = 'POST';
-                let body = JSON.stringify(item.data);
-                
-                if (item.operation === 'update') {
-                  if (singletonEntities.includes(item.entity)) {
-                      method = 'POST';
-                  } else if (item.entity === 'rolePermission') {
-                      method = 'PUT';
-                      endpoint = `${endpoint}/${item.data.role}`;
-                  } else if (item.entity === 'notification') {
-                      method = 'POST';
-                      endpoint = `${endpoint}/${item.data.id}/toggle-read`;
-                      body = '';
-                  } else if (item.entity === 'translation') {
-                      method = 'PUT';
-                      endpoint = `${endpoint}/item`;
-                  } else {
-                      method = 'PUT';
-                      endpoint = `${endpoint}/${item.data.id}`;
-                  }
-                } else if (item.operation === 'delete') {
-                  method = 'DELETE';
-                  endpoint = `${endpoint}/${item.data.id}`;
-                  body = '';
-                } else if (item.operation === 'create' && item.entity === 'sale') {
-                  // Sale creation does not include an ID in the path
-                  method = 'POST';
-                  endpoint = `/api/sales`;
-                }
-
-                const response = await fetch(endpoint, {
-                  method,
-                  headers: { 'Content-Type': 'application/json' },
-                  body: body || undefined,
-                });
-                
-                if (response.ok) {
-                  const result = await response.json();
-                  if (result.success) {
-                    await db.syncQueue.delete(item.id!);
-                    console.log(`[SyncService] Successfully synced ${item.operation} for ${item.entity} ID ${item.data.id || item.data.keyPath || item.data.role || '(new)'}`);
-                  } else {
-                     throw new Error(result.error || `Backend failed to ${item.operation} ${item.entity}`);
-                  }
-                } else {
-                   throw new Error(`API error: ${response.status}`);
-                }
-              } catch (singleError) {
-                  console.error(`[SyncService] Failed to process single operation for ${item.entity} ID ${item.data?.id || ''}. Error:`, singleError);
-              }
+        try {
+            const endpointPath = entityToEndpointMap[item.entity];
+            if (!endpointPath) {
+                console.warn(`[SyncService] No endpoint mapping for entity: ${item.entity}. Skipping.`);
+                await db.syncQueue.delete(item.id!);
+                continue;
             }
-          }
+
+            let endpoint = `/api/${endpointPath}`;
+            let method = 'POST';
+            let body: string | undefined = JSON.stringify(item.data);
+            
+            if (item.operation === 'update') {
+              method = 'PUT';
+              if (!singletonEntities.includes(item.entity)) {
+                endpoint = `${endpoint}/${item.data.id}`;
+              }
+              if(item.entity === 'rolePermission') {
+                  endpoint = `/api/role-permissions/${item.data.role}`;
+              }
+            } else if (item.operation === 'delete') {
+              method = 'DELETE';
+              endpoint = `${endpoint}/${item.data.id}`;
+              body = undefined; // No body for DELETE
+            }
+            
+            const response = await fetch(endpoint, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body,
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) {
+                    await db.syncQueue.delete(item.id!);
+                    console.log(`[SyncService] Synced ${item.operation} for ${item.entity} ID ${item.data.id || '(new)'}`);
+                } else {
+                    throw new Error(`Backend error for ${item.entity}: ${result.error}`);
+                }
+            } else {
+                throw new Error(`API error: ${response.status}`);
+            }
+
+        } catch (error) {
+            console.error(`[SyncService] Failed to process item ID ${item.id} for entity ${item.entity}. Error:`, error);
         }
-      }
-    } catch (error) {
-      console.error("[SyncService] General error during sync process:", error);
-    } finally {
-      this.isSyncing = false;
-      console.log("[SyncService] Sync finished.");
-      this.updateStatus(navigator.onLine ? 'idle' : 'offline');
     }
+
+    this.isSyncing = false;
+    console.log("[SyncService] Sync finished.");
+    this.updateStatus(typeof navigator !== 'undefined' && navigator.onLine ? 'idle' : 'offline');
   }
 
   start() {
