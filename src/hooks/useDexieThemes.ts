@@ -7,18 +7,12 @@ import type { Theme } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const generateId = () => `temp-${crypto.randomUUID()}`;
-let isPopulating = false;
 
 export function useDexieThemes() {
   const [isLoading, setIsLoading] = useState(true);
-  const themes = useLiveQuery(() => db.themes.orderBy('name').toArray(), []);
   
   const populateInitialData = useCallback(async () => {
-    if (isPopulating) return;
-    
     setIsLoading(true);
-    isPopulating = true;
-    
     try {
       const response = await fetch('/api/themes');
       if (!response.ok) throw new Error('Failed to fetch themes');
@@ -28,6 +22,7 @@ export function useDexieThemes() {
 
       const serverThemes: Theme[] = result.data;
       
+      // Atomically clear and bulk-add to prevent duplicates and ensure consistency.
       await db.transaction('rw', db.themes, async () => {
         await db.themes.clear();
         await db.themes.bulkAdd(serverThemes);
@@ -37,9 +32,23 @@ export function useDexieThemes() {
       console.warn("[useDexieThemes] Failed to populate themes (likely offline). Using local data.", error);
     } finally {
       setIsLoading(false);
-      isPopulating = false;
     }
   }, []);
+
+  // Live query will react to any changes in the themes table.
+  const themes = useLiveQuery(
+    () => {
+      // Set loading to false once we have some data from Dexie.
+      db.themes.count().then(count => {
+        if (count > 0 && isLoading) {
+            setIsLoading(false);
+        }
+      });
+      return db.themes.orderBy('name').toArray();
+    }, 
+    [], // dependencies for the query
+    []  // Default value
+  );
 
   useEffect(() => {
     populateInitialData();
@@ -65,11 +74,13 @@ export function useDexieThemes() {
           const currentDefault = await db.themes.where({ isDefault: true }).first();
           if (currentDefault && currentDefault.id !== updatedTheme.id) {
             await db.themes.update(currentDefault.id, { isDefault: false });
+            // Queue the update for the old default
             await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...currentDefault, isDefault: false } });
           }
         }
         await db.themes.put(updatedTheme);
       });
+      // Queue the update for the new theme
       await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
     } catch (e) {
       console.error("Failed to update theme in Dexie:", e);
@@ -82,5 +93,5 @@ export function useDexieThemes() {
     await syncService.addToQueue({ entity: 'theme', operation: 'delete', data: { id } });
   };
 
-  return { themes: themes || [], isLoading: isLoading, refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
+  return { themes: themes || [], isLoading, refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
 }

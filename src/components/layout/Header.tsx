@@ -138,7 +138,6 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                                 <DropdownMenuItem
                                     key={theme.id}
                                     onClick={() => handleThemeSwitch(theme.id)}
-                                    disabled={theme.isDefault}
                                     className="flex justify-between items-center"
                                 >
                                     <span>{theme.name}</span>

@@ -23,16 +23,14 @@ export default function ThemesPage() {
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
   
-  const { themes, isLoading, addTheme, updateTheme, refetch } = useDexieThemes();
+  const { themes, isLoading, addTheme, updateTheme } = useDexieThemes();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingTheme, setEditingTheme] = useState<Theme | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
   
   const { toast } = useToast();
 
   const handleAddTheme = async (newThemeData: Omit<Theme, 'id' | 'isDefault' | 'createdAt' | 'updatedAt'>) => {
-    setIsUpdating(true);
     try {
       await addTheme(newThemeData);
       toast({
@@ -46,8 +44,6 @@ export default function ThemesPage() {
         title: t('Common.error'),
         description: error instanceof Error ? error.message : 'Failed to add theme',
       });
-    } finally {
-      setIsUpdating(false);
     }
   };
 
@@ -57,7 +53,6 @@ export default function ThemesPage() {
   };
 
   const handleSaveEdited = async (updatedThemeData: Theme) => {
-    setIsUpdating(true);
     try {
       await updateTheme(updatedThemeData);
       toast({
@@ -68,16 +63,14 @@ export default function ThemesPage() {
       setEditingTheme(null);
     } catch (error) {
        toast({ variant: 'destructive', title: t('Common.error'), description: error instanceof Error ? error.message : 'Failed to update theme.' });
-    } finally {
-        setIsUpdating(false);
     }
   };
   
   const handleSetDefault = async (themeId: string) => {
-     setIsUpdating(true);
      try {
        const themeToSet = themes.find(t => t.id === themeId);
        if (!themeToSet) throw new Error("Theme not found locally");
+       // No need to check if it's already default, the button is always enabled now.
        await updateTheme({ ...themeToSet, isDefault: true });
        toast({
           title: t('Toasts.themeDefaultSetTitle'),
@@ -86,8 +79,6 @@ export default function ThemesPage() {
        window.location.reload();
     } catch (error) {
        toast({ variant: 'destructive', title: t('Common.error'), description: error instanceof Error ? error.message : t('ThemeManagerPage.errorSettingDefaultTheme') });
-    } finally {
-        setIsUpdating(false);
     }
   };
 
@@ -97,7 +88,7 @@ export default function ThemesPage() {
   
   const isLoadingData = isLoadingTranslations || isLoading;
 
-  if (isLoadingData) {
+  if (isLoadingData && themes.length === 0) {
     return (
       <div className="flex justify-center items-center h-[calc(100vh-var(--header-height,64px)-4rem)]">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -135,8 +126,8 @@ export default function ThemesPage() {
                     </div>
                     <div className="flex mt-4 gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleEditTrigger(theme)}>{t('Common.edit')}</Button>
-                        <Button size="sm" onClick={() => handleSetDefault(theme.id)} disabled={theme.isDefault || isUpdating}>
-                            {isUpdating && !theme.isDefault ? <Loader2 className="h-4 w-4 animate-spin"/> : (theme.isDefault ? t('ThemeManagerPage.isDefaultBadge') : t('ThemeManagerPage.setDefaultButton'))}
+                        <Button size="sm" onClick={() => handleSetDefault(theme.id)}>
+                            {theme.isDefault ? t('ThemeManagerPage.isDefaultBadge') : t('ThemeManagerPage.setDefaultButton')}
                         </Button>
                     </div>
                 </div>
