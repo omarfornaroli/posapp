@@ -1,4 +1,3 @@
-
 // src/lib/dexie-db.ts
 import Dexie, { type Table } from 'dexie';
 import type { Product, Client, SaleTransaction, Tax, Promotion, PaymentMethod, Supplier, User, Currency, Country, Theme, GridSetting, RolePermission, Notification, Report, POSSetting, ReceiptSetting, SmtpSetting, PendingCart, AppLanguage } from '@/types';
@@ -196,7 +195,30 @@ export class AppDexieDB extends Dexie {
       posSettings: 'key',
       receiptSettings: 'key',
       smtpSettings: 'key',
-      syncQueue: '++id, entity, timestamp', // Ensure syncQueue is always present.
+      syncQueue: '++id, entity, timestamp',
+    });
+    this.version(10).stores({
+        rolePermissions: 'id, role', // Correct primary key
+        // Re-declare all other tables from version 9 to keep them
+        products: 'id, name, barcode, sku, category, supplier',
+        clients: 'id, name, email',
+        suppliers: 'id, name, email',
+        promotions: 'id, name, isActive',
+        taxes: 'id, name',
+        paymentMethods: 'id, name',
+        countries: 'id, name, codeAlpha2',
+        currencies: 'id, name, code, isDefault',
+        appLanguages: 'id, code',
+        themes: 'id, name, isDefault',
+        users: 'id, email, role',
+        notifications: 'id, createdAt, isRead',
+        sales: 'id, date, clientId, dispatchStatus',
+        reports: 'id, createdAt',
+        translations: 'keyPath',
+        posSettings: 'key',
+        receiptSettings: 'key',
+        smtpSettings: 'key',
+        syncQueue: '++id, entity, timestamp',
     });
   }
 }

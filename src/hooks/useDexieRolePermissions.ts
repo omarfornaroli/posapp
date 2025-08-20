@@ -1,4 +1,3 @@
-
 // src/hooks/useDexieRolePermissions.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -33,8 +32,8 @@ export function useDexieRolePermissions() {
         // The API now returns an 'id' but our Dexie table uses 'role' as PK.
         // We ensure the objects being put match the Dexie schema.
         const permsToSave: RolePermission[] = result.data.map((p: any) => ({
-          role: p.role,
-          permissions: p.permissions
+          ...p,
+          id: p.role, // Use the role as the 'id' for the primary key
         }));
         await db.rolePermissions.bulkPut(permsToSave);
       } else {
