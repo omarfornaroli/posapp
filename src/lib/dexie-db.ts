@@ -52,31 +52,128 @@ export class AppDexieDB extends Dexie {
       paymentMethods: 'id, name',
       countries: 'id, name, codeAlpha2',
       currencies: 'id, name, code',
+      // Keep previous tables
+      products: 'id, name, barcode, sku, category, supplier',
+      clients: 'id, name, email',
+      suppliers: 'id, name, email',
+      syncQueue: '++id, entity, timestamp',
+      promotions: 'id, name, isActive',
     });
     this.version(3).stores({
         appLanguages: 'id, code',
         themes: 'id, name',
+        // Keep previous tables
+        products: 'id, name, barcode, sku, category, supplier',
+        clients: 'id, name, email',
+        suppliers: 'id, name, email',
+        syncQueue: '++id, entity, timestamp',
+        promotions: 'id, name, isActive',
+        taxes: 'id, name',
+        paymentMethods: 'id, name',
+        countries: 'id, name, codeAlpha2',
+        currencies: 'id, name, code',
     });
     this.version(4).stores({
         users: 'id, email, role',
         rolePermissions: 'role', // Switched primary key to 'role'
-        notifications: 'id, createdAt, isRead'
+        notifications: 'id, createdAt, isRead',
+        // Keep previous tables
+        products: 'id, name, barcode, sku, category, supplier',
+        clients: 'id, name, email',
+        suppliers: 'id, name, email',
+        syncQueue: '++id, entity, timestamp',
+        promotions: 'id, name, isActive',
+        taxes: 'id, name',
+        paymentMethods: 'id, name',
+        countries: 'id, name, codeAlpha2',
+        currencies: 'id, name, code',
+        appLanguages: 'id, code',
+        themes: 'id, name',
     });
     this.version(5).stores({
         sales: 'id, date, clientId, dispatchStatus',
-        reports: 'id, createdAt'
+        reports: 'id, createdAt',
+        // Keep previous tables
+        products: 'id, name, barcode, sku, category, supplier',
+        clients: 'id, name, email',
+        suppliers: 'id, name, email',
+        syncQueue: '++id, entity, timestamp',
+        promotions: 'id, name, isActive',
+        taxes: 'id, name',
+        paymentMethods: 'id, name',
+        countries: 'id, name, codeAlpha2',
+        currencies: 'id, name, code',
+        appLanguages: 'id, code',
+        themes: 'id, name',
+        users: 'id, email, role',
+        rolePermissions: 'role',
+        notifications: 'id, createdAt, isRead',
     });
     this.version(6).stores({
-      translations: 'keyPath' // keyPath is unique e.g. "Header.title"
+      translations: 'keyPath',
+      // Keep previous tables
+      products: 'id, name, barcode, sku, category, supplier',
+      clients: 'id, name, email',
+      suppliers: 'id, name, email',
+      syncQueue: '++id, entity, timestamp',
+      promotions: 'id, name, isActive',
+      taxes: 'id, name',
+      paymentMethods: 'id, name',
+      countries: 'id, name, codeAlpha2',
+      currencies: 'id, name, code',
+      appLanguages: 'id, code',
+      themes: 'id, name',
+      users: 'id, email, role',
+      rolePermissions: 'role',
+      notifications: 'id, createdAt, isRead',
+      sales: 'id, date, clientId, dispatchStatus',
+      reports: 'id, createdAt',
     });
     this.version(7).stores({
         posSettings: 'key',
         receiptSettings: 'key',
         smtpSettings: 'key',
+        // Keep previous tables
+        products: 'id, name, barcode, sku, category, supplier',
+        clients: 'id, name, email',
+        suppliers: 'id, name, email',
+        syncQueue: '++id, entity, timestamp',
+        promotions: 'id, name, isActive',
+        taxes: 'id, name',
+        paymentMethods: 'id, name',
+        countries: 'id, name, codeAlpha2',
+        currencies: 'id, name, code',
+        appLanguages: 'id, code',
+        themes: 'id, name',
+        users: 'id, email, role',
+        rolePermissions: 'role',
+        notifications: 'id, createdAt, isRead',
+        sales: 'id, date, clientId, dispatchStatus',
+        reports: 'id, createdAt',
+        translations: 'keyPath',
     });
     this.version(8).stores({
       currencies: 'id, name, code, isDefault',
-      themes: 'id, name, isDefault'
+      themes: 'id, name, isDefault',
+      // Keep previous tables
+      products: 'id, name, barcode, sku, category, supplier',
+      clients: 'id, name, email',
+      suppliers: 'id, name, email',
+      syncQueue: '++id, entity, timestamp',
+      promotions: 'id, name, isActive',
+      taxes: 'id, name',
+      paymentMethods: 'id, name',
+      countries: 'id, name, codeAlpha2',
+      appLanguages: 'id, code',
+      users: 'id, email, role',
+      rolePermissions: 'role',
+      notifications: 'id, createdAt, isRead',
+      sales: 'id, date, clientId, dispatchStatus',
+      reports: 'id, createdAt',
+      translations: 'keyPath',
+      posSettings: 'key',
+      receiptSettings: 'key',
+      smtpSettings: 'key',
     });
   }
 }
