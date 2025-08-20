@@ -1,4 +1,3 @@
-
 // src/hooks/useDexieThemes.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -10,9 +9,10 @@ const generateId = () => `temp-${crypto.randomUUID()}`;
 
 export function useDexieThemes() {
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const populateInitialData = useCallback(async () => {
-    setIsLoading(true);
+    // No change to setIsLoading here to prevent UI flicker.
+    // Let the live query handle the loading state based on data availability.
     try {
       const response = await fetch('/api/themes');
       if (!response.ok) throw new Error('Failed to fetch themes');
@@ -22,7 +22,6 @@ export function useDexieThemes() {
 
       const serverThemes: Theme[] = result.data;
       
-      // Atomically clear and bulk-add to prevent duplicates and ensure consistency.
       await db.transaction('rw', db.themes, async () => {
         await db.themes.clear();
         await db.themes.bulkAdd(serverThemes);
@@ -30,29 +29,27 @@ export function useDexieThemes() {
       
     } catch (error) {
       console.warn("[useDexieThemes] Failed to populate themes (likely offline). Using local data.", error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
-
-  // Live query will react to any changes in the themes table.
-  const themes = useLiveQuery(
-    () => {
-      // Set loading to false once we have some data from Dexie.
-      db.themes.count().then(count => {
-        if (count > 0 && isLoading) {
-            setIsLoading(false);
-        }
-      });
-      return db.themes.orderBy('name').toArray();
-    }, 
-    [], // dependencies for the query
-    []  // Default value
-  );
 
   useEffect(() => {
     populateInitialData();
   }, [populateInitialData]);
+  
+  const themes = useLiveQuery(
+    () => db.themes.orderBy('name').toArray(), 
+    [], 
+    []
+  );
+
+  useEffect(() => {
+    // The hook is considered "loading" only if the live query result is undefined
+    // (meaning Dexie hasn't populated it yet). Once we have an array (even an empty one),
+    // we are no longer in an initial loading state.
+    if (themes !== undefined) {
+      setIsLoading(false);
+    }
+  }, [themes]);
 
   const addTheme = async (newTheme: Omit<Theme, 'id' | 'isDefault' | 'createdAt' | 'updatedAt'>) => {
     const tempId = generateId();
@@ -71,7 +68,8 @@ export function useDexieThemes() {
     try {
       await db.transaction('rw', db.themes, async () => {
         if (updatedTheme.isDefault) {
-          const currentDefault = await db.themes.where({ isDefault: true }).first();
+          // Use filter() for robust boolean querying
+          const currentDefault = await db.themes.filter(theme => theme.isDefault === true).first();
           if (currentDefault && currentDefault.id !== updatedTheme.id) {
             await db.themes.update(currentDefault.id, { isDefault: false });
             // Queue the update for the old default
