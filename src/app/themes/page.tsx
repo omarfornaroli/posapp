@@ -31,7 +31,7 @@ export default function ThemesPage() {
   
   const { toast } = useToast();
 
-  const handleAddTheme = async (newThemeData: Omit<Theme, 'id' | 'isDefault'>) => {
+  const handleAddTheme = async (newThemeData: Omit<Theme, 'id' | 'isDefault' | 'createdAt' | 'updatedAt'>) => {
     setIsUpdating(true);
     try {
       await addTheme(newThemeData);
@@ -95,7 +95,7 @@ export default function ThemesPage() {
     return <AccessDeniedMessage />;
   }
   
-  const isLoadingData = isLoadingTranslations || (isLoading && themes.length === 0);
+  const isLoadingData = isLoadingTranslations || isLoading;
 
   if (isLoadingData) {
     return (
@@ -136,7 +136,7 @@ export default function ThemesPage() {
                     <div className="flex mt-4 gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleEditTrigger(theme)}>{t('Common.edit')}</Button>
                         <Button size="sm" onClick={() => handleSetDefault(theme.id)} disabled={theme.isDefault || isUpdating}>
-                            {isUpdating ? <Loader2 className="h-4 w-4 animate-spin"/> : (theme.isDefault ? t('ThemeManagerPage.isDefaultBadge') : t('ThemeManagerPage.setDefaultButton'))}
+                            {isUpdating && !theme.isDefault ? <Loader2 className="h-4 w-4 animate-spin"/> : (theme.isDefault ? t('ThemeManagerPage.isDefaultBadge') : t('ThemeManagerPage.setDefaultButton'))}
                         </Button>
                     </div>
                 </div>

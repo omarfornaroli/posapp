@@ -11,18 +11,13 @@ let isPopulating = false;
 
 export function useDexieThemes() {
   const [isLoading, setIsLoading] = useState(true);
-  const themes = useLiveQuery(() => db.themes.toArray(), []);
+  const themes = useLiveQuery(() => db.themes.orderBy('name').toArray(), []);
   
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
-    
+
+    setIsLoading(true);
     isPopulating = true;
-    const count = await db.themes.count();
-    if (count > 0) {
-      setIsLoading(false);
-    } else {
-      setIsLoading(true);
-    }
     
     try {
       const response = await fetch('/api/themes');
@@ -33,12 +28,16 @@ export function useDexieThemes() {
 
       const serverThemes: Theme[] = result.data;
       
-      await db.themes.clear();
-      await db.themes.bulkAdd(serverThemes);
-      console.log(`[useDexieThemes] Cleared and re-populated ${serverThemes.length} themes.`);
+      await db.transaction('rw', db.themes, async () => {
+        const currentLocalThemes = await db.themes.toArray();
+        if (JSON.stringify(serverThemes) !== JSON.stringify(currentLocalThemes)) {
+            await db.themes.clear();
+            await db.themes.bulkAdd(serverThemes);
+        }
+      });
       
     } catch (error) {
-      console.warn("[useDexieThemes] Failed to populate themes (likely offline):", error);
+      console.warn("[useDexieThemes] Failed to populate themes (likely offline). Using local data.", error);
     } finally {
       setIsLoading(false);
       isPopulating = false;
@@ -60,22 +59,26 @@ export function useDexieThemes() {
     await syncService.addToQueue({ entity: 'theme', operation: 'create', data: themeWithId });
   };
 
-  const updateTheme = async (updatedTheme: Theme) => {
-     try {
-        if (updatedTheme.isDefault) {
-          const oldDefault = await db.themes.filter(t => t.isDefault).first();
-          if (oldDefault && oldDefault.id !== updatedTheme.id) {
-              await db.themes.update(oldDefault.id, { isDefault: false });
-              await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...oldDefault, isDefault: false } });
-          }
-        }
-        
-        await db.themes.put(updatedTheme);
+ const updateTheme = async (updatedTheme: Theme) => {
+    try {
+        await db.transaction('rw', db.themes, async () => {
+            if (updatedTheme.isDefault) {
+                // Find and unset the current default theme
+                const currentDefault = await db.themes.where('isDefault').equals(1).first();
+                if (currentDefault && currentDefault.id !== updatedTheme.id) {
+                    await db.themes.update(currentDefault.id, { isDefault: false });
+                    await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...currentDefault, isDefault: false }});
+                }
+            }
+            // Put the updated theme (which will either be the new default or just a regular update)
+            await db.themes.put(updatedTheme);
+        });
+        // Queue the primary update operation after the transaction completes
         await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
-     } catch (e) {
-         console.error("Failed to update theme in Dexie:", e);
-         throw e;
-     }
+    } catch (e) {
+        console.error("Failed to update theme in Dexie:", e);
+        throw e;
+    }
   };
   
   const deleteTheme = async (id: string) => {
@@ -83,5 +86,5 @@ export function useDexieThemes() {
     await syncService.addToQueue({ entity: 'theme', operation: 'delete', data: { id } });
   };
 
-  return { themes: themes || [], isLoading: isLoading || themes === undefined, refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
+  return { themes: themes || [], isLoading: isLoading && (!themes || themes.length === 0), refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
 }
