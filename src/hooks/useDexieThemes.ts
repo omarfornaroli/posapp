@@ -23,6 +23,7 @@ export function useDexieThemes() {
       const serverThemes: Theme[] = result.data;
       
       await db.transaction('rw', db.themes, async () => {
+        // Clear local data only when we have new data to insert.
         await db.themes.clear();
         await db.themes.bulkAdd(serverThemes);
       });

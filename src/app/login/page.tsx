@@ -82,8 +82,8 @@ export default function LoginPage() {
       localStorage.setItem('loggedInUserEmail', values.email);
       localStorage.setItem('sessionExpiresAt', result.expiresAt);
 
-      router.push('/');
-      router.refresh();
+      // Use window.location.assign for a full page reload to re-initialize layout and data fetching.
+      window.location.assign('/');
       
     } catch (error) {
       toast({
