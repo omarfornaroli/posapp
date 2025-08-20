@@ -1,3 +1,4 @@
+
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -24,6 +25,7 @@ const entityToEndpointMap: Record<string, string> = {
   smtpSetting: 'settings/smtp',
   sale: 'sales',
   rolePermission: 'role-permissions',
+  translation: 'translations', // Added translation endpoint
 };
 
 const singletonEntities = ['posSetting', 'receiptSetting', 'smtpSetting'];
@@ -102,26 +104,10 @@ class SyncService {
         const endpointPath = entityToEndpointMap[entity];
         
         if (operations.length > 0 && endpointPath) {
-          if (endpointPath.endsWith('/sync')) { // Use batch endpoint if available
-            console.log(`[SyncService] Syncing ${operations.length} operations for entity: ${entity} to batch endpoint: /api/${endpointPath}`);
-            const response = await fetch(`/api/${endpointPath}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(operations.map(({ id, ...op }) => op)),
-            });
+          const batchEndpoint = entityToEndpointMap[entity] ? `${entityToEndpointMap[entity]}/sync` : null;
 
-            if (!response.ok) {
-                console.error(`[SyncService] Batch sync for ${entity} failed with status ${response.status}`);
-                continue; 
-            }
-            const result = await response.json();
-             if (result.success) {
-                const processedIds = operations.map(item => item.id).filter(id => id !== undefined) as number[];
-                await db.syncQueue.bulkDelete(processedIds);
-                console.log(`[SyncService] Successfully synced and cleared ${processedIds.length} ${entity} operations via batch.`);
-            } else {
-                console.error(`[SyncService] Backend reported error on ${entity} batch sync:`, result.error);
-            }
+          if (batchEndpoint && false) { // Batch sync logic disabled for now
+            // Future implementation for batching
           } else { // Process one by one for simple endpoints
             console.log(`[SyncService] Syncing ${operations.length} operations for entity: ${entity} one-by-one to endpoint: /api/${endpointPath}`);
             for (const item of operations) {
@@ -130,25 +116,29 @@ class SyncService {
                 let method = 'POST';
                 let body = JSON.stringify(item.data);
                 
-                // Handle standard CRUD operations
-                if (item.operation === 'update' && !singletonEntities.includes(item.entity) && item.entity !== 'rolePermission' && item.entity !== 'notification') {
-                  method = 'PUT';
-                  endpoint = `${endpoint}/${item.data.id}`;
+                if (item.operation === 'update') {
+                  if (singletonEntities.includes(item.entity)) {
+                      method = 'POST';
+                  } else if (item.entity === 'rolePermission') {
+                      method = 'PUT';
+                      endpoint = `${endpoint}/${item.data.role}`;
+                  } else if (item.entity === 'notification') {
+                      method = 'POST';
+                      endpoint = `${endpoint}/${item.data.id}/toggle-read`;
+                      body = '';
+                  } else if (item.entity === 'translation') {
+                      method = 'PUT';
+                      endpoint = `${endpoint}/item`;
+                      // Body is already { keyPath, valuesToUpdate }, which is correct
+                  } else {
+                      method = 'PUT';
+                      endpoint = `${endpoint}/${item.data.id}`;
+                  }
                 } else if (item.operation === 'delete') {
                   method = 'DELETE';
                   endpoint = `${endpoint}/${item.data.id}`;
                   body = '';
-                } else if (item.operation === 'update' && singletonEntities.includes(item.entity)) {
-                    method = 'POST';
-                } else if (item.operation === 'update' && item.entity === 'rolePermission') {
-                  method = 'PUT';
-                  endpoint = `${endpoint}/${item.data.role}`; // Use role name for URL
-                } else if (item.operation === 'update' && item.entity === 'notification') {
-                    method = 'POST';
-                    endpoint = `${endpoint}/${item.data.id}/toggle-read`;
-                    body = ''; // Body is not needed for this endpoint
                 }
-
 
                 const response = await fetch(endpoint, {
                   method,
@@ -160,7 +150,7 @@ class SyncService {
                   const result = await response.json();
                   if (result.success) {
                     await db.syncQueue.delete(item.id!);
-                    console.log(`[SyncService] Successfully synced ${item.operation} for ${item.entity} ID ${item.data.id || item.data.role || '(new)'}`);
+                    console.log(`[SyncService] Successfully synced ${item.operation} for ${item.entity} ID ${item.data.id || item.data.keyPath || item.data.role || '(new)'}`);
                   } else {
                      throw new Error(result.error || `Backend failed to ${item.operation} ${item.entity}`);
                   }
