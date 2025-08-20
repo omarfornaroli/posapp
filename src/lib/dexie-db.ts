@@ -267,7 +267,7 @@ export class AppDexieDB extends Dexie {
         appLanguages: 'id, code',
         themes: 'id, name, isDefault',
         users: 'id, email, role',
-        rolePermissions: 'id,role',
+        rolePermissions: 'id, role',
         notifications: 'id, createdAt, isRead',
         sales: 'id, date, clientId, dispatchStatus',
         reports: 'id, createdAt',
@@ -281,3 +281,5 @@ export class AppDexieDB extends Dexie {
 }
 
 export const db = new AppDexieDB();
+
+    
