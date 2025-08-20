@@ -28,14 +28,9 @@ export function useDexieThemes() {
 
       const serverThemes: Theme[] = result.data;
       
-      // Perform a clean sync: clear local and add server data.
       await db.transaction('rw', db.themes, async () => {
-        const localThemes = await db.themes.toArray();
-        // A simple check to see if a sync is needed
-        if(serverThemes.length !== localThemes.length || JSON.stringify(serverThemes) !== JSON.stringify(localThemes)){
-            await db.themes.clear();
-            await db.themes.bulkAdd(serverThemes);
-        }
+        await db.themes.clear();
+        await db.themes.bulkAdd(serverThemes);
       });
       
     } catch (error) {
@@ -66,27 +61,19 @@ export function useDexieThemes() {
   const updateTheme = async (updatedTheme: Theme) => {
     try {
       await db.transaction('rw', db.themes, async () => {
-        // If the incoming update sets a theme to be the default
         if (updatedTheme.isDefault) {
-          // Find the current default theme
-          const currentDefault = await db.themes.where('isDefault').equals(1).first();
+          const currentDefault = await db.themes.where({ isDefault: true }).first();
           if (currentDefault && currentDefault.id !== updatedTheme.id) {
-            // Unset the old default
             await db.themes.update(currentDefault.id, { isDefault: false });
-            // Queue the update for the old default theme for sync
             await syncService.addToQueue({ entity: 'theme', operation: 'update', data: { ...currentDefault, isDefault: false } });
           }
         }
-        // Update the new theme (either setting it as default or just updating other properties)
         await db.themes.put(updatedTheme);
       });
-
-      // Queue the primary update operation after the transaction completes successfully
       await syncService.addToQueue({ entity: 'theme', operation: 'update', data: updatedTheme });
-
     } catch (e) {
       console.error("Failed to update theme in Dexie:", e);
-      throw e; // Re-throw to allow the UI to catch it
+      throw e;
     }
   };
   
@@ -95,5 +82,5 @@ export function useDexieThemes() {
     await syncService.addToQueue({ entity: 'theme', operation: 'delete', data: { id } });
   };
 
-  return { themes: themes || [], isLoading: isLoading && (!themes || themes.length === 0), refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
+  return { themes: themes || [], isLoading: isLoading, refetch: populateInitialData, addTheme, updateTheme, deleteTheme };
 }

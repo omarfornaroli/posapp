@@ -37,7 +37,6 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
   const { themes, isLoading: isLoadingThemes, updateTheme } = useDexieThemes();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isSwitchingTheme, setIsSwitchingTheme] = useState(false);
 
   useEffect(() => {
     initializeTranslations(currentLocale);
@@ -60,13 +59,11 @@ export default function Header({ toggleSidebar }: HeaderProps) {
   };
 
   const handleThemeSwitch = async (themeId: string) => {
-    setIsSwitchingTheme(true);
     const themeToSet = themes.find(t => t.id === themeId);
     if (!themeToSet) return;
     
     try {
       await updateTheme({ ...themeToSet, isDefault: true });
-
       toast({
         title: t('Toasts.themeDefaultSetTitle'),
         description: t('Toasts.themeDefaultSetDescription', { themeName: themeToSet.name }),
@@ -78,8 +75,6 @@ export default function Header({ toggleSidebar }: HeaderProps) {
         title: t('Common.error'),
         description: error instanceof Error ? error.message : t('ThemeManagerPage.errorSettingDefaultTheme'),
       });
-    } finally {
-      setIsSwitchingTheme(false);
     }
   };
 
@@ -131,8 +126,8 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                         <TooltipTrigger asChild>
                             <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" aria-label={t('Header.switchThemeButton')} disabled={isLoadingThemes || isSwitchingTheme}>
-                                {isLoadingThemes || isSwitchingTheme ? <Loader2 className="h-5 w-5 animate-spin" /> : <Palette className="h-5 w-5" />}
+                                <Button variant="ghost" size="icon" aria-label={t('Header.switchThemeButton')} disabled={isLoadingThemes}>
+                                {isLoadingThemes ? <Loader2 className="h-5 w-5 animate-spin" /> : <Palette className="h-5 w-5" />}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
@@ -143,7 +138,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                                 <DropdownMenuItem
                                     key={theme.id}
                                     onClick={() => handleThemeSwitch(theme.id)}
-                                    disabled={theme.isDefault || isSwitchingTheme}
+                                    disabled={theme.isDefault}
                                     className="flex justify-between items-center"
                                 >
                                     <span>{theme.name}</span>
