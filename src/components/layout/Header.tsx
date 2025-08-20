@@ -60,7 +60,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
 
   const handleThemeSwitch = async (themeId: string) => {
     const themeToSet = themes.find(t => t.id === themeId);
-    if (!themeToSet || themeToSet.isDefault) return;
+    if (!themeToSet) return;
     
     try {
       await updateTheme({ ...themeToSet, isDefault: true });
@@ -125,7 +125,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                         <TooltipTrigger asChild>
                             <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" aria-label={t('Header.switchThemeButton')} disabled={isLoadingThemes}>
+                                <Button variant="ghost" size="icon" aria-label={t('Header.switchThemeButton')}>
                                 {isLoadingThemes ? <Loader2 className="h-5 w-5 animate-spin" /> : <Palette className="h-5 w-5" />}
                                 </Button>
                             </DropdownMenuTrigger>
@@ -138,7 +138,6 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                                     key={theme.id}
                                     onClick={() => handleThemeSwitch(theme.id)}
                                     className="flex justify-between items-center"
-                                    disabled={theme.isDefault}
                                 >
                                     <span>{theme.name}</span>
                                     {activeTheme?.id === theme.id && <Check className="h-4 w-4 text-primary" />}
