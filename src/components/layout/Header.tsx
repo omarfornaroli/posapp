@@ -71,10 +71,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
         title: t('Toasts.themeDefaultSetTitle'),
         description: t('Toasts.themeDefaultSetDescription', { themeName: themeToSet.name }),
       });
-      // The Dexie hook will trigger a re-render. A full reload re-fetches everything,
-      // which is slow and against the offline-first approach.
-      // The ThemeStyleInjector will reactively apply the new theme from Dexie.
-       window.location.reload(); // Still might be necessary if some components don't react properly.
+      window.location.reload(); 
     } catch (error) {
       toast({
         variant: 'destructive',

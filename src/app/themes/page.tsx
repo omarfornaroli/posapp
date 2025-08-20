@@ -136,7 +136,7 @@ export default function ThemesPage() {
                     <div className="flex mt-4 gap-2">
                         <Button variant="outline" size="sm" onClick={() => handleEditTrigger(theme)}>{t('Common.edit')}</Button>
                         <Button size="sm" onClick={() => handleSetDefault(theme.id)} disabled={theme.isDefault || isUpdating}>
-                            {theme.isDefault ? t('ThemeManagerPage.isDefaultBadge') : t('ThemeManagerPage.setDefaultButton')}
+                            {isUpdating ? <Loader2 className="h-4 w-4 animate-spin"/> : (theme.isDefault ? t('ThemeManagerPage.isDefaultBadge') : t('ThemeManagerPage.setDefaultButton'))}
                         </Button>
                     </div>
                 </div>
