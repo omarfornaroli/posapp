@@ -28,7 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Client } from '@/types';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { Loader2 } from 'lucide-react';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const clientFormSchema = (t: Function) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.minLength', {fieldName: t('AddClientDialog.nameLabel'), minLength: 2}) }),
@@ -134,7 +134,7 @@ export default function EditClientDialog({ open, onOpenChange, client, onSaveCli
                   <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormLabel>{t('AddClientDialog.addressLabel')}</FormLabel><FormControl><Textarea placeholder={t('AddClientDialog.addressPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
             </ScrollArea>
-            <DialogFooter className="pt-4 border-t mt-4 shrink-0">
+            <DialogFooter className="pt-4 border-t mt-auto shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddClientDialog.cancelButton')}</Button>
               </DialogClose>

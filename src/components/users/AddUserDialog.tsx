@@ -29,7 +29,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { User, UserRole } from '@/types';
 import { Loader2 } from 'lucide-react';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const userRoles: [UserRole, ...UserRole[]] = ['Admin', 'Editor', 'Viewer'];
 
@@ -107,7 +107,7 @@ export default function AddUserDialog({ open, onOpenChange, onAddUser }: AddUser
                   <FormField control={form.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>{t('AddUserDialog.imageUrlLabel')}</FormLabel><FormControl><Input placeholder={t('AddUserDialog.imageUrlPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
             </ScrollArea>
-            <DialogFooter className="pt-4 mt-4 border-t shrink-0">
+            <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
               <DialogClose asChild>
                 <Button type="button" variant="outline">{t('AddUserDialog.cancelButton')}</Button>
               </DialogClose>

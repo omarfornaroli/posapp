@@ -31,6 +31,7 @@ import type { Supplier } from '@/types';
 import { Loader2 } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import UpdateCostsFromFile from './UpdateCostsFromFile';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const supplierFormSchema = (t: Function) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.minLength', {fieldName: t('AddSupplierDialog.nameLabel'), minLength: 2}) }),
@@ -110,7 +111,6 @@ export default function EditSupplierDialog({ open, onOpenChange, supplier, onSav
         className="sm:max-w-lg flex flex-col max-h-[90vh]"
         onInteractOutside={(e) => {
           const target = e.target as HTMLElement;
-          // Prevent closing if the click is on the file input or its children.
           if (target.closest('input[type="file"]')) {
              e.preventDefault();
           }
@@ -124,8 +124,8 @@ export default function EditSupplierDialog({ open, onOpenChange, supplier, onSav
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <div className="flex-grow overflow-y-auto pr-4">
-              <div className="space-y-4">
+            <ScrollArea className="flex-grow pr-4 -mr-4">
+              <div className="space-y-4 pr-2">
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddSupplierDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddSupplierDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="contactPerson" render={({ field }) => (<FormItem><FormLabel>{t('AddSupplierDialog.contactPersonLabel')}</FormLabel><FormControl><Input placeholder={t('AddSupplierDialog.contactPersonPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -146,7 +146,7 @@ export default function EditSupplierDialog({ open, onOpenChange, supplier, onSav
                   </AccordionItem>
                 </Accordion>
               </div>
-            </div>
+            </ScrollArea>
             <DialogFooter className="pt-6 mt-4 border-t shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline">{t('AddSupplierDialog.cancelButton')}</Button>

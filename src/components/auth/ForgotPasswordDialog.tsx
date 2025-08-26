@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -19,6 +20,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, MailQuestion } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const forgotPasswordSchema = (t: Function) => z.object({
   email: z.string().email({ message: t('Common.formErrors.invalidEmail') }),

@@ -28,7 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import type { Tax } from '@/types';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { Loader2 } from 'lucide-react';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const taxFormSchema = (t: Function) => z.object({
   name: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('AddTaxDialog.nameLabel')}) }),
@@ -109,7 +109,7 @@ export default function AddTaxDialog({ open, onOpenChange, onAddTax }: AddTaxDia
                   <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>{t('AddTaxDialog.descriptionLabel')}</FormLabel><FormControl><Textarea placeholder={t('AddTaxDialog.descriptionPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
             </ScrollArea>
-            <DialogFooter className="pt-4 mt-4 border-t shrink-0">
+            <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
               <DialogClose asChild>
                 <Button type="button" variant="outline">{t('AddTaxDialog.cancelButton')}</Button>
               </DialogClose>

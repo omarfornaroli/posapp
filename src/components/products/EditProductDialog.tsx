@@ -230,7 +230,7 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
                 <FormField control={form.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.imageUrlLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.imageUrlPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
             </ScrollArea>
-            <DialogFooter className="pt-6 border-t shrink-0">
+            <DialogFooter className="pt-6 border-t mt-auto shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddProductDialog.cancelButton')}</Button>
               </DialogClose>

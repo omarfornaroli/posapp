@@ -41,7 +41,7 @@ const getProductFormSchema = (t: Function) => z.object({
   cost: z.coerce.number().min(0, { message: t('AddProductDialog.positiveOrZeroError')}).optional().or(z.literal('')),
   markup: z.coerce.number().min(0, { message: t('AddProductDialog.positiveOrZeroError')}).optional().or(z.literal('')),
   price: z.coerce.number().positive({ message: t('Common.formErrors.positiveNumber', {fieldName: t('AddProductDialog.priceLabel')}) }),
-  tax: z.coerce.number().min(0).max(100).optional().or(z.literal('')),
+  tax: z.coerce.number().min(0).max(100).optional().or(z.literal('')), 
   isTaxInclusivePrice: z.boolean().default(false),
   isPriceChangeAllowed: z.boolean().default(true),
   isUsingDefaultQuantity: z.boolean().default(true),
@@ -165,7 +165,7 @@ export default function AddProductDialog({ open, onOpenChange, onAddProduct }: A
                   <FormField control={form.control} name="preferredQuantity" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.preferredQuantityLabel')}</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                  <FormField control={form.control} name="warningQuantity" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.warningQuantityLabel')}</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                   <FormField control={form.control} name="warningQuantity" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.warningQuantityLabel')}</FormLabel><FormControl><Input type="number" placeholder="0" {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="lowStockWarning" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4"><div className="space-y-0.5"><FormLabel>{t('AddProductDialog.lowStockWarningLabel')}</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                 </div>
                 <FormField control={form.control} name="supplier" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.supplierLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.supplierPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -183,7 +183,7 @@ export default function AddProductDialog({ open, onOpenChange, onAddProduct }: A
                 <FormField control={form.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.imageUrlLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.imageUrlPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
             </ScrollArea>
-            <DialogFooter className="pt-6 border-t mt-4 shrink-0">
+            <DialogFooter className="pt-6 border-t mt-auto shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline">{t('AddProductDialog.cancelButton')}</Button>
               </DialogClose>

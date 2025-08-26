@@ -29,7 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import type { Supplier } from '@/types';
 import { Loader2 } from 'lucide-react';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const supplierFormSchema = (t: Function) => z.object({
   name: z.string().min(2, { message: t('Common.formErrors.minLength', {fieldName: t('AddSupplierDialog.nameLabel'), minLength: 2}) }),
@@ -111,7 +111,7 @@ export default function AddSupplierDialog({ open, onOpenChange, onAddSupplier }:
                 <FormField control={form.control} name="isEnabled" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddSupplierDialog.enabledLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
               </div>
             </ScrollArea>
-            <DialogFooter className="pt-4 mt-4 border-t shrink-0">
+            <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
               <DialogClose asChild>
                 <Button type="button" variant="outline">{t('AddSupplierDialog.cancelButton')}</Button>
               </DialogClose>

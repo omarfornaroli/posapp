@@ -29,7 +29,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import type { PaymentMethod } from '@/types';
 import { Loader2 } from 'lucide-react';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const paymentMethodFormSchema = (t: Function) => z.object({
   name: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('AddPaymentMethodDialog.nameLabel')}) }),
@@ -125,7 +125,7 @@ export default function EditPaymentMethodDialog({ open, onOpenChange, paymentMet
                   </div>
                 </div>
             </ScrollArea>
-            <DialogFooter className="pt-4 mt-4 border-t shrink-0">
+            <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
               <DialogClose asChild>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddPaymentMethodDialog.cancelButton')}</Button>
               </DialogClose>

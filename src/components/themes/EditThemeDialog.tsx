@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input';
 import type { Theme, ThemeColors } from '@/types';
 import ColorPickerInput from './ColorPickerInput'; 
 import { Loader2 } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const hslColorStringSchema = (t: Function) => z.string().regex(
   /^\d{1,3}\s+(\d{1,3}(?:\.\d+)?)%\s+(\d{1,3}(?:\.\d+)?)%$/,
@@ -97,7 +98,7 @@ export default function EditThemeDialog({ open, onOpenChange, theme, onSaveTheme
         background: '0 0% 100%', foreground: '0 0% 0%', card: '0 0% 100%', cardForeground: '0 0% 0%',
         popover: '0 0% 100%', popoverForeground: '0 0% 0%', primary: '260 100% 50%', primaryForeground: '0 0% 100%',
         secondary: '240 5% 95%', secondaryForeground: '240 5% 10%', muted: '240 5% 95%', mutedForeground: '240 4% 46%',
-        accent: '300 100% 50%', accentForeground: '0 0% 100%', destructive: '0 84% 60%', destructiveForeground: '0 0% 100%',
+        accent: '300 100% 50%', accentForeground: '0 0% 100%', destructive: '0 84% 60%', destructiveForeground: '0 0% 98%',
         border: '240 6% 90%', input: '240 6% 90%', ring: '260 100% 50%',
       },
     },
@@ -158,8 +159,8 @@ export default function EditThemeDialog({ open, onOpenChange, theme, onSaveTheme
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <div className="flex-grow overflow-y-auto pr-4">
-              <div className="space-y-4">
+            <ScrollArea className="flex-grow pr-4 -mr-4">
+              <div className="space-y-4 pr-2">
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('ThemeManagerPage.themeNameLabel')}</FormLabel><FormControl><Input {...field} readOnly disabled className="bg-muted/50 cursor-default"/></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="fontBody" render={({ field }) => (<FormItem><FormLabel>{t('ThemeManagerPage.fontBodyLabel')}</FormLabel><FormControl><Input placeholder="e.g., Inter, 'Open Sans', sans-serif" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="fontHeadline" render={({ field }) => (<FormItem><FormLabel>{t('ThemeManagerPage.fontHeadlineLabel')}</FormLabel><FormControl><Input placeholder="e.g., Poppins, Montserrat, serif" {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -187,7 +188,7 @@ export default function EditThemeDialog({ open, onOpenChange, theme, onSaveTheme
                   ))}
                 </div>
               </div>
-            </div>
+            </ScrollArea>
             <DialogFooter className="pt-6 border-t shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('EditThemeDialog.cancelButton')}</Button>

@@ -31,7 +31,7 @@ import type { User, UserRole } from '@/types';
 import { Loader2, RefreshCw, Send } from 'lucide-react';
 import JsBarcode from 'jsbarcode';
 import { useToast } from '@/hooks/use-toast';
-import { ScrollArea } from '../ui/scroll-area';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const userRoles: readonly [UserRole, ...UserRole[]] = ['Admin', 'Editor', 'Viewer'];
 
@@ -300,7 +300,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
                 </div>
               )}
             </ScrollArea>
-            <DialogFooter className="pt-4 mt-4 border-t shrink-0">
+            <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
                 <DialogClose asChild>
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddUserDialog.cancelButton')}</Button>
                 </DialogClose>

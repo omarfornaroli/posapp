@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const saveReportSchema = (t: Function) => z.object({
   name: z.string().min(3, { message: t('Common.formErrors.minLength', { fieldName: t('ReportsPage.reportNameLabel'), minLength: 3 }) }),
@@ -61,44 +62,48 @@ export default function SaveReportDialog({ open, onOpenChange, onSave, initialQu
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="font-headline">{t('ReportsPage.saveReportDialogTitle')}</DialogTitle>
           <DialogDescription>{t('ReportsPage.saveReportDialogDescription')}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormItem>
-              <FormLabel>{t('ReportsPage.originalQueryLabel')}</FormLabel>
-              <p className="text-sm text-muted-foreground p-2 border rounded-md bg-muted">{initialQuery}</p>
-            </FormItem>
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('ReportsPage.reportNameLabel')}</FormLabel>
-                  <FormControl>
-                    <Input placeholder={t('ReportsPage.reportNamePlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('ReportsPage.reportDescriptionLabel')}</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder={t('ReportsPage.reportDescriptionPlaceholder')} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <DialogFooter className="pt-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
+            <ScrollArea className="flex-grow pr-6 -mr-6">
+                <div className="space-y-4 py-4 pr-6">
+                    <FormItem>
+                    <FormLabel>{t('ReportsPage.originalQueryLabel')}</FormLabel>
+                    <p className="text-sm text-muted-foreground p-2 border rounded-md bg-muted">{initialQuery}</p>
+                    </FormItem>
+                    <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>{t('ReportsPage.reportNameLabel')}</FormLabel>
+                        <FormControl>
+                            <Input placeholder={t('ReportsPage.reportNamePlaceholder')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>{t('ReportsPage.reportDescriptionLabel')}</FormLabel>
+                        <FormControl>
+                            <Textarea placeholder={t('ReportsPage.reportDescriptionPlaceholder')} {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+            </ScrollArea>
+            <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 {t('Common.cancel')}
               </Button>
@@ -110,5 +115,3 @@ export default function SaveReportDialog({ open, onOpenChange, onSave, initialQu
     </Dialog>
   );
 }
-
-    

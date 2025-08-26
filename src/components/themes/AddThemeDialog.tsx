@@ -27,6 +27,7 @@ import {
 import { Input } from '@/components/ui/input';
 import type { Theme, ThemeColors } from '@/types';
 import { Loader2 } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const addThemeFormSchema = (t: Function) => z.object({
   name: z.string().min(3, { message: t('Common.formErrors.minLength', {fieldName: t('ThemeManagerPage.themeNameLabel'), minLength: 3}) }),
@@ -162,5 +163,3 @@ export default function AddThemeDialog({ open, onOpenChange, onSaveTheme }: AddT
     </Dialog>
   );
 }
-
-    
