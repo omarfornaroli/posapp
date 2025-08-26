@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -26,6 +27,7 @@ import { Input } from '@/components/ui/input';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { KeyRound, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const authFormSchema = (t: Function) => z.object({
   authorizationCode: z.string().min(6, { message: t('AuthorizationDialog.codeLengthError') }),

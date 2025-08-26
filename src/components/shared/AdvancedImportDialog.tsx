@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import * as React from 'react';
@@ -239,13 +240,13 @@ export default function AdvancedImportDialog({
 
   const renderMappingStep = () => (
     <>
-      <DialogHeader>
+      <DialogHeader className="shrink-0">
         <DialogTitle>{t('AdvancedImportDialog.mappingTitle')}</DialogTitle>
         <DialogDescription>{t('AdvancedImportDialog.mappingDescription', {modelName})}</DialogDescription>
       </DialogHeader>
-      <div className="flex flex-col flex-grow overflow-hidden">
-        <div className="flex-grow overflow-y-auto pr-4 -mr-4">
-            <div className="space-y-4 py-4">
+      <div className="flex-grow flex flex-col overflow-hidden">
+        <ScrollArea className="flex-grow pr-4 -mr-4">
+            <div className="space-y-4 py-4 pr-2">
                 {templates.length > 0 && (
                 <div className="flex gap-2 items-end">
                     <div className="flex-grow">
@@ -259,7 +260,7 @@ export default function AdvancedImportDialog({
                     </div>
                 </div>
                 )}
-                <ScrollArea className="h-64 border rounded-md">
+                <div className="border rounded-md">
                     <Table>
                         <TableHeader className="sticky top-0 bg-card z-10">
                             <TableRow>
@@ -300,13 +301,12 @@ export default function AdvancedImportDialog({
                             )})}
                         </TableBody>
                     </Table>
-                    <ScrollBar orientation="horizontal" />
-                </ScrollArea>
+                </div>
                 <div className="text-xs text-muted-foreground">
                 {t('AdvancedImportDialog.requiredFieldsHint')}: {requiredModelFields.map(f => f.label).join(', ')}
                 </div>
             </div>
-        </div>
+        </ScrollArea>
         <div className="shrink-0 pt-4">
             <div className="flex gap-2">
                 <Input placeholder={t('AdvancedImportDialog.templateNamePlaceholder')} value={newTemplateName} onChange={e => setNewTemplateName(e.target.value)} className="flex-grow"/>
@@ -314,7 +314,7 @@ export default function AdvancedImportDialog({
             </div>
         </div>
       </div>
-      <DialogFooter className="shrink-0">
+      <DialogFooter className="shrink-0 pt-4 border-t">
         <Button variant="ghost" onClick={() => setStage('upload')}>{t('Common.back')}</Button>
         <Button onClick={() => setStage('confirm')} disabled={!allRequiredFieldsMapped}>
             {t('Common.next')} <ArrowRight className="ml-2 h-4 w-4"/>
@@ -326,12 +326,12 @@ export default function AdvancedImportDialog({
   const renderConfirmStep = () => (
      <Form {...confirmForm}>
         <form onSubmit={confirmForm.handleSubmit(onConfirm)} className="flex flex-col flex-grow overflow-hidden">
-            <DialogHeader>
+            <DialogHeader className="shrink-0">
                 <DialogTitle>{t('AdvancedImportDialog.confirmTitle')}</DialogTitle>
                 <DialogDescription>{t('AdvancedImportDialog.confirmDescription', { count: dataRows.length, fileName: fileName })}</DialogDescription>
             </DialogHeader>
             <div className="flex-grow overflow-y-auto pr-4 -mr-4">
-                <div className="py-4 space-y-4">
+                <div className="py-4 space-y-4 pr-2">
                     <FormField control={confirmForm.control} name="conflictResolution" render={({ field }) => (
                         <FormItem>
                             <FormLabel>{t('ImportProductsSettingsDialog.conflictResolutionLabel')}</FormLabel>
@@ -360,7 +360,7 @@ export default function AdvancedImportDialog({
                     </div>
                 </div>
             </div>
-            <DialogFooter className="shrink-0">
+            <DialogFooter className="shrink-0 pt-4 border-t">
                 <Button variant="ghost" onClick={() => setStage('mapping')} disabled={isImporting}>{t('Common.back')}</Button>
                 <Button type="submit" disabled={isImporting}>
                     {isImporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileText className="mr-2 h-4 w-4"/>}

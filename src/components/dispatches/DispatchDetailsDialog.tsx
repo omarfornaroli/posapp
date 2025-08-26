@@ -127,12 +127,12 @@ export default function DispatchDetailsDialog({ sale, open, onOpenChange, onDisp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-headline">{t('DispatchManager.dialogTitle', { saleId: `...${sale.id.slice(-8)}` })}</DialogTitle>
           <DialogDescription>{t('DispatchManager.dialogDescription')}</DialogDescription>
         </DialogHeader>
-        <div className="py-2">
+        <div className="flex-grow py-2 overflow-hidden">
           {isFullyDispatched ? (
              <Alert variant="default" className="bg-green-50 border-green-200">
                 <PackageCheck className="h-4 w-4 !text-green-600" />
@@ -144,7 +144,7 @@ export default function DispatchDetailsDialog({ sale, open, onOpenChange, onDisp
           ) : (
             <h3 className="font-semibold mb-2">{t('DispatchManager.dialogItemsHeader')}</h3>
           )}
-          <ScrollArea className="h-80 border rounded-md">
+          <ScrollArea className="h-full border rounded-md">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -189,10 +189,11 @@ export default function DispatchDetailsDialog({ sale, open, onOpenChange, onDisp
             {sale.items.every(item => (item.quantity - (item.dispatchedQuantity || 0)) === 0) && !isFullyDispatched && (
                  <p className="text-center text-muted-foreground p-4 text-sm">{t('DispatchManager.noItemsToDispatch')}</p>
             )}
+            <ScrollBar orientation="horizontal" />
           </ScrollArea>
 
         </div>
-        <DialogFooter>
+        <DialogFooter className="shrink-0 pt-4 border-t">
           <DialogClose asChild><Button variant="outline">{t('Common.close')}</Button></DialogClose>
           {!isFullyDispatched && (
             <Button onClick={handleConfirmDispatch} disabled={isDispatching || totalItemsToDispatch === 0}>

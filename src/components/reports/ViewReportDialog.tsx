@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useRxTranslate } from '@/hooks/use-rx-translate';
@@ -16,6 +17,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bot, Loader2 } from 'lucide-react';
 import type { Report } from '@/types';
+import { ScrollArea } from '../ui/scroll-area';
 
 interface ViewReportDialogProps {
   open: boolean;
@@ -41,17 +43,17 @@ export default function ViewReportDialog({ open, onOpenChange, report }: ViewRep
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-headline text-2xl">{report.reportData.title}</DialogTitle>
           <DialogDescription>
             {t('ReportsPage.viewDialogDescription', { reportName: report.name })}
           </DialogDescription>
         </DialogHeader>
-        <div className="flex-grow space-y-4 overflow-y-auto pr-4">
+        <div className="flex-grow space-y-4 overflow-y-auto pr-4 -mr-4 min-h-0">
           <Card className="shadow-lg bg-primary/5 border-primary/20">
             <CardHeader>
               <CardTitle className="font-headline text-primary flex items-center gap-3">
-                <Bot className="h-6 w-6" /> {t('AiReportsPage.summaryTitle')}
+                <Bot className="h-6 w-6" /> {t('ReportsPage.summaryTitle')}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -82,7 +84,7 @@ export default function ViewReportDialog({ open, onOpenChange, report }: ViewRep
             </Table>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="shrink-0 pt-4 border-t">
           <DialogClose asChild>
             <Button variant="outline">{t('Common.close')}</Button>
           </DialogClose>
@@ -91,5 +93,3 @@ export default function ViewReportDialog({ open, onOpenChange, report }: ViewRep
     </Dialog>
   );
 }
-
-    
