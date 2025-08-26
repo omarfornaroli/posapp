@@ -132,9 +132,9 @@ export default function DispatchDetailsDialog({ sale, open, onOpenChange, onDisp
           <DialogTitle className="font-headline">{t('DispatchManager.dialogTitle', { saleId: `...${sale.id.slice(-8)}` })}</DialogTitle>
           <DialogDescription>{t('DispatchManager.dialogDescription')}</DialogDescription>
         </DialogHeader>
-        <div className="flex-grow py-2 overflow-hidden">
+        <div className="flex-grow py-2 overflow-hidden flex flex-col">
           {isFullyDispatched ? (
-             <Alert variant="default" className="bg-green-50 border-green-200">
+             <Alert variant="default" className="bg-green-50 border-green-200 mb-2">
                 <PackageCheck className="h-4 w-4 !text-green-600" />
                 <AlertTitle className="text-green-800">{t('DispatchManager.alreadyDispatchedTitle')}</AlertTitle>
                 <AlertDescription className="text-green-700">
@@ -142,7 +142,7 @@ export default function DispatchDetailsDialog({ sale, open, onOpenChange, onDisp
                 </AlertDescription>
             </Alert>
           ) : (
-            <h3 className="font-semibold mb-2">{t('DispatchManager.dialogItemsHeader')}</h3>
+            <h3 className="font-semibold mb-2 shrink-0">{t('DispatchManager.dialogItemsHeader')}</h3>
           )}
           <ScrollArea className="h-full border rounded-md">
             <Table>

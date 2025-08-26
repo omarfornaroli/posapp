@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useEffect } from 'react';
@@ -128,13 +127,13 @@ export default function AddProductDialog({ open, onOpenChange, onAddProduct }: A
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl flex flex-col max-h-[90vh]">
-        <DialogHeader className="shrink-0">
+        <DialogHeader>
           <DialogTitle className="font-headline">{t('AddProductDialog.dialogTitle')}</DialogTitle>
           <DialogDescription>{t('AddProductDialog.dialogDescription')}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex-grow flex flex-col overflow-hidden">
-            <ScrollArea className="flex-grow pr-4 -mr-4">
+            <ScrollArea className="flex-grow pr-6 -mr-6">
               <div className="space-y-4 py-4 pr-4">
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
