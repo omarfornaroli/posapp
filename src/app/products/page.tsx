@@ -1,3 +1,4 @@
+
 // This file was moved from src/app/[locale]/products/page.tsx
 'use client';
 
@@ -66,7 +67,7 @@ export default function ProductsPage() {
     return [
       { key: 'name', label: t('AddProductDialog.nameLabel'), type: 'string', isRequired: true },
       { key: 'barcode', label: t('AddProductDialog.barcodeLabel'), type: 'string', isRequired: true },
-      { key: 'price', label: t('AddProductDialog.priceLabel'), type: 'number', isRequired: true },
+      { key: 'price', label: t('AddProductDialog.priceLabel'), type: 'number', isRequired: false },
       { key: 'quantity', label: t('AddProductDialog.quantityLabel'), type: 'number', isRequired: true },
       { key: 'category', label: t('AddProductDialog.categoryLabel'), type: 'string', isRequired: true },
       { key: 'cost', label: t('AddProductDialog.costLabel'), type: 'number' },
@@ -78,6 +79,7 @@ export default function ProductsPage() {
       { key: 'description', label: t('AddProductDialog.descriptionLabel'), type: 'string' },
       { key: 'isEnabled', label: t('AddProductDialog.isEnabledLabel'), type: 'boolean' },
       { key: 'isService', label: t('AddProductDialog.isServiceLabel'), type: 'boolean' },
+      { key: 'dispatchAtSale', label: t('AddProductDialog.dispatchAtSaleLabel'), type: 'boolean' },
     ];
   }, [isLoadingTranslations, t]);
 

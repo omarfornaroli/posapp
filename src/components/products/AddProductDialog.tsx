@@ -33,19 +33,19 @@ import { Loader2 } from 'lucide-react';
 
 const getProductFormSchema = (t: Function) => z.object({
   name: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('AddProductDialog.nameLabel')}) }),
-  productGroup: z.string().optional(),
   sku: z.string().optional(),
   barcode: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('AddProductDialog.barcodeLabel')}) }),
   measurementUnit: z.string().optional(),
   cost: z.coerce.number().min(0, { message: t('AddProductDialog.positiveOrZeroError')}).optional().or(z.literal('')),
   markup: z.coerce.number().min(0, { message: t('AddProductDialog.positiveOrZeroError')}).optional().or(z.literal('')),
-  price: z.coerce.number().positive({ message: t('Common.formErrors.positiveNumber', {fieldName: t('AddProductDialog.priceLabel')}) }),
+  price: z.coerce.number().optional(),
   tax: z.coerce.number().min(0).max(100).optional().or(z.literal('')), 
   isTaxInclusivePrice: z.boolean().default(false),
   isPriceChangeAllowed: z.boolean().default(true),
   isUsingDefaultQuantity: z.boolean().default(true),
   isService: z.boolean().default(false),
   isEnabled: z.boolean().default(true),
+  dispatchAtSale: z.boolean().default(true),
   description: z.string().optional(),
   quantity: z.coerce.number().int().min(0, { message: t('Common.formErrors.nonNegativeNumber', {fieldName: t('AddProductDialog.quantityLabel')}) }),
   supplier: z.string().optional(),
@@ -77,15 +77,30 @@ export default function AddProductDialog({ open, onOpenChange, onAddProduct }: A
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-      name: '', productGroup: '', sku: '', barcode: '', measurementUnit: 'piece',
-      cost: '', markup: '', price: '' as unknown as number, tax: '', 
+      name: '', sku: '', barcode: '', measurementUnit: 'piece',
+      cost: '', markup: '', price: 0, tax: '', 
       isTaxInclusivePrice: false, isPriceChangeAllowed: true, isUsingDefaultQuantity: true,
-      isService: false, isEnabled: true, description: '', quantity: '0' as unknown as number, 
+      isService: false, isEnabled: true, dispatchAtSale: true, description: '', quantity: 0,
       supplier: '', reorderPoint: '', preferredQuantity: '', lowStockWarning: false,
       warningQuantity: '', category: '', imageUrl: '',
     },
   });
   
+  const watchedCost = form.watch("cost");
+  const watchedMarkup = form.watch("markup");
+
+  useEffect(() => {
+      const cost = typeof watchedCost === 'number' ? watchedCost : 0;
+      const markup = typeof watchedMarkup === 'number' ? watchedMarkup : 0;
+      if (cost > 0) {
+          const newPrice = cost * (1 + markup / 100);
+          form.setValue('price', parseFloat(newPrice.toFixed(2)));
+      } else {
+          form.setValue('price', 0);
+      }
+  }, [watchedCost, watchedMarkup, form]);
+
+
   useEffect(() => {
     if (!isLoadingTranslations && open) {
       form.trigger();
@@ -138,19 +153,18 @@ export default function AddProductDialog({ open, onOpenChange, onAddProduct }: A
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="category" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.categoryLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.categoryPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="productGroup" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.productGroupLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.productGroupPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="measurementUnit" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.measurementUnitLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.measurementUnitPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField control={form.control} name="sku" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.skuLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.skuPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="barcode" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.barcodeLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.barcodePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
-                <FormField control={form.control} name="measurementUnit" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.measurementUnitLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.measurementUnitPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 
                 <h3 className="text-md font-semibold pt-2 border-b">{t('AddProductDialog.pricingSectionTitle')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FormField control={form.control} name="cost" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.costLabel')}</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} step="0.01" /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="markup" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.markupLabel')}</FormLabel><FormControl><Input type="number" placeholder="e.g. 20 for 20%" {...field} step="0.01" /></FormControl><FormMessage /></FormItem>)} />
-                  <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.priceLabel')}</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} step="0.01" /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="price" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.priceLabel')}</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} step="0.01" readOnly className="bg-muted/50" /></FormControl><FormMessage /></FormItem>)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
                   <FormField control={form.control} name="tax" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.taxLabel')}</FormLabel><FormControl><Input type="number" placeholder="e.g. 10 for 10%" {...field} step="0.01" /></FormControl><FormMessage /></FormItem>)} />
@@ -170,11 +184,12 @@ export default function AddProductDialog({ open, onOpenChange, onAddProduct }: A
                 <FormField control={form.control} name="supplier" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.supplierLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.supplierPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
 
                 <h3 className="text-md font-semibold pt-2 border-b">{t('AddProductDialog.behaviorStatusSectionTitle')}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-3">
                     <FormField control={form.control} name="isPriceChangeAllowed" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.isPriceChangeAllowedLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="isUsingDefaultQuantity" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.isUsingDefaultQuantityLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="isService" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.isServiceLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="isEnabled" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.isEnabledLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
+                    <FormField control={form.control} name="dispatchAtSale" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.dispatchAtSaleLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                 </div>
 
                 <h3 className="text-md font-semibold pt-2 border-b">{t('AddProductDialog.otherDetailsSectionTitle')}</h3>

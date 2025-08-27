@@ -1,5 +1,4 @@
 
-
 import type React from 'react';
 
 export type Permission =
@@ -43,6 +42,7 @@ export interface Product {
   isUsingDefaultQuantity?: boolean; 
   isService?: boolean; 
   isEnabled?: boolean; 
+  dispatchAtSale?: boolean;
   description?: string;
   quantity: number; 
   supplier?: Supplier | string;
@@ -51,7 +51,6 @@ export interface Product {
   lowStockWarning?: boolean; 
   warningQuantity?: number; 
   category: string; 
-  productGroup?: string;
   imageUrl?: string;
   createdBy?: string;
   updatedBy?: string;
