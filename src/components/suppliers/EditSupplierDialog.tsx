@@ -124,7 +124,7 @@ export default function EditSupplierDialog({ open, onOpenChange, supplier, onSav
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <ScrollArea className="flex-grow pr-4 -mr-4">
+            <div className="flex-grow overflow-y-auto pr-4 -mr-4">
               <div className="space-y-4 pr-2">
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddSupplierDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddSupplierDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="contactPerson" render={({ field }) => (<FormItem><FormLabel>{t('AddSupplierDialog.contactPersonLabel')}</FormLabel><FormControl><Input placeholder={t('AddSupplierDialog.contactPersonPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
@@ -146,7 +146,7 @@ export default function EditSupplierDialog({ open, onOpenChange, supplier, onSav
                   </AccordionItem>
                 </Accordion>
               </div>
-            </ScrollArea>
+            </div>
             <DialogFooter className="pt-6 mt-4 border-t shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline">{t('AddSupplierDialog.cancelButton')}</Button>

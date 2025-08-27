@@ -117,7 +117,7 @@ export default function EditClientDialog({ open, onOpenChange, client, onSaveCli
         form.reset();
       }
     }}>
-      <DialogContent className="sm:max-w-[525px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="font-headline">{t('EditClientDialog.title')}</DialogTitle>
           <DialogDescription>
@@ -126,14 +126,14 @@ export default function EditClientDialog({ open, onOpenChange, client, onSaveCli
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <ScrollArea className="flex-grow pr-6 -mr-6">
-                <div className="space-y-4 py-4 pr-6">
+            <div className="flex-grow overflow-y-auto pr-6 -mr-6">
+              <div className="space-y-4 py-4 pr-2">
                   <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddClientDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddClientDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>{t('AddClientDialog.emailLabel')}</FormLabel><FormControl><Input type="email" placeholder={t('AddClientDialog.emailPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="phone" render={({ field }) => (<FormItem><FormLabel>{t('AddClientDialog.phoneLabel')}</FormLabel><FormControl><Input placeholder={t('AddClientDialog.phonePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="address" render={({ field }) => (<FormItem><FormLabel>{t('AddClientDialog.addressLabel')}</FormLabel><FormControl><Textarea placeholder={t('AddClientDialog.addressPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
-                </div>
-            </ScrollArea>
+              </div>
+            </div>
             <DialogFooter className="pt-4 border-t mt-auto shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddClientDialog.cancelButton')}</Button>

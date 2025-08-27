@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from 'react';
@@ -245,7 +244,7 @@ export default function AdvancedImportDialog({
         <DialogDescription>{t('AdvancedImportDialog.mappingDescription', {modelName})}</DialogDescription>
       </DialogHeader>
       <div className="flex-grow flex flex-col overflow-hidden">
-        <ScrollArea className="flex-grow pr-4 -mr-4">
+        <div className="flex-grow overflow-y-auto pr-4 -mr-4">
             <div className="space-y-4 py-4 pr-2">
                 {templates.length > 0 && (
                 <div className="flex gap-2 items-end">
@@ -306,7 +305,7 @@ export default function AdvancedImportDialog({
                 {t('AdvancedImportDialog.requiredFieldsHint')}: {requiredModelFields.map(f => f.label).join(', ')}
                 </div>
             </div>
-        </ScrollArea>
+        </div>
         <div className="shrink-0 pt-4">
             <div className="flex gap-2">
                 <Input placeholder={t('AdvancedImportDialog.templateNamePlaceholder')} value={newTemplateName} onChange={e => setNewTemplateName(e.target.value)} className="flex-grow"/>

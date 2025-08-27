@@ -205,8 +205,8 @@ export default function AddPromotionDialog({ open, onOpenChange, onAddPromotion 
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <ScrollArea className="flex-grow pr-6 -mr-6">
-                <div className="space-y-4 py-4 pr-6">
+            <div className="flex-grow overflow-y-auto pr-6 -mr-6">
+                <div className="space-y-4 py-4 pr-2">
                   <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddPromotionDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddPromotionDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>{t('AddPromotionDialog.descriptionLabel')}</FormLabel><FormControl><Input placeholder={t('AddPromotionDialog.descriptionPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -253,7 +253,7 @@ export default function AddPromotionDialog({ open, onOpenChange, onAddPromotion 
                   <FormField control={form.control} name="applicablePaymentMethodIds" render={({ field }) => (<FormItem><FormLabel>{t('AddPromotionDialog.applicablePaymentMethodsLabel')}</FormLabel><DropdownMenu><DropdownMenuTrigger asChild><FormControl><Button variant="outline" className="w-full justify-between">{field.value?.length > 0 ? `${field.value.length} ${t(field.value.length === 1 ? 'AddPromotionDialog.paymentMethodSelectedSingular' : 'AddPromotionDialog.paymentMethodSelectedPlural')}` : t('AddPromotionDialog.selectPaymentMethodsPlaceholder')}<ChevronDown className="ml-2 h-4 w-4 opacity-50" /></Button></FormControl></DropdownMenuTrigger><DropdownMenuContent className="w-[--radix-dropdown-menu-trigger-width] max-h-60 overflow-y-auto"><DropdownMenuLabel>{t('AddPromotionDialog.availablePaymentMethodsHint')}</DropdownMenuLabel><DropdownMenuSeparator />{paymentMethods.length === 0 ? (<DropdownMenuItem disabled>{t('AddPromotionDialog.noPaymentMethodsAvailable')}</DropdownMenuItem>) : paymentMethods.map((method) => (<DropdownMenuCheckboxItem key={method.id} checked={field.value?.includes(method.id)} onCheckedChange={(checked) => field.onChange(checked ? [...(field.value || []), method.id] : (field.value || []).filter(id => id !== method.id))}>{method.name}</DropdownMenuCheckboxItem>))}</DropdownMenuContent></DropdownMenu><FormMessage /></FormItem>)} />
                   <FormField control={form.control} name="isActive" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><div className="space-y-0.5"><FormLabel>{t('AddPromotionDialog.isActiveLabel')}</FormLabel></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                 </div>
-            </ScrollArea>
+            </div>
             <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
               <DialogClose asChild><Button type="button" variant="outline">{t('AddPromotionDialog.cancelButton')}</Button></DialogClose>
               <Button type="submit" className="bg-primary hover:bg-primary/90">{t('AddPromotionDialog.addButton')}</Button>

@@ -97,8 +97,8 @@ export default function AddSupplierDialog({ open, onOpenChange, onAddSupplier }:
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <ScrollArea className="flex-grow pr-6 -mr-6">
-              <div className="space-y-4 py-4 pr-6">
+            <div className="flex-grow overflow-y-auto pr-6 -mr-6">
+              <div className="space-y-4 py-4 pr-2">
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddSupplierDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddSupplierDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="contactPerson" render={({ field }) => (<FormItem><FormLabel>{t('AddSupplierDialog.contactPersonLabel')}</FormLabel><FormControl><Input placeholder={t('AddSupplierDialog.contactPersonPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -110,7 +110,7 @@ export default function AddSupplierDialog({ open, onOpenChange, onAddSupplier }:
                 <FormField control={form.control} name="notes" render={({ field }) => (<FormItem><FormLabel>{t('AddSupplierDialog.notesLabel')}</FormLabel><FormControl><Textarea placeholder={t('AddSupplierDialog.notesPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="isEnabled" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddSupplierDialog.enabledLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
               </div>
-            </ScrollArea>
+            </div>
             <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
               <DialogClose asChild>
                 <Button type="button" variant="outline">{t('AddSupplierDialog.cancelButton')}</Button>
