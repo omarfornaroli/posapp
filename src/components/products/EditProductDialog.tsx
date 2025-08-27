@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,6 +31,8 @@ import type { Product } from '@/types';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { Loader2 } from 'lucide-react';
 import { ScrollArea } from '../ui/scroll-area';
+import { Combobox } from '../ui/combobox';
+import { useDexieProducts } from '@/hooks/useDexieProducts';
 
 const getProductFormSchema = (t: Function) => z.object({
   name: z.string().min(1, { message: t('Common.formErrors.requiredField', {fieldName: t('AddProductDialog.nameLabel')}) }),
@@ -45,7 +48,6 @@ const getProductFormSchema = (t: Function) => z.object({
   isUsingDefaultQuantity: z.boolean().default(true),
   isService: z.boolean().default(false),
   isEnabled: z.boolean().default(true),
-  dispatchAtSale: z.boolean().default(true),
   description: z.string().optional(),
   quantity: z.coerce.number().int().min(0, { message: t('Common.formErrors.nonNegativeNumber', {fieldName: t('AddProductDialog.quantityLabel')}) }),
   supplier: z.string().optional(),
@@ -68,6 +70,12 @@ interface EditProductDialogProps {
 
 export default function EditProductDialog({ open, onOpenChange, product, onSaveProduct }: EditProductDialogProps) {
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
+  const { products } = useDexieProducts();
+
+  const categoryOptions = useMemo(() => {
+    const uniqueCategories = [...new Set(products.map(p => p.category))];
+    return uniqueCategories.map(c => ({ value: c, label: c }));
+  }, [products]);
   
   useEffect(() => {
     initializeTranslations(currentLocale);
@@ -81,7 +89,7 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
       name: '', sku: '', barcode: '', measurementUnit: 'piece',
       cost: 0, markup: 0, price: 0, tax: 0,
       isTaxInclusivePrice: false, isPriceChangeAllowed: true, isUsingDefaultQuantity: true,
-      isService: false, isEnabled: true, dispatchAtSale: true, description: '', quantity: 0, 
+      isService: false, isEnabled: true, description: '', quantity: 0, 
       supplier: '', reorderPoint: 0, preferredQuantity: 0, lowStockWarning: false,
       warningQuantity: 0, category: '', imageUrl: '',
     },
@@ -117,7 +125,6 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
         isUsingDefaultQuantity: product.isUsingDefaultQuantity === undefined ? true : product.isUsingDefaultQuantity,
         isService: product.isService || false,
         isEnabled: product.isEnabled === undefined ? true : product.isEnabled,
-        dispatchAtSale: product.dispatchAtSale === undefined ? true : product.dispatchAtSale,
         description: product.description || '',
         quantity: product.quantity,
         supplier: (product.supplier as any)?.name || (product.supplier as string) || '',
@@ -133,7 +140,7 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
             name: '', sku: '', barcode: '', measurementUnit: 'piece',
             cost: '', markup: '', price: 0, tax: '',
             isTaxInclusivePrice: false, isPriceChangeAllowed: true, isUsingDefaultQuantity: true,
-            isService: false, isEnabled: true, dispatchAtSale: true, description: '', quantity: 0,
+            isService: false, isEnabled: true, description: '', quantity: 0,
             supplier: '', reorderPoint: '', preferredQuantity: '', lowStockWarning: false,
             warningQuantity: '', category: '', imageUrl: '',
         });
@@ -198,7 +205,22 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
               <div className="space-y-4 py-4 pr-6">
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="category" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.categoryLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.categoryPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
+                  <FormField control={form.control} name="category" render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>{t('AddProductDialog.categoryLabel')}</FormLabel>
+                          <FormControl>
+                              <Combobox
+                                  options={categoryOptions}
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  placeholder={t('AddProductDialog.categoryPlaceholder')}
+                                  searchPlaceholder="Search categories..."
+                                  emptyResultText="No categories found."
+                              />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                  )} />
                    <FormField control={form.control} name="measurementUnit" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.measurementUnitLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.measurementUnitPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -235,7 +257,6 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
                     <FormField control={form.control} name="isUsingDefaultQuantity" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.isUsingDefaultQuantityLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="isService" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.isServiceLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                     <FormField control={form.control} name="isEnabled" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.isEnabledLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
-                    <FormField control={form.control} name="dispatchAtSale" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm"><FormLabel>{t('AddProductDialog.dispatchAtSaleLabel')}</FormLabel><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>)} />
                 </div>
                 
                 <h3 className="text-md font-semibold pt-2 border-b">{t('AddProductDialog.otherDetailsSectionTitle')}</h3>
@@ -255,3 +276,4 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
     </Dialog>
   );
 }
+

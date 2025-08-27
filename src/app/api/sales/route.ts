@@ -1,5 +1,6 @@
 
 
+
 import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import SaleTransaction from '@/models/SaleTransaction';
@@ -60,6 +61,7 @@ export async function POST(request: NextRequest) {
         }
         product.quantity -= item.quantity;
         await product.save();
+        item.dispatchedQuantity = item.quantity; // Mark item as dispatched
       }
     }
 

@@ -23,7 +23,7 @@ import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard, Percent, ChevronDown, Plus } from 'lucide-react';
+import { Loader2, Search, XCircle, ShoppingCart, User, TicketPercent, PercentSquare, Trash2, Camera, ScanLine, Clock, List, CreditCard, Percent, ChevronDown, Plus, Truck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -49,6 +49,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { Switch } from '@/components/ui/switch';
 
 
 const generateCartId = () => `cart-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
@@ -92,6 +93,7 @@ export default function POSPage() {
   const [overallDiscountValue, setOverallDiscountValue] = useState<number | string>('');
   const [isDiscountPopoverOpen, setIsDiscountPopoverOpen] = useState(false);
   const [isProcessingSale, setIsProcessingSale] = useState(false);
+  const [dispatchAtSale, setDispatchAtSale] = useState(posSettings?.dispatchAtSaleDefault ?? true);
 
   // States for the new payment section
   const [appliedPayments, setAppliedPayments] = useState<AppliedPayment[]>([]);
@@ -122,6 +124,7 @@ export default function POSPage() {
         setOverallDiscountType(savedState.overallDiscountType || undefined);
         setOverallDiscountValue(savedState.overallDiscountValue || '');
         setAppliedPayments(savedState.appliedPayments || []);
+        setDispatchAtSale(savedState.dispatchAtSale ?? posSettings?.dispatchAtSaleDefault ?? true);
       } catch (error) {
         console.error("Failed to parse cart state from localStorage", error);
         localStorage.removeItem('posCartState');
@@ -138,13 +141,14 @@ export default function POSPage() {
       overallDiscountType,
       overallDiscountValue,
       appliedPayments,
-      paymentCurrencyCode: paymentCurrency?.code
+      paymentCurrencyCode: paymentCurrency?.code,
+      dispatchAtSale
     };
     // Only save if the cart has items to avoid overwriting a refreshed page with an empty state before hydration
     if(cart.length > 0) {
         localStorage.setItem('posCartState', JSON.stringify(stateToSave));
     }
-  }, [cart, selectedClient, appliedTaxes, overallDiscountType, overallDiscountValue, appliedPayments, paymentCurrency]);
+  }, [cart, selectedClient, appliedTaxes, overallDiscountType, overallDiscountValue, appliedPayments, paymentCurrency, dispatchAtSale]);
 
 
   useEffect(() => {
@@ -278,79 +282,80 @@ export default function POSPage() {
   };
 
   const { subtotal, totalAmount, appliedPromotions, promotionalDiscountAmount, taxAmount, overallDiscountAmountApplied, totalItemDiscountAmount } = useMemo(() => {
-    const activePromotions = promotions.filter(p => p.isActive && new Date(p.startDate) <= new Date() && (!p.endDate || new Date(p.endDate) >= new Date()));
-    let currentSubtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    let currentItemDiscountAmount = 0;
+    const exchangeRate = paymentCurrency?.exchangeRate || 1;
+
+    let currentSubtotalInBase = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    
+    let currentItemDiscountAmountInBase = 0;
     cart.forEach(item => {
         if (item.itemDiscountType && item.itemDiscountValue && item.itemDiscountValue > 0) {
             if (item.itemDiscountType === 'percentage') {
-                currentItemDiscountAmount += (item.price * item.quantity) * (item.itemDiscountValue / 100);
+                currentItemDiscountAmountInBase += (item.price * item.quantity) * (item.itemDiscountValue / 100);
             } else { // fixedAmount
-                currentItemDiscountAmount += item.itemDiscountValue * item.quantity;
+                currentItemDiscountAmountInBase += item.itemDiscountValue * item.quantity;
             }
         }
     });
 
-    const subtotalAfterItemDiscounts = currentSubtotal - currentItemDiscountAmount;
+    const subtotalAfterItemDiscountsInBase = currentSubtotalInBase - currentItemDiscountAmountInBase;
     
-    // 1. Calculate overall sale discount
-    let currentOverallDiscountAmount = 0;
+    let currentOverallDiscountAmountInBase = 0;
     if (overallDiscountType && typeof overallDiscountValue === 'number' && overallDiscountValue > 0) {
       if (overallDiscountType === 'percentage') {
-        currentOverallDiscountAmount = subtotalAfterItemDiscounts * (overallDiscountValue / 100);
+        currentOverallDiscountAmountInBase = subtotalAfterItemDiscountsInBase * (overallDiscountValue / 100);
       } else { // fixedAmount
-        currentOverallDiscountAmount = Math.min(subtotalAfterItemDiscounts, overallDiscountValue);
+        const discountInBase = overallDiscountValue / exchangeRate;
+        currentOverallDiscountAmountInBase = Math.min(subtotalAfterItemDiscountsInBase, discountInBase);
       }
     }
-    const subtotalAfterOverallDiscount = subtotalAfterItemDiscounts - currentOverallDiscountAmount;
+    const subtotalAfterOverallDiscountInBase = subtotalAfterItemDiscountsInBase - currentOverallDiscountAmountInBase;
     
-    // 2. Calculate promotional discount (on the subtotal *after* manual discount)
-    let promotionalDiscount = 0;
+    let promotionalDiscountInBase = 0;
     const appliedPromos: AppliedPromotionEntry[] = [];
-    activePromotions.forEach(promo => {
-      const minAmountCondition = promo.conditions.find(c => c.type === 'minSellAmount');
-      if (minAmountCondition && typeof minAmountCondition.value === 'number' && subtotalAfterOverallDiscount < minAmountCondition.value) {
-        return; 
-      }
-      
-      let discountableAmount = subtotalAfterOverallDiscount;
-      
-      if (promo.discountType === 'percentage') {
-        const discountValue = (discountableAmount * promo.discountValue) / 100;
-        promotionalDiscount += discountValue;
-        appliedPromos.push({ promotionId: promo.id, name: promo.name, discountType: 'percentage', discountValue: promo.discountValue, amountDeducted: discountValue });
-      } else if (promo.discountType === 'fixedAmount') {
-        const discountValue = Math.min(discountableAmount, promo.discountValue);
-        promotionalDiscount += discountValue;
-        appliedPromos.push({ promotionId: promo.id, name: promo.name, discountType: 'fixedAmount', discountValue: promo.discountValue, amountDeducted: discountValue });
-      }
-    });
-
-    const subtotalAfterPromo = subtotalAfterOverallDiscount - promotionalDiscount;
-    let totalTaxAmount = 0;
-    
-    const calculatedTaxes = appliedTaxes.map(appliedTax => {
-        const taxDetails = taxes.find(t => t.id === appliedTax.taxId);
-        if (taxDetails) {
-            const taxAmountValue = subtotalAfterPromo * taxDetails.rate;
-            totalTaxAmount += taxAmountValue;
-            return { ...appliedTax, amount: taxAmountValue };
+    if(promotions) {
+        const activePromotions = promotions.filter(p => p.isActive && new Date(p.startDate) <= new Date() && (!p.endDate || new Date(p.endDate) >= new Date()));
+        activePromotions.forEach(promo => {
+        const minAmountCondition = promo.conditions.find(c => c.type === 'minSellAmount');
+        if (minAmountCondition && typeof minAmountCondition.value === 'number') {
+            const minAmountInBase = minAmountCondition.value / exchangeRate;
+            if (subtotalAfterOverallDiscountInBase < minAmountInBase) return;
         }
-        return appliedTax;
+        
+        let discountableAmountInBase = subtotalAfterOverallDiscountInBase;
+        
+        if (promo.discountType === 'percentage') {
+            const discountValue = (discountableAmountInBase * promo.discountValue) / 100;
+            promotionalDiscountInBase += discountValue;
+            appliedPromos.push({ promotionId: promo.id, name: promo.name, discountType: 'percentage', discountValue: promo.discountValue, amountDeducted: discountValue });
+        } else if (promo.discountType === 'fixedAmount') {
+            const discountValueInBase = promo.discountValue / exchangeRate;
+            const discountValue = Math.min(discountableAmountInBase, discountValueInBase);
+            promotionalDiscountInBase += discountValue;
+            appliedPromos.push({ promotionId: promo.id, name: promo.name, discountType: 'fixedAmount', discountValue: promo.discountValue, amountDeducted: discountValue });
+        }
+        });
+    }
+
+
+    const subtotalAfterPromoInBase = subtotalAfterOverallDiscountInBase - promotionalDiscountInBase;
+    
+    let totalTaxAmountInBase = 0;
+    appliedTaxes.forEach(appliedTax => {
+        totalTaxAmountInBase += subtotalAfterPromoInBase * appliedTax.rate;
     });
 
-    const total = subtotalAfterPromo + totalTaxAmount; 
+    const totalInBase = subtotalAfterPromoInBase + totalTaxAmountInBase; 
 
     return { 
-      subtotal: currentSubtotal,
-      totalItemDiscountAmount: currentItemDiscountAmount,
-      overallDiscountAmountApplied: currentOverallDiscountAmount,
-      totalAmount: total, 
-      appliedPromotions: appliedPromos,
-      promotionalDiscountAmount: promotionalDiscount,
-      taxAmount: totalTaxAmount,
+      subtotal: currentSubtotalInBase * exchangeRate,
+      totalItemDiscountAmount: currentItemDiscountAmountInBase * exchangeRate,
+      overallDiscountAmountApplied: currentOverallDiscountAmountInBase * exchangeRate,
+      totalAmount: totalInBase * exchangeRate, 
+      appliedPromotions: appliedPromos.map(p => ({...p, amountDeducted: p.amountDeducted * exchangeRate})),
+      promotionalDiscountAmount: promotionalDiscountInBase * exchangeRate,
+      taxAmount: totalTaxAmountInBase * exchangeRate,
     };
-  }, [cart, selectedClient, promotions, appliedTaxes, taxes, overallDiscountType, overallDiscountValue]);
+  }, [cart, selectedClient, promotions, appliedTaxes, overallDiscountType, overallDiscountValue, paymentCurrency]);
 
   const clientOptions = useMemo(() => {
     return clients.map(c => ({ value: c.id, label: `${c.name} (${c.email})`}));
@@ -466,12 +471,12 @@ export default function POSPage() {
       baseCurrencyCode: baseCurrency!.code,
       exchangeRate: paymentCurrency!.exchangeRate || 1,
       totalInBaseCurrency: totalAmount / (paymentCurrency!.exchangeRate || 1),
-      dispatchStatus: 'Pending', // Or based on a UI switch
+      dispatchStatus: dispatchAtSale ? 'Dispatched' : 'Pending',
     };
 
     try {
       await db.sales.add(saleData);
-      await syncService.addToQueue({ entity: 'sale', operation: 'create', data: saleData });
+      await syncService.addToQueue({ entity: 'sale', operation: 'create', data: { ...saleData, dispatchNow: dispatchAtSale } });
       
       toast({
         title: t('Toasts.paymentSuccessfulTitle'),
@@ -527,7 +532,7 @@ export default function POSPage() {
                                                     <img src={product.imageUrl || 'https://placehold.co/40x40.png'} alt={product.name} className="w-8 h-8 rounded-sm object-cover" data-ai-hint="product image"/>
                                                     <div className="flex-grow">
                                                         <p className="text-sm font-medium text-left">{product.name}</p>
-                                                        <p className="text-xs text-muted-foreground text-left">{paymentCurrency?.symbol || '$'}{product.price.toFixed(2)}</p>
+                                                        <p className="text-xs text-muted-foreground text-left">{paymentCurrency?.symbol || '$'}{(product.price * (paymentCurrency?.exchangeRate || 1)).toFixed(paymentCurrency?.decimalPlaces || 2)}</p>
                                                     </div>
                                                      <div className="text-xs text-muted-foreground ml-auto">
                                                         {product.isService ? 'N/A' : `${t('Dashboard.stockRemaining')}: ${product.quantity}`}
@@ -604,7 +609,7 @@ export default function POSPage() {
                         <PopoverTrigger asChild>
                             <Button variant="outline" className="w-full justify-between">
                                 {overallDiscountAmountApplied > 0
-                                    ? `${t('POSPage.totalDiscountLabel')}: ${paymentCurrency?.symbol || '$'}${overallDiscountAmountApplied.toFixed(2)}`
+                                    ? `${t('POSPage.totalDiscountLabel')}: ${formatCurrency(overallDiscountAmountApplied)}`
                                     : t('POSPage.itemDiscountButtonAriaLabel')}
                                 <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
@@ -654,13 +659,13 @@ export default function POSPage() {
                 </div>
 
                 {/* Summary Section */}
-                <div className="pt-2 space-y-2 text-sm border-t">
-                    <div className="flex justify-between"><span>{t('POSPage.subtotal')}</span><span>{paymentCurrency?.symbol || '$'}{subtotal.toFixed(2)}</span></div>
-                    {overallDiscountAmountApplied > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.overallSaleDiscountSectionTitle')}</span><span>-{paymentCurrency?.symbol || '$'}${overallDiscountAmountApplied.toFixed(2)}</span></div>}
-                    {promotionalDiscountAmount > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.promotionalDiscountLabel')}</span><span>-{paymentCurrency?.symbol || '$'}${promotionalDiscountAmount.toFixed(2)}</span></div>}
-                    {appliedTaxes.length > 0 && <div className="flex justify-between"><span>{t('SalesTable.headerTax')}</span><span>{paymentCurrency?.symbol || '$'}${taxAmount.toFixed(2)}</span></div>}
+                <div className="pt-2 space-y-2 border-t">
+                    <div className="flex justify-between"><span>{t('POSPage.subtotal')}</span><span>{formatCurrency(subtotal)}</span></div>
+                    {overallDiscountAmountApplied > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.overallSaleDiscountSectionTitle')}</span><span>-{formatCurrency(overallDiscountAmountApplied)}</span></div>}
+                    {promotionalDiscountAmount > 0 && <div className="flex justify-between text-destructive"><span>{t('POSPage.promotionalDiscountLabel')}</span><span>-{formatCurrency(promotionalDiscountAmount)}</span></div>}
+                    {appliedTaxes.length > 0 && <div className="flex justify-between"><span>{t('SalesTable.headerTax')}</span><span>{formatCurrency(taxAmount)}</span></div>}
                     <Separator />
-                    <div className="flex justify-between font-bold text-lg text-primary"><span>{t('POSPage.total')}</span><span>{paymentCurrency?.symbol || '$'}{totalAmount.toFixed(2)}</span></div>
+                    <div className="flex justify-between font-bold text-lg text-primary"><span>{t('POSPage.total')}</span><span>{formatCurrency(totalAmount)}</span></div>
                 </div>
                  {/* Payment Section */}
                  <div className="pt-2 space-y-2 border-t">
@@ -668,7 +673,7 @@ export default function POSPage() {
                      {appliedPayments.map((p, i) => (
                         <div key={i} className="flex justify-between items-center text-xs">
                             <span>{p.methodName}</span>
-                            <span>{paymentCurrency?.symbol || '$'}{p.amount.toFixed(2)}</span>
+                            <span>{formatCurrency(p.amount)}</span>
                              <Button variant="ghost" size="icon" onClick={() => handleRemovePayment(i)} className="h-6 w-6 text-destructive/80 hover:text-destructive"><Trash2 className="h-3.5 w-3.5"/></Button>
                         </div>
                     ))}
@@ -689,8 +694,26 @@ export default function POSPage() {
                         </div>
                     )}
                      <Separator />
-                     <div className="flex justify-between text-sm"><span>{t('POSPage.totalPaidLabel')}</span><span>{paymentCurrency?.symbol || '$'}{totalPaid.toFixed(2)}</span></div>
-                     <div className={cn("flex justify-between font-bold", amountRemaining > 0.001 ? "text-destructive" : "text-green-600")}><span>{t('POSPage.amountRemainingLabel')}</span><span>{paymentCurrency?.symbol || '$'}{amountRemaining.toFixed(2)}</span></div>
+                     <div className="flex justify-between text-sm"><span>{t('POSPage.totalPaidLabel')}</span><span>{formatCurrency(totalPaid)}</span></div>
+                     <div className={cn("flex justify-between font-bold", amountRemaining > 0.001 ? "text-destructive" : "text-green-600")}><span>{t('POSPage.amountRemainingLabel')}</span><span>{formatCurrency(amountRemaining)}</span></div>
+                </div>
+
+                <div className="pt-2 border-t">
+                   <FormField
+                      control={form.control}
+                      name="dispatchAtSale"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-sm">{t('POSPage.dispatchNowButton')}</FormLabel>
+                            <FormDescription className="text-xs">{t('POSBehaviorSettingsForm.dispatchAtSaleDefaultDescription')}</FormDescription>
+                          </div>
+                          <FormControl>
+                            <Switch checked={dispatchAtSale} onCheckedChange={setDispatchAtSale} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
                 </div>
             </CardContent>
             {cart.length > 0 && (

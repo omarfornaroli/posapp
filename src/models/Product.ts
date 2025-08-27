@@ -1,4 +1,5 @@
 
+
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { Product as ProductType, Supplier } from '@/types';
 
@@ -20,7 +21,6 @@ const ProductSchema: Schema<ProductDocument> = new Schema({
   isUsingDefaultQuantity: { type: Boolean, default: true },
   isService: { type: Boolean, default: false },
   isEnabled: { type: Boolean, default: true },
-  dispatchAtSale: { type: Boolean, default: true },
   description: { type: String, trim: true },
   quantity: { type: Number, required: true, min: 0, default: 0 }, 
   supplier: { type: Schema.Types.ObjectId, ref: 'Supplier' },

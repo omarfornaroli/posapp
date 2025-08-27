@@ -1,4 +1,5 @@
 
+
 import type { Product, SaleTransaction, Client, Tax, AppliedTaxEntry, User, Promotion, Theme, ThemeColors, PaymentMethod, AppliedPayment, ReceiptSetting, CartItem, ReceiptMargin, PromotionCondition, Country, Currency, Supplier } from '@/types';
 
 export const mockProducts: Omit<Product, 'id'>[] = [
@@ -20,7 +21,6 @@ export const mockProducts: Omit<Product, 'id'>[] = [
     isUsingDefaultQuantity: true,
     isService: false,
     isEnabled: true,
-    dispatchAtSale: true,
     supplier: 'Green Supplies Co.',
     reorderPoint: 20,
     preferredQuantity: 50,
@@ -45,7 +45,6 @@ export const mockProducts: Omit<Product, 'id'>[] = [
     isUsingDefaultQuantity: true,
     isService: false,
     isEnabled: true,
-    dispatchAtSale: true,
     supplier: 'Eco Textiles Inc.',
     reorderPoint: 30,
     preferredQuantity: 60,
@@ -69,7 +68,6 @@ export const mockProducts: Omit<Product, 'id'>[] = [
     isUsingDefaultQuantity: true,
     isService: false,
     isEnabled: true,
-    dispatchAtSale: true,
     supplier: 'Natural Dental Care',
     reorderPoint: 50,
     preferredQuantity: 100,
@@ -94,7 +92,6 @@ export const mockProducts: Omit<Product, 'id'>[] = [
     isUsingDefaultQuantity: true,
     isService: false,
     isEnabled: true,
-    dispatchAtSale: true,
     supplier: 'SunPower Tech',
     reorderPoint: 10,
     preferredQuantity: 25,
@@ -119,7 +116,6 @@ export const mockProducts: Omit<Product, 'id'>[] = [
     isUsingDefaultQuantity: true,
     isService: false,
     isEnabled: true,
-    dispatchAtSale: true,
     supplier: 'The Coffee Roasters',
     reorderPoint: 20,
     preferredQuantity: 40,
@@ -140,7 +136,6 @@ export const mockProducts: Omit<Product, 'id'>[] = [
     isUsingDefaultQuantity: false, 
     isService: true,
     isEnabled: true,
-    dispatchAtSale: false,
     description: "Professional design consultation and work, billed per hour.",
     quantity: 9999, 
     category: "Services",
