@@ -1,4 +1,5 @@
 
+
 // src/components/layout/AppLayout.tsx
 'use client';
 
@@ -9,7 +10,7 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import SessionExpirationDialog from './SessionExpirationDialog';
 import { syncService } from '@/services/sync.service';
-import type { User, Permission, RolePermission } from '@/types';
+import type { User, Permission, RolePermission, POSSetting } from '@/types';
 import { translationRxService } from '@/services/translation.rx.service';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toaster";
@@ -38,6 +39,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
 
   const [isSessionWarningVisible, setIsSessionWarningVisible] = useState(false);
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
+  const [sessionDurationMinutes, setSessionDurationMinutes] = useState(30);
 
   const publicPaths = ['/login', '/setup-account', '/reset-password'];
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
@@ -58,6 +60,16 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
     translationRxService.initialize(initialLocale);
   }, []);
 
+  useEffect(() => {
+    async function fetchSessionDuration() {
+        const settings = await db.posSettings.get('global_pos_settings');
+        if (settings && settings.sessionDuration) {
+            setSessionDurationMinutes(settings.sessionDuration);
+        }
+    }
+    fetchSessionDuration();
+  }, []);
+
   const handleLogout = useCallback(() => {
     setIsSessionWarningVisible(false);
     localStorage.removeItem('isLoggedIn');
@@ -69,13 +81,13 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
   }, []);
 
   const handleExtendSession = useCallback(() => {
-    const wasRemembered = (sessionExpiresAt && sessionExpiresAt - Date.now() > 5 * 60 * 1000);
-    const newExpiresIn = wasRemembered ? 15 * 24 * 60 * 60 * 1000 : 5 * 60 * 1000;
+    const wasRemembered = (sessionExpiresAt && sessionExpiresAt - Date.now() > 5 * 60 * 1000 + SESSION_WARNING_MS); // check if original duration was longer than standard
+    const newExpiresIn = wasRemembered ? 15 * 24 * 60 * 60 * 1000 : sessionDurationMinutes * 60 * 1000;
     const newExpiresAt = Date.now() + newExpiresIn;
     localStorage.setItem('sessionExpiresAt', String(newExpiresAt));
     setSessionExpiresAt(newExpiresAt);
     setIsSessionWarningVisible(false);
-  }, [sessionExpiresAt]);
+  }, [sessionExpiresAt, sessionDurationMinutes]);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -261,3 +273,5 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </AuthProvider>
     );
 }
+
+    

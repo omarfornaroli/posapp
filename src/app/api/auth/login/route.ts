@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/models/User';
+import POSSetting from '@/models/POSSetting';
 import type { UserDocument } from '@/models/User';
 
 export async function POST(request: NextRequest) {
@@ -33,9 +34,15 @@ export async function POST(request: NextRequest) {
     }
     
     const now = new Date();
-    const expiresIn = rememberMe 
-      ? 15 * 24 * 60 * 60 * 1000 // 15 days
-      : 5 * 60 * 1000; // 5 minutes
+    let expiresIn;
+
+    if (rememberMe) {
+      expiresIn = 15 * 24 * 60 * 60 * 1000; // 15 days
+    } else {
+      const posSettings = await POSSetting.findOne({});
+      const sessionDurationMinutes = posSettings?.sessionDuration || 30; // Default to 30 minutes
+      expiresIn = sessionDurationMinutes * 60 * 1000;
+    }
       
     const expiresAt = now.getTime() + expiresIn;
 
@@ -47,3 +54,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }
+
+    

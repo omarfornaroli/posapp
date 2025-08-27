@@ -333,6 +333,7 @@ export interface POSSetting {
   requireAuthForCartItemRemoval?: boolean;
   dispatchAtSaleDefault?: boolean;
   separateCartAndPayment?: boolean;
+  sessionDuration?: number; // In minutes
 }
 
 export interface SmtpSetting {
@@ -513,3 +514,5 @@ export interface Report {
   createdAt?: string;
   updatedAt?: string;
 }
+
+    

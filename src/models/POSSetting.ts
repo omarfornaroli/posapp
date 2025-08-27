@@ -14,6 +14,7 @@ const POSSettingSchema: Schema<POSSettingDocument> = new Schema({
   requireAuthForCartItemRemoval: { type: Boolean, default: true },
   dispatchAtSaleDefault: { type: Boolean, default: true },
   separateCartAndPayment: { type: Boolean, default: false },
+  sessionDuration: { type: Number, default: 30 }, // In minutes, default 30 mins
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
@@ -29,3 +30,5 @@ const POSSetting: Model<POSSettingDocument> =
   models.POSSetting || mongoose.model<POSSettingDocument>('POSSetting', POSSettingSchema);
 
 export default POSSetting;
+
+    
