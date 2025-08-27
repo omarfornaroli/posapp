@@ -47,7 +47,7 @@ export default function SalesReportPage() {
   const [selectedDispatchStatus, setSelectedDispatchStatus] = useState<string>('');
   
   const [isGridSettingsDialogOpen, setIsGridSettingsDialogOpen] = useState(false);
-  const [sortConfig, setSortConfig] = useState<SortConfig<SaleTransaction> | null>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig<SaleTransaction> | null>({ key: 'date', direction: 'desc' });
   const [groupingKeys, setGroupingKeys] = useState<string[]>([]);
   const [columnDefinitions, setColumnDefinitions] = useState<ColumnDefinition<SaleTransaction>[]>([]);
   const [persistedColumnSettings, setPersistedColumnSettings] = useState<PersistedColumnSetting[]>([]);
@@ -96,6 +96,22 @@ export default function SalesReportPage() {
     });
   }, [sales, dateRange, searchTerm, selectedClientId, selectedPaymentMethodId, selectedDispatchStatus]);
 
+  const sortedTransactions = useMemo(() => {
+    let sortableItems = [...filteredTransactions];
+    if (sortConfig) {
+      sortableItems.sort((a, b) => {
+        const valA = a[sortConfig.key as keyof SaleTransaction];
+        const valB = b[sortConfig.key as keyof SaleTransaction];
+        if (valA === null || valA === undefined) return 1;
+        if (valB === null || valB === undefined) return -1;
+        if (valA < valB) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [filteredTransactions, sortConfig]);
+
 
   const handleExport = () => {
     toast({ title: t('Common.featureComingSoonTitle')});
@@ -114,7 +130,7 @@ export default function SalesReportPage() {
   };
 
   const handleSortRequest = useCallback((key: keyof SaleTransaction | string, direction: 'asc' | 'desc' | null) => {
-    // Implementation for sorting
+    setSortConfig(direction ? { key, direction } : null);
   }, []);
 
   const handleToggleGroupingKey = useCallback((key: string) => {
@@ -192,7 +208,7 @@ export default function SalesReportPage() {
                     </Select>
                 </div>
                  <SalesTable
-                    transactions={filteredTransactions}
+                    transactions={sortedTransactions}
                     displayColumns={columnDefinitions.filter(c => c.visible !== false)}
                     columnDefinitions={columnDefinitions}
                     onSort={handleSortRequest}
@@ -207,5 +223,6 @@ export default function SalesReportPage() {
     </div>
   );
 }
+
 
 
