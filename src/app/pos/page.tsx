@@ -17,6 +17,7 @@ import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/dexie-db';
 import { syncService } from '@/services/sync.service';
+import { useForm } from 'react-hook-form';
 
 import type { Product, Client, CartItem, Tax, Promotion, PaymentMethod, Currency, SaleTransaction, PendingCart, AppliedTaxEntry, AppliedPromotionEntry, AppliedPayment } from '@/types';
 
@@ -29,6 +30,15 @@ import { Separator } from '@/components/ui/separator';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useDebounce } from 'use-debounce';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
 
 import CartItemCard from '@/components/pos/CartItemCard';
 import { Combobox } from '@/components/ui/combobox';
@@ -62,6 +72,8 @@ export default function POSPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  
+  const form = useForm();
 
   const { products, isLoading: isLoadingProducts } = useDexieProducts();
   const { clients, isLoading: isLoadingClients } = useDexieClients();
