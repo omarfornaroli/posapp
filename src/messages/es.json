@@ -206,7 +206,9 @@
     "selectCartToCheckout": "Selecciona un carrito para comenzar el pago.",
     "noPendingCarts": "No hay carritos pendientes de pago.",
     "cartLoadedTitle": "Carrito Cargado",
-    "cartLoadedDescription": "El carrito '{cartName}' está ahora activo."
+    "cartLoadedDescription": "El carrito '{cartName}' está ahora activo.",
+    "dispatchNowButton": "Despachar Ahora",
+    "dispatchNowTooltip": "Si está activado, afectará al stock decrementando las cantidades vendidas."
   },
   "Items": {
     "singular": "Artículo",
@@ -293,7 +295,6 @@
     "isUsingDefaultQuantityLabel": "Usar Cantidad Predeterminada (1) en PDV",
     "isServiceLabel": "Este es un Servicio",
     "isEnabledLabel": "Producto está Habilitado",
-    "dispatchAtSaleLabel": "Despachar este artículo al vender",
     "descriptionLabel": "Descripción",
     "descriptionPlaceholder": "Describe brevemente el producto...",
     "quantityLabel": "Cantidad en Stock Actual",
@@ -869,7 +870,7 @@
     "themeAddedDescription": "Theme \"{themeName}\" has been successfully added.",
     "themeDefaultSetTitle": "Theme Set as Default",
     "themeDefaultSetDescription": "Theme \"{themeName}\" is now the default theme.",
-    "saleDispatched": "Sale #{saleId} has been dispatched."
+    "saleDispatched": "La venta #{saleId} ha sido despachada."
   },
   "NotificationsManagerPage": {
     "title": "Gestor de Notificaciones",

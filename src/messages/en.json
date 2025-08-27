@@ -206,7 +206,9 @@
     "selectCartToCheckout": "Select a cart to begin checkout.",
     "noPendingCarts": "No carts are pending for checkout.",
     "cartLoadedTitle": "Cart Loaded",
-    "cartLoadedDescription": "Cart '{cartName}' is now active."
+    "cartLoadedDescription": "Cart '{cartName}' is now active.",
+    "dispatchNowButton": "Dispatch Now",
+    "dispatchNowTooltip": "If enabled, this will affect stock by decrementing the quantities sold."
   },
   "Items": {
     "singular": "Item",
@@ -293,7 +295,6 @@
     "isUsingDefaultQuantityLabel": "Use Default Quantity (1) at POS",
     "isServiceLabel": "This is a Service",
     "isEnabledLabel": "Product is Enabled",
-    "dispatchAtSaleLabel": "Dispatch this item at time of sale",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Briefly describe the product...",
     "quantityLabel": "Current Stock Quantity",

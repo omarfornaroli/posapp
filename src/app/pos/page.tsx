@@ -39,6 +39,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 
 import CartItemCard from '@/components/pos/CartItemCard';
 import { Combobox } from '@/components/ui/combobox';
@@ -712,21 +713,29 @@ export default function POSPage() {
                     </div>
 
                     <div className="pt-2 border-t">
-                    <FormField
-                        control={form.control}
-                        name="dispatchAtSale"
-                        render={({ field }) => (
-                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                            <div className="space-y-0.5">
-                                <FormLabel className="text-sm">{t('POSPage.dispatchNowButton')}</FormLabel>
-                                <FormDescription className="text-xs">{t('POSBehaviorSettingsForm.dispatchAtSaleDefaultDescription')}</FormDescription>
-                            </div>
-                            <FormControl>
-                                <Switch checked={dispatchAtSale} onCheckedChange={setDispatchAtSale} />
-                            </FormControl>
-                            </FormItem>
-                        )}
-                        />
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <FormField
+                                        control={form.control}
+                                        name="dispatchAtSale"
+                                        render={({ field }) => (
+                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                                            <div className="space-y-0.5">
+                                                <FormLabel className="text-sm">{t('POSPage.dispatchNowButton')}</FormLabel>
+                                            </div>
+                                            <FormControl>
+                                                <Switch checked={dispatchAtSale} onCheckedChange={setDispatchAtSale} />
+                                            </FormControl>
+                                            </FormItem>
+                                        )}
+                                        />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{t('POSPage.dispatchNowTooltip')}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                     </div>
                 </CardContent>
                 {cart.length > 0 && (
