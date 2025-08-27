@@ -560,7 +560,7 @@
     "fontHeadlineLabel": "Fuente del Encabezado",
     "colorsSectionTitle": "Colores (HSL)",
     "isDefaultBadge": "Predeterminado",
-    "setDefaultButton": "Predeterminado",
+    "setDefaultButton": "Predeterminar",
     "themeUpdatedTitle": "Tema Actualizado",
     "themeUpdatedDescription": "El tema \"{themeName}\" ha sido actualizado.",
     "errorSettingDefaultTheme": "Error al establecer el tema predeterminado.",

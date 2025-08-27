@@ -716,20 +716,20 @@ export default function POSPage() {
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <FormField
-                                        control={form.control}
-                                        name="dispatchAtSale"
-                                        render={({ field }) => (
-                                            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                                            <div className="space-y-0.5">
+                                    <div className="mt-4">
+                                        <FormField
+                                            control={form.control}
+                                            name="dispatchAtSale"
+                                            render={({ field }) => (
+                                                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
                                                 <FormLabel className="text-sm">{t('POSPage.dispatchNowButton')}</FormLabel>
-                                            </div>
-                                            <FormControl>
-                                                <Switch checked={dispatchAtSale} onCheckedChange={setDispatchAtSale} />
-                                            </FormControl>
-                                            </FormItem>
-                                        )}
+                                                <FormControl>
+                                                    <Switch checked={dispatchAtSale} onCheckedChange={setDispatchAtSale} />
+                                                </FormControl>
+                                                </FormItem>
+                                            )}
                                         />
+                                    </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
                                     <p>{t('POSPage.dispatchNowTooltip')}</p>
