@@ -1,22 +1,49 @@
 
+
 import mongoose, { Schema, Document, models, Model } from 'mongoose';
 import type { PaymentMethod as PaymentMethodType } from '@/types';
 
-export interface PaymentMethodDocument extends PaymentMethodType, Document {
+export interface PaymentMethodDocument extends Omit<PaymentMethodType, 'name' | 'description'>, Document {
   id: string;
+  name: Map<string, string>;
+  description?: Map<string, string>;
 }
 
 const PaymentMethodSchema: Schema<PaymentMethodDocument> = new Schema({
-  name: { type: String, required: true, unique: true, trim: true },
-  description: { type: String, trim: true },
+  name: {
+    type: Map,
+    of: String,
+    required: true,
+    validate: {
+      validator: (map: Map<string, string>) => map.size > 0 && Array.from(map.values()).some(v => v && v.trim() !== ''),
+      message: 'Name must be provided for at least one language.'
+    }
+  },
+  description: {
+    type: Map,
+    of: String,
+    default: {},
+  },
   isEnabled: { type: Boolean, default: true, required: true },
   isDefault: { type: Boolean, default: false },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   updatedBy: { type: Schema.Types.ObjectId, ref: 'User' },
 }, {
   timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true },
+  toJSON: { 
+    virtuals: true,
+    transform: (doc, ret) => {
+      if (ret.name) ret.name = Object.fromEntries(ret.name);
+      if (ret.description) ret.description = Object.fromEntries(ret.description);
+    }
+  },
+  toObject: { 
+    virtuals: true,
+    transform: (doc, ret) => {
+      if (ret.name) ret.name = Object.fromEntries(ret.name);
+      if (ret.description) ret.description = Object.fromEntries(ret.description);
+    }
+  },
   collection: 'pos_payment_methods'
 });
 
@@ -28,3 +55,4 @@ const PaymentMethod: Model<PaymentMethodDocument> =
   models.PaymentMethod || mongoose.model<PaymentMethodDocument>('PaymentMethod', PaymentMethodSchema);
 
 export default PaymentMethod;
+

@@ -1,4 +1,5 @@
 
+
 {
   "Header": {
     "title": "POSAPP",
@@ -124,6 +125,11 @@
     "changeLanguage": "Cambiar Idioma",
     "en": "Inglés (English)",
     "es": "Español"
+  },
+  "MultiLanguageInput": {
+    "editAllLanguages": "Editar todos los idiomas",
+    "dialogTitle": "Editar {fieldName}",
+    "dialogDescription": "Introduce los valores para cada idioma disponible."
   },
   "POSPage": {
     "currentTransactionTitle": "Transacción Actual",
@@ -759,8 +765,7 @@
     "themeAddedTitle": "Tema Agregado",
     "themeAddedDescription": "El tema \"{themeName}\" ha sido agregado exitosamente.",
     "themeDefaultSetTitle": "Tema Establecido como Predeterminado",
-    "themeDefaultSetDescription": "El tema \"{themeName}\" ahora es el tema predeterminado.",
-    "saleDispatched": "La venta #{saleId} ha sido despachada."
+    "themeDefaultSetDescription": "El tema \"{themeName}\" ahora es el tema predeterminado."
   },
   "NotificationsManagerPage": {
     "title": "Gestor de Notificaciones",

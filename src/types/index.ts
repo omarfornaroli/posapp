@@ -131,8 +131,8 @@ export interface AppliedPromotionEntry {
 
 export interface PaymentMethod {
   id: string;
-  name: string;
-  description?: string;
+  name: Record<string, string>;
+  description?: Record<string, string>;
   isEnabled: boolean;
   isDefault?: boolean;
   createdBy?: string;
@@ -515,4 +515,7 @@ export interface Report {
   updatedAt?: string;
 }
 
+export interface MultiLanguageValue {
+  [locale: string]: string;
+}
     
