@@ -98,11 +98,11 @@ export async function runSeedOperations() {
   
   await Promise.all(
     mockUsers.map(userData => {
-      const isAdmi n = userData.email === 'admin@example.com';
+      const isAdmin = userData.email === 'admin@example.com';
       const userPayload = {
         ...userData,
         status: 'active' as const, // Admins and mock users are active by default now.
-        password: isAdmi n ? hashedPassword : undefined,
+        password: isAdmin ? hashedPassword : undefined,
       };
       return User.updateOne(
         { email: userData.email },
