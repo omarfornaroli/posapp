@@ -272,7 +272,7 @@ export default function POSPage() {
         addToCart(product);
         setIsScannerOpen(false);
       } else {
-        toast({ variant: 'destructive', title: "Out of Stock", description: `Product "${product.name}" is out of stock.` });
+        toast({ variant: 'destructive', title: t('POSPage.outOfStock'), description: t('POSPage.productOutOfStock', { productName: product.name}) });
       }
     } else {
       toast({ variant: 'destructive', title: t('POSPage.productNotFoundByBarcodeToastTitle'), description: t('POSPage.productNotFoundByBarcodeToastDescription', { barcode }) });
@@ -604,14 +604,14 @@ export default function POSPage() {
                     {/* Client Section */}
                     <div className="space-y-1">
                         <Label>{t('POSPage.clientSectionTitle')}</Label>
-                        <Combobox options={clientOptions} value={selectedClient?.id || ''} onChange={(value) => setSelectedClient(clients.find(c => c.id === value) || null)} placeholder={t('POSPage.selectClientPlaceholder')} searchPlaceholder="Search clients..." emptyResultText="No clients found." />
+                        <Combobox options={clientOptions} value={selectedClient?.id || ''} onChange={(value) => setSelectedClient(clients.find(c => c.id === value) || null)} placeholder={t('POSPage.selectClientPlaceholder')} searchPlaceholder={t('POSPage.searchClientsPlaceholder')} emptyResultText={t('POSPage.noClientsFound')} />
                     </div>
 
                     {/* Currency Section */}
                     <div className="space-y-1">
                         <Label>{t('SalesTable.headerCurrency')}</Label>
                         <Select value={paymentCurrency?.code} onValueChange={(code) => setPaymentCurrency(currencies.find(c => c.code === code) || null)}>
-                            <SelectTrigger><SelectValue placeholder="Select currency..." /></SelectTrigger>
+                            <SelectTrigger><SelectValue placeholder={t('POSPage.selectCurrencyPlaceholder')} /></SelectTrigger>
                             <SelectContent>{currencyOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                         </Select>
                     </div>

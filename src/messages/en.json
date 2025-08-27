@@ -208,7 +208,12 @@
     "cartLoadedTitle": "Cart Loaded",
     "cartLoadedDescription": "Cart '{cartName}' is now active.",
     "dispatchNowButton": "Dispatch Now",
-    "dispatchNowTooltip": "If enabled, this will affect stock by decrementing the quantities sold."
+    "dispatchNowTooltip": "If enabled, this will affect stock by decrementing the quantities sold.",
+    "searchClientsPlaceholder": "Search clients...",
+    "noClientsFound": "No clients found.",
+    "selectCurrencyPlaceholder": "Select currency...",
+    "outOfStock": "Out of Stock",
+    "productOutOfStock": "Product \"{productName}\" is out of stock."
   },
   "Items": {
     "singular": "Item",
