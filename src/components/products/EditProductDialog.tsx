@@ -180,8 +180,8 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
-            <ScrollArea className="flex-grow pr-6 -mr-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex-grow flex flex-col overflow-hidden">
+             <div className="flex-grow overflow-y-auto pr-6 -mr-6">
               <div className="space-y-4 py-4 pr-6">
                 <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.nameLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.namePlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -229,7 +229,7 @@ export default function EditProductDialog({ open, onOpenChange, product, onSaveP
                 <FormField control={form.control} name="description" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.descriptionLabel')}</FormLabel><FormControl><Textarea placeholder={t('AddProductDialog.descriptionPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
                 <FormField control={form.control} name="imageUrl" render={({ field }) => (<FormItem><FormLabel>{t('AddProductDialog.imageUrlLabel')}</FormLabel><FormControl><Input placeholder={t('AddProductDialog.imageUrlPlaceholder')} {...field} /></FormControl><FormMessage /></FormItem>)} />
               </div>
-            </ScrollArea>
+            </div>
             <DialogFooter className="pt-6 border-t mt-auto shrink-0">
               <DialogClose asChild>
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddProductDialog.cancelButton')}</Button>
