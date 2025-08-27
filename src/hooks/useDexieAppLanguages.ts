@@ -7,7 +7,7 @@ import type { AppLanguage, TranslationRecord } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from './use-toast';
 
-const generateId = () => `temp-${crypto.randomUUID()}`;
+const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 let isPopulating = false;
 
 async function translateAndPopulate(newLangCode: string) {

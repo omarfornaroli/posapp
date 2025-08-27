@@ -6,7 +6,7 @@ import { syncService } from '@/services/sync.service';
 import type { Product } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
-const generateClientId = () => crypto.randomUUID();
+const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 export function useDexieProducts() {
   const [isLoading, setIsLoading] = useState(true);
@@ -46,7 +46,7 @@ export function useDexieProducts() {
 
   const addProduct = async (newProduct: Omit<Product, 'id'>) => {
     // Generate a temporary client-side ID for immediate UI updates
-    const tempId = `temp-${generateClientId()}`;
+    const tempId = generateId();
     const productWithId: Product = {
       ...newProduct,
       id: tempId,

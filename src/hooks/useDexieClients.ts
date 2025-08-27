@@ -6,7 +6,7 @@ import { syncService } from '@/services/sync.service';
 import type { Client } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
-const generateClientId = () => `temp-${crypto.randomUUID()}`;
+const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 let isPopulating = false; // Flag to prevent concurrent population
 
@@ -53,7 +53,7 @@ export function useDexieClients() {
   }, [populateInitialData]);
 
   const addClient = async (newClient: Omit<Client, 'id' | 'registrationDate'>) => {
-    const tempId = generateClientId();
+    const tempId = generateId();
     const clientWithId: Client = {
       ...newClient,
       id: tempId,

@@ -6,7 +6,7 @@ import { syncService } from '@/services/sync.service';
 import type { Supplier } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
-const generateSupplierId = () => `temp-${crypto.randomUUID()}`;
+const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 let isPopulating = false;
 
 export function useDexieSuppliers() {
@@ -51,7 +51,7 @@ export function useDexieSuppliers() {
   }, [populateInitialData]);
 
   const addSupplier = async (newSupplier: Omit<Supplier, 'id'>) => {
-    const tempId = generateSupplierId();
+    const tempId = generateId();
     const supplierWithId: Supplier = {
       ...newSupplier,
       id: tempId,

@@ -6,7 +6,7 @@ import { syncService } from '@/services/sync.service';
 import type { Theme } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
-const generateId = () => `temp-${crypto.randomUUID()}`;
+const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 export function useDexieThemes() {
   const [isLoading, setIsLoading] = useState(true);

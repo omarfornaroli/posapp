@@ -6,7 +6,7 @@ import { syncService } from '@/services/sync.service';
 import type { Promotion } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
-const generatePromotionId = () => `temp-${crypto.randomUUID()}`;
+const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
 let isPopulating = false;
 
@@ -53,7 +53,7 @@ export function useDexiePromotions() {
   }, [populateInitialData]);
 
   const addPromotion = async (newPromotion: Omit<Promotion, 'id'>) => {
-    const tempId = generatePromotionId();
+    const tempId = generateId();
     const promotionWithId: Promotion = {
       ...newPromotion,
       id: tempId,
