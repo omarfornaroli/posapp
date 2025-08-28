@@ -1,3 +1,4 @@
+
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -30,6 +31,7 @@ const entityToEndpointMap: Record<string, string> = {
 const singletonEntities = ['posSetting', 'receiptSetting', 'smtpSetting'];
 
 type SyncStatus = 'idle' | 'syncing' | 'offline';
+type SyncTrigger = 'interval' | 'onlineEvent' | 'manual';
 
 class SyncService {
   private isSyncing = false;
@@ -49,7 +51,7 @@ class SyncService {
   private handleOnline = () => {
     console.log('[SyncService] App is online.');
     this.updateStatus('idle');
-    this.syncWithBackend();
+    this.syncWithBackend('onlineEvent');
   };
   
   private handleOffline = () => {
@@ -70,7 +72,7 @@ class SyncService {
     }
   }
 
-  async syncWithBackend() {
+  async syncWithBackend(trigger: SyncTrigger = 'interval') {
     if (typeof navigator !== 'undefined' && !navigator.onLine) {
         this.updateStatus('offline');
         return;
@@ -82,7 +84,7 @@ class SyncService {
 
     this.isSyncing = true;
     this.updateStatus('syncing');
-    console.log("[SyncService] Starting sync with backend...");
+    console.log(`[SyncService] Starting sync with backend (triggered by: ${trigger})...`);
 
     const queueItems = await db.syncQueue.orderBy('timestamp').toArray();
     if (queueItems.length === 0) {
@@ -96,6 +98,7 @@ class SyncService {
 
     for (const item of queueItems) {
         try {
+            console.log(`[SyncService] Processing item ID ${item.id}:`, item); // Log each item
             const endpointPath = entityToEndpointMap[item.entity];
             if (!endpointPath) {
                 console.warn(`[SyncService] No endpoint mapping for entity: ${item.entity}. Skipping.`);
@@ -152,7 +155,7 @@ class SyncService {
   start() {
     if (syncIntervalId !== null) return;
     
-    syncIntervalId = setInterval(() => this.syncWithBackend(), SYNC_INTERVAL);
+    syncIntervalId = setInterval(() => this.syncWithBackend('interval'), SYNC_INTERVAL);
     window.addEventListener('online', this.handleOnline);
     window.addEventListener('offline', this.handleOffline);
     
@@ -160,7 +163,7 @@ class SyncService {
     // Initial check
     this.updateStatus(navigator.onLine ? 'idle' : 'offline');
     if (navigator.onLine) {
-        this.syncWithBackend();
+        this.syncWithBackend('manual');
     }
   }
 
