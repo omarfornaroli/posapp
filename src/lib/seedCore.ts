@@ -26,7 +26,7 @@ import { SINGLETON_KEY as ReceiptSettingSingletonKey } from '../models/ReceiptSe
 import { SINGLETON_KEY as POSSettingSingletonKey } from '../models/POSSetting';
 import { SINGLETON_KEY as SmtpSettingSingletonKey } from '../models/SmtpSetting';
 import { DEFAULT_ROLE_PERMISSIONS } from './permissions'; 
-import type { UserRole, Product as ProductType } from '../types';
+import type { UserRole, Product as ProductType, Supplier } from '../types';
 
 // Ensure all models are imported so they are registered with Mongoose.
 import '../models/Product';
@@ -117,10 +117,21 @@ export async function runSeedOperations() {
     ...mockThemes.map(data => Theme.updateOne({ name: data.name }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
     ...mockPaymentMethods.map(data => {
         // Convert plain object names to Maps for Mongoose
-        const nameMap = new Map(Object.entries(data.name || {}));
-        const descriptionMap = new Map(Object.entries(data.description || {}));
+        const nameMap = new Map<string, string>();
+        if (data.name) {
+            Object.entries(data.name).forEach(([key, value]) => nameMap.set(key, value));
+        }
+        const descriptionMap = new Map<string, string>();
+        if (data.description) {
+            Object.entries(data.description).forEach(([key, value]) => descriptionMap.set(key, value));
+        }
+        
+        // Use an identifying, unique field for the query, not the whole object
+        // Assuming name.en is unique for mock data
+        const englishName = typeof data.name === 'object' && data.name.en ? data.name.en : `PaymentMethod-${Date.now()}`;
+
         return PaymentMethod.updateOne(
-            { 'name.en': data.name.en }, 
+            { 'name.en': englishName }, 
             { $setOnInsert: { ...data, name: nameMap, description: descriptionMap } }, 
             { upsert: true, runValidators: true }
         );
@@ -137,7 +148,6 @@ export async function runSeedOperations() {
   console.log('Core configuration data seeded/updated.');
   
   // App Languages and Translations should be managed carefully.
-  // This logic ensures they exist but doesn't overwrite.
   const enLangCount = await AppLanguage.countDocuments({ code: 'en' });
   if (enLangCount === 0) await AppLanguage.create({ code: 'en', name: 'English', isDefault: false, isEnabled: true });
   const esLangCount = await AppLanguage.countDocuments({ code: 'es' });
@@ -147,27 +157,21 @@ export async function runSeedOperations() {
   const flatEnMessages = flattenMessages(enMessages as NestedMessages);
   const flatEsMessages = flattenMessages(esMessages as NestedMessages);
   const allKeys = new Set([...Object.keys(flatEnMessages), ...Object.keys(flatEsMessages)]);
-  const translationUpserts = Array.from(allKeys).map(keyPath => {
+
+  for (const keyPath of allKeys) {
     const valuesMap = new Map<string, string>();
     valuesMap.set('en', flatEnMessages[keyPath] || `[EN MISSING: ${keyPath}]`);
     valuesMap.set('es', flatEsMessages[keyPath] || `[ES MISSING: ${keyPath}]`);
     
-    return {
-      updateOne: {
-        filter: { keyPath: keyPath },
-        update: { $setOnInsert: { keyPath: keyPath, values: valuesMap } },
-        upsert: true
-      }
-    };
-  });
-  if(translationUpserts.length > 0) {
-    await Translation.bulkWrite(translationUpserts);
+    // Use updateOne with upsert to avoid race conditions and ensure atomicity per key
+    await Translation.updateOne(
+        { keyPath: keyPath },
+        { $setOnInsert: { keyPath: keyPath, values: valuesMap } },
+        { upsert: true }
+    );
   }
-  console.log(`${translationUpserts.length} Translation records seeded/updated.`);
+  console.log(`${allKeys.size} Translation records seeded/updated.`);
   
-  // Don't clear notifications on seed
-  // await mongoose.model('Notification').deleteMany({});
-
   // --- DEMO DATA (Conditional) ---
   if (shouldLoadDemoData) {
     console.log('LOAD_DEMO_DATA is true. Seeding demo data (upsert mode)...');
