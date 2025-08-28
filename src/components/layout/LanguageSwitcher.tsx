@@ -1,3 +1,4 @@
+
 // src/components/layout/LanguageSwitcher.tsx
 'use client';
 
@@ -28,7 +29,6 @@ export default function LanguageSwitcher() {
   const handleLanguageChange = async (newLocale: string) => {
     if (newLocale === currentLocale) return;
     await translationRxService.setCurrentLocaleAndLoadTranslations(newLocale);
-    window.location.reload(); 
   };
 
   const availableLocales = useMemo(() => {
