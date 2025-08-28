@@ -1247,7 +1247,7 @@
   },
   "DeleteConfirmation": {
     "title": "Confirmar Eliminación",
-    "description": "¿Seguro que quieres eliminar este {itemType}: \"{itemName}\"? Esta acción no se puede deshacer.",
+    "description": "Estás seguro que quieres eliminar este {itemType}: \"{itemName}\"? Esta acción no se puede deshacer.",
     "cancel": "Cancelar",
     "confirm": "Eliminar"
   },
