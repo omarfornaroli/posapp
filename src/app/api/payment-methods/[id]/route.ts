@@ -49,13 +49,9 @@ export async function PUT(request: Request, { params }: any) {
   try {
     const body = await request.json() as Partial<Omit<PaymentMethodType, 'id'>>;
 
-    // Convert plain objects back to Maps for Mongoose
-    if (body.name && typeof body.name === 'object' && !(body.name instanceof Map)) {
-        body.name = new Map(Object.entries(body.name));
-    }
-    if (body.description && typeof body.description === 'object' && !(body.description instanceof Map)) {
-        body.description = new Map(Object.entries(body.description));
-    }
+    // The logic to convert to Map was incorrect. Mongoose handles plain objects correctly for Map types.
+    // The previous implementation was causing the validation to fail.
+    // No conversion is needed here. The incoming plain object is correct.
 
     if (body.isDefault === true) {
       await PaymentMethod.updateMany({ _id: { $ne: id } }, { $set: { isDefault: false } });
