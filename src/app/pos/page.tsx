@@ -68,7 +68,7 @@ const generateSaleId = () => `sale-${Date.now()}-${Math.random().toString(36).su
 
 
 export default function POSPage() {
-  const { t } = useRxTranslate();
+  const { t, currentLocale } = useRxTranslate();
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -417,13 +417,16 @@ export default function POSPage() {
       return;
     }
     
+    const localizedMethodName = selectedPaymentMethod.name[currentLocale] || selectedPaymentMethod.name['en'];
+    
     setAppliedPayments(prev => [...prev, {
         methodId: selectedPaymentMethod.id,
-        methodName: selectedPaymentMethod.name,
+        methodName: localizedMethodName,
         amount: roundedAmount
     }]);
     setPaymentAmount('');
-  }, [selectedPaymentMethod, paymentAmount, amountRemaining, paymentCurrency, t, toast, formatCurrency]);
+  }, [selectedPaymentMethod, paymentAmount, amountRemaining, paymentCurrency, t, toast, formatCurrency, currentLocale]);
+
 
   const handleRemovePayment = (index: number) => {
     setAppliedPayments(prev => prev.filter((_, i) => i !== index));
@@ -697,7 +700,7 @@ export default function POSPage() {
                                     <Label htmlFor="payment-method" className="text-xs">{t('POSPage.selectPaymentMethodPlaceholder')}</Label>
                                     <Select onValueChange={(value) => setSelectedPaymentMethod(enabledPaymentMethods.find(p => p.id === value) || null)}>
                                         <SelectTrigger id="payment-method"><SelectValue /></SelectTrigger>
-                                        <SelectContent>{enabledPaymentMethods.map(p => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
+                                        <SelectContent>{enabledPaymentMethods.map(p => <SelectItem key={p.id} value={p.id}>{p.name[currentLocale] || p.name['en']}</SelectItem>)}</SelectContent>
                                     </Select>
                                 </div>
                                 <div className="w-28">
