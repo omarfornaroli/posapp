@@ -1,4 +1,5 @@
 
+
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 // Mock data imports
@@ -118,17 +119,15 @@ export async function runSeedOperations() {
     ...mockPaymentMethods.map(data => {
         // Convert plain object names to Maps for Mongoose
         const nameMap = new Map<string, string>();
-        if (data.name) {
+        if (typeof data.name === 'object' && data.name !== null) {
             Object.entries(data.name).forEach(([key, value]) => nameMap.set(key, value));
         }
         const descriptionMap = new Map<string, string>();
-        if (data.description) {
+        if (typeof data.description === 'object' && data.description !== null) {
             Object.entries(data.description).forEach(([key, value]) => descriptionMap.set(key, value));
         }
         
-        // Use an identifying, unique field for the query, not the whole object
-        // Assuming name.en is unique for mock data
-        const englishName = typeof data.name === 'object' && data.name.en ? data.name.en : `PaymentMethod-${Date.now()}`;
+        const englishName = nameMap.get('en') || `PaymentMethod-${Date.now()}`;
 
         return PaymentMethod.updateOne(
             { 'name.en': englishName }, 

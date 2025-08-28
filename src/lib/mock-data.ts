@@ -163,11 +163,32 @@ export const mockUsers: Omit<User, 'id' | 'permissions'>[] = [
 ];
 
 export const mockPaymentMethods: Omit<PaymentMethod, 'id'>[] = [
-  { name: 'Cash', description: 'Physical currency.', isEnabled: true, isDefault: true },
-  { name: 'Credit Card', description: 'Visa, Mastercard, Amex, etc.', isEnabled: true },
-  { name: 'Debit Card', description: 'Direct bank debit.', isEnabled: true },
-  { name: 'Coupon', description: 'Promotional or gift coupons.', isEnabled: true },
-  { name: 'Bank Transfer', description: 'Direct bank transfer.', isEnabled: true },
+  { 
+    name: { en: 'Cash', es: 'Efectivo' }, 
+    description: { en: 'Physical currency.', es: 'Moneda física.' }, 
+    isEnabled: true, 
+    isDefault: true 
+  },
+  { 
+    name: { en: 'Credit Card', es: 'Tarjeta de Crédito' }, 
+    description: { en: 'Visa, Mastercard, Amex, etc.', es: 'Visa, Mastercard, Amex, etc.' }, 
+    isEnabled: true 
+  },
+  { 
+    name: { en: 'Debit Card', es: 'Tarjeta de Débito' }, 
+    description: { en: 'Direct bank debit.', es: 'Débito directo bancario.' }, 
+    isEnabled: true 
+  },
+  { 
+    name: { en: 'Coupon', es: 'Cupón' }, 
+    description: { en: 'Promotional or gift coupons.', es: 'Cupones promocionales o de regalo.' }, 
+    isEnabled: true 
+  },
+  { 
+    name: { en: 'Bank Transfer', es: 'Transferencia Bancaria' }, 
+    description: { en: 'Direct bank transfer.', es: 'Transferencia bancaria directa.' }, 
+    isEnabled: true 
+  },
 ];
 
 export const mockCountries: Omit<Country, 'id'>[] = [
@@ -759,8 +780,8 @@ const generateMockSales = (count: number): Omit<SaleTransaction, 'id'>[] => {
     const chosenPaymentMethod = mockEnabledPaymentMethods[Math.floor(Math.random() * mockEnabledPaymentMethods.length)];
 
     const appliedPayments: AppliedPayment[] = [{
-        methodId: chosenPaymentMethod.name.toLowerCase().replace(/\s+/g, '-'), 
-        methodName: chosenPaymentMethod.name,
+        methodId: (chosenPaymentMethod.name as any).en.toLowerCase().replace(/\s+/g, '-'), 
+        methodName: (chosenPaymentMethod.name as any).en,
         amount: parseFloat(totalAmount.toFixed(2))
     }];
 
