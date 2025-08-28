@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -28,6 +29,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 
+
 const PaymentMethodCard = ({ method, onEditPaymentMethod, onDeletePaymentMethod, onToggleEnable, onSetDefault, t, hasPermission, currentLocale }: { method: PaymentMethod, onEditPaymentMethod: (id: string) => void, onDeletePaymentMethod: (id: string) => void, onToggleEnable: (m: PaymentMethod, e: boolean) => void, onSetDefault: (id: string) => void, t: Function, hasPermission: (p: any) => boolean, currentLocale: string }) => (
     <Card className="mb-2">
       <CardHeader className="p-4 flex flex-row items-start justify-between">
@@ -47,7 +49,7 @@ const PaymentMethodCard = ({ method, onEditPaymentMethod, onDeletePaymentMethod,
       </CardHeader>
       <CardFooter className="px-4 pb-4 flex justify-between items-center text-sm">
         <div className="flex items-center gap-2">
-            <Switch checked={method.isEnabled} onCheckedChange={(checked) => onToggleEnable(method, checked)} id={`switch-mob-${method.id}`} aria-label={t(method.isEnabled ? 'PaymentMethodListTable.disableAriaLabel' : 'PaymentMethodListTable.enableAriaLabel', { methodName: method.name[currentLocale] || method.name['en'] })} />
+            <Switch checked={method.isEnabled} onCheckedChange={(checked) => onToggleEnable(method, checked)} id={`switch-mob-${method.id}`} aria-label={t('PaymentMethodListTable.disableAriaLabel', { methodName: method.name[currentLocale] || method.name['en'] })} />
             <label htmlFor={`switch-mob-${method.id}`}>{t('PaymentMethodListTable.headerEnabled')}</label>
         </div>
         <Button size="sm" variant="outline" onClick={() => onSetDefault(method.id)} disabled={!method.isEnabled || method.isDefault}>{method.isDefault ? t('PaymentMethodListTable.isDefaultBadge') : t('PaymentMethodListTable.setDefaultButton')}</Button>
@@ -116,7 +118,7 @@ export default function PaymentMethodListTable({
                 <Switch
                     checked={!!value}
                     onCheckedChange={(checked) => onToggleEnable(method, checked)}
-                    aria-label={t(!!value ? 'PaymentMethodListTable.disableAriaLabel' : 'PaymentMethodListTable.enableAriaLabel', { methodName: method.name[currentLocale] || method.name['en'] })}
+                    aria-label={t('PaymentMethodListTable.disableAriaLabel', { methodName: method.name[currentLocale] || method.name['en'] })}
                   />
             );
         case 'isDefault':
