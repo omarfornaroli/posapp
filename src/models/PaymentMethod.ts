@@ -14,10 +14,6 @@ const PaymentMethodSchema: Schema<PaymentMethodDocument> = new Schema({
     type: Map,
     of: String,
     required: true,
-    validate: {
-      validator: (map: Map<string, string>) => map.size > 0 && Array.from(map.values()).some(v => v && v.trim() !== ''),
-      message: 'Name must be provided for at least one language.'
-    }
   },
   description: {
     type: Map,
