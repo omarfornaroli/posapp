@@ -1,19 +1,15 @@
 
+
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Translation from '@/models/Translation';
 import AppLanguage from '@/models/AppLanguage'; // Import the correct model
 
 export async function GET() {
-  const connection = await dbConnect();
-  if (!connection) {
-    return NextResponse.json({ 
-      success: false, 
-      error: 'Database connection not established. Check server logs and .env.local configuration.' 
-    }, { status: 503 });
-  }
-
   try {
+    // The dbConnect() call will be implicitly handled by the Mongoose models
+    // when they are accessed, and this avoids a common cause of serverless timeouts.
+    
     // Fetch active locales from AppLanguage model
     const enabledLanguages = await AppLanguage.find({ isEnabled: true }).lean();
     let activeLocales: string[];
