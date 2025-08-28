@@ -2,8 +2,8 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
@@ -26,7 +26,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
-import type { PaymentMethod, MultiLanguageValue } from '@/types';
+import type { PaymentMethod } from '@/types';
 import { Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import MultiLanguageInput from '@/components/shared/MultiLanguageInput';
@@ -81,7 +81,7 @@ export default function AddPaymentMethodDialog({ open, onOpenChange, onAddPaymen
   if (isLoadingTranslations && open) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[480px] flex flex-col items-center justify-center h-72">
+        <DialogContent className="sm:max-w-lg flex flex-col items-center justify-center h-72">
            <DialogHeader className="sr-only">
             <DialogTitle>{t('Common.loadingTitle')}</DialogTitle>
             <DialogDescription>{t('Common.loadingDescription')}</DialogDescription>
@@ -94,7 +94,7 @@ export default function AddPaymentMethodDialog({ open, onOpenChange, onAddPaymen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="font-headline">{t('AddPaymentMethodDialog.title')}</DialogTitle>
           <DialogDescription>{t('AddPaymentMethodDialog.description')}</DialogDescription>
@@ -154,4 +154,3 @@ export default function AddPaymentMethodDialog({ open, onOpenChange, onAddPaymen
     </Dialog>
   );
 }
-

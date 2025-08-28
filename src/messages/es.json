@@ -306,6 +306,7 @@
     "isUsingDefaultQuantityLabel": "Usar Cantidad Predeterminada (1) en PDV",
     "isServiceLabel": "Este es un Servicio",
     "isEnabledLabel": "Producto está Habilitado",
+    "dispatchAtSaleLabel": "Despachar en la Venta",
     "descriptionLabel": "Descripción",
     "descriptionPlaceholder": "Describe brevemente el producto...",
     "quantityLabel": "Cantidad en Stock Actual",
@@ -1177,17 +1178,17 @@
     "sessionDurationPlaceholder": "Seleccionar duración",
     "sessionDurationDescription": "Duración de la sesión para usuarios que no marcaron 'Recordarme'.",
     "durationOptions": {
-      "5minutes": "5 minutos",
-      "10minutes": "10 minutos",
-      "15minutes": "15 minutos",
-      "20minutes": "20 minutos",
-      "30minutes": "30 minutos",
-      "1hour": "1 hora",
-      "3hours": "3 horas",
-      "5hours": "5 horas",
-      "8hours": "8 horas",
-      "10hours": "10 horas",
-      "12hours": "12 horas"
+        "5minutes": "5 minutos",
+        "10minutes": "10 minutos",
+        "15minutes": "15 minutos",
+        "20minutes": "20 minutos",
+        "30minutes": "30 minutos",
+        "1hour": "1 hora",
+        "3hours": "3 horas",
+        "5hours": "5 horas",
+        "8hours": "8 horas",
+        "10hours": "10 horas",
+        "12hours": "12 horas"
     }
   },
   "ReceiptSettingsForm": {
@@ -1245,7 +1246,38 @@
     "description": "¿Seguro que quieres eliminar este {itemType}: \"{itemName}\"? Esta acción no se puede deshacer.",
     "cancel": "Cancelar",
     "confirm": "Eliminar"
+  },
+  "AddPaymentMethodDialog": {
+    "title": "Agregar Nuevo Método de Pago",
+    "description": "Define un nuevo método para aceptar pagos.",
+    "nameLabel": "Nombre del Método",
+    "namePlaceholder": "Ej: Tarjeta de Crédito, Efectivo, PayPal",
+    "descriptionLabel": "Descripción (Opcional)",
+    "descriptionPlaceholder": "Ej: Acepta Visa, Mastercard, AMEX",
+    "enabledLabel": "Habilitado",
+    "defaultLabel": "Predeterminado",
+    "cancelButton": "Cancelar",
+    "addButton": "Agregar Método"
+  },
+  "EditPaymentMethodDialog": {
+    "title": "Editar Método de Pago",
+    "description": "Actualiza los detalles para el método de pago \"{methodName}\".",
+    "saveButton": "Guardar Cambios"
+  },
+  "PaymentMethodListTable": {
+    "noPaymentMethodsMessage": "No se encontraron métodos de pago. Haz clic en 'Agregar Nuevo Método' para comenzar.",
+    "headerActions": "Acciones",
+    "headerName": "Nombre",
+    "headerDescription": "Descripción",
+    "headerEnabled": "Habilitado",
+    "headerDefault": "Predeterminado",
+    "isDefaultBadge": "Predeterminado",
+    "setDefaultButton": "Predeterminar",
+    "editActionLabel": "Editar {methodName}",
+    "deleteActionLabel": "Eliminar {methodName}",
+    "enableAriaLabel": "Habilitar {methodName}",
+    "disableAriaLabel": "Deshabilitar {methodName}",
+    "setDefaultAriaLabel": "Establecer {methodName} como predeterminado",
+    "noDescription": "Sin descripción"
   }
 }
-
-    

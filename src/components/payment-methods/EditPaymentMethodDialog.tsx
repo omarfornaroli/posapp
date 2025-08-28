@@ -98,7 +98,7 @@ export default function EditPaymentMethodDialog({ open, onOpenChange, paymentMet
   if (isLoadingTranslations && open) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[480px] flex flex-col items-center justify-center h-72">
+        <DialogContent className="sm:max-w-lg flex flex-col items-center justify-center h-72">
           <DialogHeader className="sr-only">
             <DialogTitle>{t('Common.loadingTitle')}</DialogTitle>
             <DialogDescription>{t('Common.loadingDescription')}</DialogDescription>
@@ -111,7 +111,7 @@ export default function EditPaymentMethodDialog({ open, onOpenChange, paymentMet
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => { onOpenChange(isOpen); if (!isOpen) form.reset(); }}>
-      <DialogContent className="sm:max-w-[480px] flex flex-col max-h-[90vh]">
+      <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="font-headline">{t('EditPaymentMethodDialog.title')}</DialogTitle>
           <DialogDescription>{t('EditPaymentMethodDialog.description', { methodName: paymentMethod?.name[currentLocale] || 'method' })}</DialogDescription>
@@ -171,4 +171,3 @@ export default function EditPaymentMethodDialog({ open, onOpenChange, paymentMet
     </Dialog>
   );
 }
-

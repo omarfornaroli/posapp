@@ -1,5 +1,4 @@
 
-
 {
   "Header": {
     "title": "POSAPP",
@@ -306,6 +305,7 @@
     "isUsingDefaultQuantityLabel": "Use Default Quantity (1) at POS",
     "isServiceLabel": "This is a Service",
     "isEnabledLabel": "Product is Enabled",
+    "dispatchAtSaleLabel": "Dispatch at Sale",
     "descriptionLabel": "Description",
     "descriptionPlaceholder": "Briefly describe the product...",
     "quantityLabel": "Current Stock Quantity",
@@ -1247,7 +1247,38 @@
     "description": "Are you sure you want to delete this {itemType}: \"{itemName}\"? This action cannot be undone.",
     "cancel": "Cancel",
     "confirm": "Delete"
+  },
+  "AddPaymentMethodDialog": {
+    "title": "Add New Payment Method",
+    "description": "Define a new method for accepting payments.",
+    "nameLabel": "Method Name",
+    "namePlaceholder": "e.g., Credit Card, Cash, PayPal",
+    "descriptionLabel": "Description (Optional)",
+    "descriptionPlaceholder": "e.g., Accepts Visa, Mastercard, AMEX",
+    "enabledLabel": "Enabled",
+    "defaultLabel": "Default",
+    "cancelButton": "Cancel",
+    "addButton": "Add Method"
+  },
+  "EditPaymentMethodDialog": {
+    "title": "Edit Payment Method",
+    "description": "Update the details for the \"{methodName}\" payment method.",
+    "saveButton": "Save Changes"
+  },
+  "PaymentMethodListTable": {
+    "noPaymentMethodsMessage": "No payment methods found. Click 'Add New Method' to get started.",
+    "headerActions": "Actions",
+    "headerName": "Name",
+    "headerDescription": "Description",
+    "headerEnabled": "Enabled",
+    "headerDefault": "Default",
+    "isDefaultBadge": "Default",
+    "setDefaultButton": "Default",
+    "editActionLabel": "Edit {methodName}",
+    "deleteActionLabel": "Delete {methodName}",
+    "enableAriaLabel": "Enable {methodName}",
+    "disableAriaLabel": "Disable {methodName}",
+    "setDefaultAriaLabel": "Set {methodName} as default",
+    "noDescription": "No description"
   }
 }
-
-    
