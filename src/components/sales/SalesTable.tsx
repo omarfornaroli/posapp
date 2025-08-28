@@ -93,8 +93,17 @@ export default function SalesTable({
 
   const formatPaymentMethods = (payments: SaleTransaction['appliedPayments']) => {
     if (!payments || payments.length === 0) return 'N/A';
-    if (payments.length === 1) return payments[0].methodName;
-    return payments.map(p => p.methodName).join(', ');
+    
+    const getLocalizedMethodName = (methodName: any): string => {
+        if (typeof methodName === 'string') return methodName;
+        if (typeof methodName === 'object' && methodName !== null) {
+            return methodName[currentLocale] || methodName['en'] || 'Unknown Method';
+        }
+        return 'N/A';
+    }
+
+    if (payments.length === 1) return getLocalizedMethodName(payments[0].methodName);
+    return payments.map(p => getLocalizedMethodName(p.methodName)).join(', ');
   };
   
   const renderCellContent = (transaction: SaleTransaction, columnKey: keyof SaleTransaction | string) => {
