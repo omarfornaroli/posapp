@@ -14,6 +14,13 @@ const PaymentMethodSchema: Schema<PaymentMethodDocument> = new Schema({
     type: Map,
     of: String,
     required: true,
+    validate: {
+      validator: function(this: PaymentMethodDocument, v: Map<string, string>) {
+        // Ensure the map is not empty and has a value for the default/primary locale ('en')
+        return v && v.size > 0 && v.get('en') && v.get('en')!.trim().length > 0;
+      },
+      message: 'Payment method name must have a value for the default language (en).'
+    }
   },
   description: {
     type: Map,
@@ -51,4 +58,3 @@ const PaymentMethod: Model<PaymentMethodDocument> =
   models.PaymentMethod || mongoose.model<PaymentMethodDocument>('PaymentMethod', PaymentMethodSchema);
 
 export default PaymentMethod;
-
