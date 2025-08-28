@@ -115,7 +115,16 @@ export async function runSeedOperations() {
   
   await Promise.all([
     ...mockThemes.map(data => Theme.updateOne({ name: data.name }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
-    ...mockPaymentMethods.map(data => PaymentMethod.updateOne({ name: data.name }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
+    ...mockPaymentMethods.map(data => {
+        // Convert plain object names to Maps for Mongoose
+        const nameMap = new Map(Object.entries(data.name || {}));
+        const descriptionMap = new Map(Object.entries(data.description || {}));
+        return PaymentMethod.updateOne(
+            { 'name.en': data.name.en }, 
+            { $setOnInsert: { ...data, name: nameMap, description: descriptionMap } }, 
+            { upsert: true, runValidators: true }
+        );
+    }),
     ...mockCountries.map(data => Country.updateOne({ codeAlpha2: data.codeAlpha2 }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
     ...mockCurrencies.map(data => Currency.updateOne({ code: data.code }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
     ReceiptSetting.updateOne({ key: ReceiptSettingSingletonKey }, { $setOnInsert: { key: ReceiptSettingSingletonKey, ...mockReceiptSettings } }, { upsert: true, runValidators: true }),
@@ -139,10 +148,10 @@ export async function runSeedOperations() {
   const flatEsMessages = flattenMessages(esMessages as NestedMessages);
   const allKeys = new Set([...Object.keys(flatEnMessages), ...Object.keys(flatEsMessages)]);
   const translationUpserts = Array.from(allKeys).map(keyPath => {
-    const valuesMap = {
-      en: flatEnMessages[keyPath] || `[EN MISSING: ${keyPath}]`,
-      es: flatEsMessages[keyPath] || `[ES MISSING: ${keyPath}]`
-    };
+    const valuesMap = new Map<string, string>();
+    valuesMap.set('en', flatEnMessages[keyPath] || `[EN MISSING: ${keyPath}]`);
+    valuesMap.set('es', flatEsMessages[keyPath] || `[ES MISSING: ${keyPath}]`);
+    
     return {
       updateOne: {
         filter: { keyPath: keyPath },

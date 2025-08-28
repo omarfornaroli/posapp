@@ -18,6 +18,7 @@ import AccessDeniedMessage from '@/components/AccessDeniedMessage';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { TranslationDexieRecord } from '@/lib/dexie-db';
+import { useDexieAppLanguages } from '@/hooks/useDexieAppLanguages';
 
 type EditableTranslation = TranslationDexieRecord & { isDirty?: boolean };
 
@@ -26,10 +27,10 @@ export default function TranslationsManagerPage() {
   const { hasPermission } = useAuth();
   const { toast } = useToast();
   
-  const { translations: dexieTranslations, isLoading, updateTranslation } = useDexieTranslations();
+  const { translations: dexieTranslations, isLoading: isLoadingDexieTranslations, updateTranslation } = useDexieTranslations();
+  const { appLanguages, isLoading: isLoadingLanguages } = useDexieAppLanguages();
   
   const [editableTranslations, setEditableTranslations] = useState<EditableTranslation[]>([]);
-  const [activeLocales, setActiveLocales] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
   const [isApiKeySet, setIsApiKeySet] = useState(false);
@@ -53,6 +54,11 @@ export default function TranslationsManagerPage() {
     }
     checkKeyStatus();
   }, []);
+
+  const activeLocales = useMemo(() => 
+      appLanguages.filter(l => l.isEnabled).map(l => l.code).sort(),
+  [appLanguages]);
+
 
   const handleInputChange = (keyPath: string, locale: string, value: string) => {
     setEditableTranslations(prev =>
@@ -133,6 +139,8 @@ export default function TranslationsManagerPage() {
   if (!hasPermission('manage_translations_page')) {
     return <AccessDeniedMessage />;
   }
+  
+  const isLoading = isLoadingDexieTranslations || isLoadingLanguages;
 
   return (
     <div className="space-y-6">
@@ -205,4 +213,3 @@ export default function TranslationsManagerPage() {
     </div>
   );
 }
-
