@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as Omit<PaymentMethodType, 'id'>;
 
-    // Convert plain objects back to Maps for Mongoose
+    // Convert plain objects back to Maps for Mongoose, which is crucial for sync to work.
     if (body.name && typeof body.name === 'object' && !(body.name instanceof Map)) {
         body.name = new Map(Object.entries(body.name));
     }
