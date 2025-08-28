@@ -472,7 +472,6 @@ export const mockCurrencies: Omit<Currency, 'id'>[] = [
   { name: "Comorian Franc", code: "KMF", symbol: "CF", decimalPlaces: 0, isEnabled: true, isDefault: false, exchangeRate: 457.00 },
   { name: "Congolese Franc", code: "CDF", symbol: "FC", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 2785.00 },
   { name: "Costa Rican Colón", code: "CRC", symbol: "₡", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 520.00 },
-  { name: "Croatian Kuna", code: "HRK", symbol: "kn", decimalPlaces: 2, isEnabled: false, isDefault: false, exchangeRate: 7.00 },
   { name: "Cuban Peso", code: "CUP", symbol: "$", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 24.00 },
   { name: "Czech Koruna", code: "CZK", symbol: "Kč", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 23.25 },
   { name: "Danish Krone", code: "DKK", symbol: "kr", decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 6.95 },
@@ -584,8 +583,7 @@ export const mockCurrencies: Omit<Currency, 'id'>[] = [
   { name: 'Vietnamese Đồng', code: 'VND', symbol: '₫', decimalPlaces: 0, isEnabled: true, isDefault: false, exchangeRate: 25450.00 },
   { name: 'West African CFA Franc', code: 'XOF', symbol: 'CFA', decimalPlaces: 0, isEnabled: true, isDefault: false, exchangeRate: 610.00 },
   { name: 'Yemeni Rial', code: 'YER', symbol: '﷼', decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 250.00 },
-  { name: 'Zambian Kwacha', code: 'ZMW', symbol: 'ZK', decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 25.50 },
-  { name: 'Zimbabwean Dollar', code: 'ZWL', symbol: '$', decimalPlaces: 2, isEnabled: false, isDefault: false, exchangeRate: 322.00 },
+  { name: 'Zambian Kwacha', code: 'ZMW', symbol: 'ZK', decimalPlaces: 2, isEnabled: true, isDefault: false, exchangeRate: 25.50 }
 ];
 
 const defaultFontBody = "Inter";
