@@ -44,14 +44,14 @@ export default function PaymentMethodsPage() {
 
   const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
   const [methodToDelete, setMethodToDelete] = useState<PaymentMethod | null>(null);
-  const [sortConfig, setSortConfig] = useState<SortConfig<PaymentMethod> | null>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig<PaymentMethod> | null>({ key: 'name', direction: 'asc' });
 
   const handleAddPaymentMethod = async (newMethodData: Omit<PaymentMethod, 'id'>) => {
     try {
       await addPaymentMethod(newMethodData);
       toast({
         title: t('Toasts.paymentMethodAddedTitle'),
-        description: t('Toasts.paymentMethodAddedDescription', { methodName: newMethodData.name }),
+        description: t('Toasts.paymentMethodAddedDescription', { methodName: newMethodData.name[currentLocale] || newMethodData.name['en'] }),
       });
       setIsAddDialogOpen(false);
     } catch (error) {
@@ -76,7 +76,7 @@ export default function PaymentMethodsPage() {
       await updatePaymentMethod(updatedMethodData);
       toast({
         title: t('Toasts.paymentMethodUpdatedTitle'),
-        description: t('Toasts.paymentMethodUpdatedDescription', {methodName: updatedMethodData.name}),
+        description: t('Toasts.paymentMethodUpdatedDescription', {methodName: updatedMethodData.name[currentLocale] || updatedMethodData.name['en']}),
       });
       setIsEditDialogOpen(false);
       setEditingMethod(null);
@@ -99,7 +99,7 @@ export default function PaymentMethodsPage() {
       await deletePaymentMethod(methodToDelete.id);
       toast({
         title: t('Toasts.paymentMethodDeletedTitle'),
-        description: t('Toasts.paymentMethodDeletedDescription', {methodName: methodToDelete.name}),
+        description: t('Toasts.paymentMethodDeletedDescription', {methodName: methodToDelete.name[currentLocale] || methodToDelete.name['en']}),
       });
     } catch (error) {
       toast({
@@ -123,6 +123,14 @@ export default function PaymentMethodsPage() {
       sortableItems.sort((a, b) => {
         const valA = a[sortConfig.key as keyof PaymentMethod];
         const valB = b[sortConfig.key as keyof PaymentMethod];
+        
+        // Handle name and description fields which are multi-language objects
+        if (sortConfig.key === 'name' || sortConfig.key === 'description') {
+          const valAStr = (valA as any)?.[currentLocale] || (valA as any)?.['en'] || '';
+          const valBStr = (valB as any)?.[currentLocale] || (valB as any)?.['en'] || '';
+          return sortConfig.direction === 'asc' ? valAStr.localeCompare(valBStr) : valBStr.localeCompare(valAStr);
+        }
+
         if (valA === null || valA === undefined) return 1;
         if (valB === null || valB === undefined) return -1;
         if (typeof valA === 'boolean' && typeof valB === 'boolean') {
@@ -132,7 +140,7 @@ export default function PaymentMethodsPage() {
       });
     }
     return sortableItems;
-  }, [paymentMethods, sortConfig]);
+  }, [paymentMethods, sortConfig, currentLocale]);
 
   if (!hasPermission('manage_payment_methods_page')) {
     return <AccessDeniedMessage />;
@@ -207,7 +215,7 @@ export default function PaymentMethodsPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>{t('DeleteConfirmation.title')}</AlertDialogTitle>
               <AlertDialogDescription>
-                {t('DeleteConfirmation.description', {itemName: methodToDelete.name, itemType: 'payment method'})}
+                {t('DeleteConfirmation.description', {itemName: methodToDelete.name[currentLocale] || methodToDelete.name['en'], itemType: 'payment method'})}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

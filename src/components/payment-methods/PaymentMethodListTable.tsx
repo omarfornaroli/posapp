@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useEffect } from 'react';
-import type { PaymentMethod } from '@/types';
+import { useEffect, useMemo } from 'react';
+import type { PaymentMethod, ColumnDefinition } from '@/types';
 import {
   Table,
   TableBody,
@@ -27,7 +27,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-
 
 const PaymentMethodCard = ({ method, onEditPaymentMethod, onDeletePaymentMethod, onToggleEnable, onSetDefault, t, hasPermission, currentLocale }: { method: PaymentMethod, onEditPaymentMethod: (id: string) => void, onDeletePaymentMethod: (id: string) => void, onToggleEnable: (m: PaymentMethod, e: boolean) => void, onSetDefault: (id: string) => void, t: Function, hasPermission: (p: any) => boolean, currentLocale: string }) => (
     <Card className="mb-2">
@@ -85,6 +84,13 @@ export default function PaymentMethodListTable({
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
 
+  const columnDefinitions: ColumnDefinition<PaymentMethod>[] = useMemo(() => [
+    { key: 'name', label: t('PaymentMethodListTable.headerName'), isSortable: true, className: "min-w-[150px] whitespace-nowrap" },
+    { key: 'description', label: t('PaymentMethodListTable.headerDescription'), isSortable: false, className: "whitespace-nowrap" },
+    { key: 'isEnabled', label: t('PaymentMethodListTable.headerEnabled'), isSortable: true, className: "text-center" },
+    { key: 'isDefault', label: t('PaymentMethodListTable.headerDefault'), isSortable: true, className: "text-center" },
+  ], [t]);
+
   if (isLoadingTranslations && (!paymentMethods || paymentMethods.length === 0)) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -97,37 +103,66 @@ export default function PaymentMethodListTable({
     return <p className="text-center text-muted-foreground py-8">{t('PaymentMethodListTable.noPaymentMethodsMessage')}</p>;
   }
 
-  const SortableHeader = ({ columnKey, label }: { columnKey: keyof PaymentMethod | string, label: string }) => {
-    const isCurrentSortColumn = currentSortKey === columnKey;
+  const renderCellContent = (method: PaymentMethod, columnKey: keyof PaymentMethod | string) => {
+    const value = method[columnKey as keyof PaymentMethod];
+
+    switch (columnKey) {
+        case 'name':
+        case 'description':
+            const multiLangValue = value as Record<string, string> | undefined;
+            return multiLangValue?.[currentLocale] || multiLangValue?.['en'] || (columnKey === 'description' ? t('PaymentMethodListTable.noDescription') : '');
+        case 'isEnabled':
+            return (
+                <Switch
+                    checked={!!value}
+                    onCheckedChange={(checked) => onToggleEnable(method, checked)}
+                    aria-label={t(!!value ? 'PaymentMethodListTable.disableAriaLabel' : 'PaymentMethodListTable.enableAriaLabel', { methodName: method.name[currentLocale] || method.name['en'] })}
+                  />
+            );
+        case 'isDefault':
+            return value ? (
+                <Badge variant="default" className="flex items-center justify-center gap-1 w-fit mx-auto whitespace-nowrap">
+                    <CheckCircle2 className="h-4 w-4"/> {t('PaymentMethodListTable.isDefaultBadge')}
+                </Badge>
+            ) : (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onSetDefault(method.id)}
+                    disabled={!method.isEnabled}
+                    aria-label={t('PaymentMethodListTable.setDefaultAriaLabel', { methodName: method.name[currentLocale] || method.name['en'] })}
+                    className="whitespace-nowrap"
+                >
+                    <CircleDot className="mr-2 h-4 w-4"/> {t('PaymentMethodListTable.setDefaultButton')}
+                </Button>
+            );
+        default:
+            return String(value ?? '');
+    }
+  };
+
+  const SortableHeader = ({ columnDef }: { columnDef: ColumnDefinition<PaymentMethod> }) => {
+    const { key, label, isSortable } = columnDef;
+    const isCurrentSortColumn = currentSortKey === key;
 
     const handleSortClick = () => {
+      if (!isSortable) return;
       if (isCurrentSortColumn) {
-        if (currentSortDirection === 'asc') {
-          onSort(columnKey, 'desc');
-        } else if (currentSortDirection === 'desc') {
-          onSort(columnKey, null);
-        } else {
-          onSort(columnKey, 'asc');
-        }
+        onSort(key, currentSortDirection === 'asc' ? 'desc' : currentSortDirection === 'desc' ? null : 'asc');
       } else {
-        onSort(columnKey, 'asc');
+        onSort(key, 'asc');
       }
     };
     
-    const handleGroupBy = () => {
-      toast({ title: t('Common.featureComingSoonTitle'), description: t('TableActions.groupingComingSoon', { columnName: String(label) }) });
-    };
-
     let SortIcon = ChevronsUpDown;
     if (isCurrentSortColumn) {
-      if (currentSortDirection === 'asc') SortIcon = ArrowUpAZ;
-      else if (currentSortDirection === 'desc') SortIcon = ArrowDownAZ;
+      SortIcon = currentSortDirection === 'asc' ? ArrowUpAZ : ArrowDownAZ;
     }
 
     return (
       <div className="flex items-center justify-between group">
         {label}
-        <div className="flex items-center">
+        {isSortable && (
           <Button
             variant="ghost"
             size="icon"
@@ -137,27 +172,14 @@ export default function PaymentMethodListTable({
           >
             <SortIcon className="h-4 w-4 opacity-40 group-hover:opacity-100" />
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 data-[state=open]:bg-accent" aria-label={t('TableActions.columnActionsMenu', {columnName: label})}>
-                <MoreVertical className="h-4 w-4 opacity-40 group-hover:opacity-100" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleGroupBy}>
-                <Layers className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
-                {t('TableActions.groupByThisColumn')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        )}
       </div>
     );
   };
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="md:hidden">
+       <div className="md:hidden">
         {paymentMethods.map(method => (
           <PaymentMethodCard
             key={method.id}
@@ -175,7 +197,15 @@ export default function PaymentMethodListTable({
       <div className="hidden md:block rounded-md border shadow-sm max-h-[60vh] overflow-auto relative">
         <Table>
           <TableHeader className="sticky top-0 bg-card z-10">
-            <TableRow><TableHead className="w-[40px] text-center font-semibold whitespace-nowrap">*</TableHead><TableHead className="text-center font-semibold whitespace-nowrap">{t('PaymentMethodListTable.headerActions')}</TableHead><TableHead className={cn("font-semibold min-w-[150px] whitespace-nowrap")}><SortableHeader columnKey="name" label={t('PaymentMethodListTable.headerName')} /></TableHead><TableHead className={cn("font-semibold whitespace-nowrap")}>{t('PaymentMethodListTable.headerDescription')}</TableHead><TableHead className={cn("text-center font-semibold whitespace-nowrap")}><SortableHeader columnKey="isEnabled" label={t('PaymentMethodListTable.headerEnabled')} /></TableHead><TableHead className={cn("text-center font-semibold whitespace-nowrap")}><SortableHeader columnKey="isDefault" label={t('PaymentMethodListTable.headerDefault')} /></TableHead></TableRow>
+            <TableRow>
+                <TableHead className="w-[40px] text-center font-semibold whitespace-nowrap">*</TableHead>
+                <TableHead className="text-center font-semibold whitespace-nowrap">{t('PaymentMethodListTable.headerActions')}</TableHead>
+                {columnDefinitions.map(colDef => (
+                     <TableHead key={String(colDef.key)} className={cn("font-semibold", colDef.className)}>
+                        <SortableHeader columnDef={colDef} />
+                    </TableHead>
+                ))}
+            </TableRow>
           </TableHeader>
           <TableBody>
             {paymentMethods.map((method, index) => (
@@ -201,33 +231,11 @@ export default function PaymentMethodListTable({
                     </Tooltip>
                   </div>
                 </TableCell>
-                <TableCell className="font-medium whitespace-nowrap">{method.name[currentLocale] || method.name['en']}</TableCell>
-                <TableCell className="whitespace-nowrap">{method.description?.[currentLocale] || method.description?.['en'] || t('PaymentMethodListTable.noDescription')}</TableCell>
-                <TableCell className="text-center">
-                  <Switch
-                    checked={method.isEnabled}
-                    onCheckedChange={(checked) => onToggleEnable(method, checked)}
-                    aria-label={t(method.isEnabled ? 'PaymentMethodListTable.disableAriaLabel' : 'PaymentMethodListTable.enableAriaLabel', { methodName: method.name[currentLocale] || method.name['en'] })}
-                  />
-                </TableCell>
-                <TableCell className="text-center">
-                   {method.isDefault ? (
-                      <Badge variant="default" className="flex items-center justify-center gap-1 w-fit mx-auto whitespace-nowrap">
-                          <CheckCircle2 className="h-4 w-4"/> {t('PaymentMethodListTable.isDefaultBadge')}
-                      </Badge>
-                   ) : (
-                      <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onSetDefault(method.id)}
-                          disabled={!method.isEnabled}
-                          aria-label={t('PaymentMethodListTable.setDefaultAriaLabel', { methodName: method.name[currentLocale] || method.name['en'] })}
-                          className="whitespace-nowrap"
-                      >
-                          <CircleDot className="mr-2 h-4 w-4"/> {t('PaymentMethodListTable.setDefaultButton')}
-                      </Button>
-                   )}
-                </TableCell>
+                {columnDefinitions.map(colDef => (
+                    <TableCell key={String(colDef.key)} className={cn(colDef.className)}>
+                        {renderCellContent(method, colDef.key)}
+                    </TableCell>
+                ))}
               </TableRow>
             ))}
           </TableBody>
