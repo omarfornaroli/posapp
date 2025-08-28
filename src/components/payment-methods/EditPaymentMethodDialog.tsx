@@ -89,10 +89,19 @@ export default function EditPaymentMethodDialog({ open, onOpenChange, paymentMet
 
   function onSubmit(values: PaymentMethodFormData) {
     if (!paymentMethod) return;
+    
+    // Ensure name and description are Maps before saving
+    const nameAsMap = values.name instanceof Map ? values.name : new Map(Object.entries(values.name));
+    const descriptionAsMap = values.description && Object.keys(values.description).length > 0
+        ? (values.description instanceof Map ? values.description : new Map(Object.entries(values.description)))
+        : new Map();
+
     onSavePaymentMethod({
       ...paymentMethod, 
       ...values,
-    });
+      name: nameAsMap,
+      description: descriptionAsMap,
+    } as any);
   }
 
   if (isLoadingTranslations && open) {
@@ -114,7 +123,7 @@ export default function EditPaymentMethodDialog({ open, onOpenChange, paymentMet
       <DialogContent className="sm:max-w-lg flex flex-col max-h-[90vh]">
         <DialogHeader>
           <DialogTitle className="font-headline">{t('EditPaymentMethodDialog.title')}</DialogTitle>
-          <DialogDescription>{t('EditPaymentMethodDialog.description', { methodName: paymentMethod?.name[currentLocale] || 'method' })}</DialogDescription>
+          <DialogDescription>{t('EditPaymentMethodDialog.description', { methodName: paymentMethod?.name[currentLocale] || paymentMethod?.name['en'] || 'method' })}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col flex-grow overflow-hidden">
