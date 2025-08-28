@@ -36,6 +36,14 @@ export async function POST(request: Request) {
   await dbConnect();
   try {
     const body = await request.json() as Omit<PaymentMethodType, 'id'>;
+
+    // Convert plain objects back to Maps for Mongoose
+    if (body.name && typeof body.name === 'object' && !(body.name instanceof Map)) {
+        body.name = new Map(Object.entries(body.name));
+    }
+    if (body.description && typeof body.description === 'object' && !(body.description instanceof Map)) {
+        body.description = new Map(Object.entries(body.description));
+    }
     
     if (body.isDefault) {
       await PaymentMethod.updateMany({}, { $set: { isDefault: false } });
@@ -44,8 +52,8 @@ export async function POST(request: Request) {
     const newPaymentMethod = await PaymentMethod.create(body);
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
-      messageKey: 'Notifications.paymentMethodCreated',
-      messageParams: { methodName: newPaymentMethod.name },
+      messageKey: 'Toasts.paymentMethodAddedTitle',
+      messageParams: { methodName: newPaymentMethod.name.get('en') || 'Unknown' },
       type: 'success',
       link: `/payment-methods?highlight=${newPaymentMethod.id}`,
       ...actorDetails
@@ -56,7 +64,7 @@ export async function POST(request: Request) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
-        messageKey: 'Notifications.paymentMethodCreateFailed',
+        messageKey: 'Toasts.paymentMethodCreateFailed',
         messageParams: { error: errorMessage },
         type: 'error',
         ...actorDetails

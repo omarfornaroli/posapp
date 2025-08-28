@@ -49,6 +49,14 @@ export async function PUT(request: Request, { params }: any) {
   try {
     const body = await request.json() as Partial<Omit<PaymentMethodType, 'id'>>;
 
+    // Convert plain objects back to Maps for Mongoose
+    if (body.name && typeof body.name === 'object' && !(body.name instanceof Map)) {
+        body.name = new Map(Object.entries(body.name));
+    }
+    if (body.description && typeof body.description === 'object' && !(body.description instanceof Map)) {
+        body.description = new Map(Object.entries(body.description));
+    }
+
     if (body.isDefault === true) {
       await PaymentMethod.updateMany({ _id: { $ne: id } }, { $set: { isDefault: false } });
     }
@@ -63,8 +71,8 @@ export async function PUT(request: Request, { params }: any) {
     }
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
-      messageKey: body.isDefault === true ? 'Notifications.paymentMethodSetDefault' : 'Notifications.paymentMethodUpdated',
-      messageParams: { methodName: updatedPaymentMethod.name },
+      messageKey: body.isDefault === true ? 'Toasts.paymentMethodDefaultSetTitle' : 'Toasts.paymentMethodUpdatedTitle',
+      messageParams: { methodName: updatedPaymentMethod.name.get('en') || 'Unknown' },
       type: 'success',
       link: `/payment-methods?highlight=${updatedPaymentMethod.id}`,
       ...actorDetails
@@ -75,7 +83,7 @@ export async function PUT(request: Request, { params }: any) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
-        messageKey: 'Notifications.paymentMethodUpdateFailed',
+        messageKey: 'Toasts.paymentMethodUpdateFailed',
         messageParams: { error: errorMessage },
         type: 'error',
         ...actorDetails
@@ -100,8 +108,8 @@ export async function DELETE(request: Request, { params }: any) {
     }
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
-      messageKey: 'Notifications.paymentMethodDeleted',
-      messageParams: { methodName: deletedPaymentMethod.name },
+      messageKey: 'Toasts.paymentMethodDeletedTitle',
+      messageParams: { methodName: deletedPaymentMethod.name.get('en') || 'Unknown' },
       type: 'info',
       ...actorDetails
     });
@@ -111,7 +119,7 @@ export async function DELETE(request: Request, { params }: any) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
-        messageKey: 'Notifications.paymentMethodDeleteFailed',
+        messageKey: 'Toasts.paymentMethodDeleteFailed',
         messageParams: { error: errorMessage },
         type: 'error',
         ...actorDetails
