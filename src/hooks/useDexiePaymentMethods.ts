@@ -1,4 +1,3 @@
-
 // src/hooks/useDexiePaymentMethods.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -27,7 +26,12 @@ export function useDexiePaymentMethods() {
             if (!response.ok) throw new Error('Failed to fetch initial payment methods');
             const result = await response.json();
             if (result.success) {
-                await db.paymentMethods.bulkPut(result.data);
+                const methodsToStore = result.data.map((pm: any) => ({
+                    ...pm,
+                    name: pm.name instanceof Map ? Object.fromEntries(pm.name) : pm.name,
+                    description: pm.description instanceof Map ? Object.fromEntries(pm.description) : pm.description,
+                }));
+                await db.paymentMethods.bulkPut(methodsToStore);
             } else {
                 throw new Error(result.error || 'API error fetching initial payment methods');
             }
@@ -48,17 +52,25 @@ export function useDexiePaymentMethods() {
 
   const addPaymentMethod = async (newMethod: Omit<PaymentMethod, 'id'>) => {
     const tempId = generateId();
+    const now = new Date().toISOString();
     const methodWithId: PaymentMethod = {
       ...newMethod,
       id: tempId,
+      createdAt: now,
+      updatedAt: now,
     };
     await db.paymentMethods.add(methodWithId);
     await syncService.addToQueue({ entity: 'paymentMethod', operation: 'create', data: methodWithId });
+    return methodWithId;
   };
 
   const updatePaymentMethod = async (updatedMethod: PaymentMethod) => {
-    await db.paymentMethods.put(updatedMethod);
-    await syncService.addToQueue({ entity: 'paymentMethod', operation: 'update', data: updatedMethod });
+    const methodToSave = {
+        ...updatedMethod,
+        updatedAt: new Date().toISOString()
+    };
+    await db.paymentMethods.put(methodToSave);
+    await syncService.addToQueue({ entity: 'paymentMethod', operation: 'update', data: methodToSave });
   };
 
   const deletePaymentMethod = async (id: string) => {

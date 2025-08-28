@@ -1,8 +1,7 @@
 
-
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -46,7 +45,7 @@ type PaymentMethodFormData = z.infer<ReturnType<typeof paymentMethodFormSchema>>
 interface AddPaymentMethodDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAddPaymentMethod: (newMethodData: Omit<PaymentMethod, 'id'>) => void;
+  onAddPaymentMethod: (newMethodData: Omit<PaymentMethod, 'id'>) => Promise<PaymentMethod>;
 }
 
 export default function AddPaymentMethodDialog({ open, onOpenChange, onAddPaymentMethod }: AddPaymentMethodDialogProps) {
@@ -69,12 +68,14 @@ export default function AddPaymentMethodDialog({ open, onOpenChange, onAddPaymen
   useEffect(() => {
     if (!isLoadingTranslations && open) { 
       form.trigger();
+    } else if (!open) {
+        form.reset();
     }
   }, [isLoadingTranslations, open, form, t]);
 
 
-  function onSubmit(values: PaymentMethodFormData) {
-    onAddPaymentMethod(values as Omit<PaymentMethod, 'id'>);
+  async function onSubmit(values: PaymentMethodFormData) {
+    await onAddPaymentMethod(values as Omit<PaymentMethod, 'id'>);
     form.reset();
   }
 

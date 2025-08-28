@@ -36,10 +36,6 @@ export async function POST(request: Request) {
   await dbConnect();
   try {
     const body = await request.json() as Omit<PaymentMethodType, 'id'>;
-
-    // The logic to convert to Map was incorrect. Mongoose handles plain objects correctly for Map types.
-    // The previous implementation was causing the validation to fail.
-    // No conversion is needed here. The incoming plain object is correct.
     
     if (body.isDefault) {
       await PaymentMethod.updateMany({}, { $set: { isDefault: false } });
@@ -47,9 +43,14 @@ export async function POST(request: Request) {
 
     const newPaymentMethod = await PaymentMethod.create(body);
     const actorDetails = await getActorDetails(request);
+    
+    const englishName = typeof newPaymentMethod.name === 'object' && newPaymentMethod.name !== null 
+      ? newPaymentMethod.name.get('en') || Object.values(newPaymentMethod.name)[0] 
+      : 'Unknown';
+
     await NotificationService.createNotification({
       messageKey: 'Toasts.paymentMethodAddedTitle',
-      messageParams: { methodName: newPaymentMethod.name.get('en') || 'Unknown' },
+      messageParams: { methodName: englishName },
       type: 'success',
       link: `/payment-methods?highlight=${newPaymentMethod.id}`,
       ...actorDetails
@@ -65,8 +66,11 @@ export async function POST(request: Request) {
         type: 'error',
         ...actorDetails
     });
+    if (error instanceof mongoose.Error.ValidationError) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
     if (error instanceof Error && 'code' in error && (error as any).code === 11000) {
-      return NextResponse.json({ success: false, error: 'Payment method name already exists.' }, { status: 409 });
+      return NextResponse.json({ success: false, error: 'A payment method with this name already exists.' }, { status: 409 });
     }
     return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }

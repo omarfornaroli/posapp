@@ -89,16 +89,10 @@ export default function EditPaymentMethodDialog({ open, onOpenChange, paymentMet
 
   function onSubmit(values: PaymentMethodFormData) {
     if (!paymentMethod) return;
-    
-    // Ensure name and description are plain objects before saving
-    const nameAsObject = values.name instanceof Map ? Object.fromEntries(values.name) : values.name;
-    const descriptionAsObject = values.description ? (values.description instanceof Map ? Object.fromEntries(values.description) : values.description) : {};
 
     onSavePaymentMethod({
       ...paymentMethod, 
       ...values,
-      name: nameAsObject,
-      description: descriptionAsObject,
     });
   }
 

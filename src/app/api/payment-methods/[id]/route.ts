@@ -49,9 +49,6 @@ export async function PUT(request: Request, { params }: any) {
   try {
     const body = await request.json() as Partial<Omit<PaymentMethodType, 'id'>>;
 
-    // The incoming body from the client will have name and description as plain objects.
-    // Mongoose's Map type can handle this directly when updating. No conversion is needed.
-
     if (body.isDefault === true) {
       await PaymentMethod.updateMany({ _id: { $ne: id } }, { $set: { isDefault: false } });
     }
@@ -66,8 +63,7 @@ export async function PUT(request: Request, { params }: any) {
     }
     const actorDetails = await getActorDetails(request);
     
-    // Determine the best name for the notification based on available locales
-    const methodName = updatedPaymentMethod.name.get('en') || Array.from(updatedPaymentMethod.name.values())[0] || 'Unknown';
+    const methodName = updatedPaymentMethod.name.get('en') || Object.values(updatedPaymentMethod.name)[0] || 'Unknown';
 
     await NotificationService.createNotification({
       messageKey: body.isDefault === true ? 'Toasts.paymentMethodDefaultSetTitle' : 'Toasts.paymentMethodUpdatedTitle',
@@ -108,8 +104,7 @@ export async function DELETE(request: Request, { params }: any) {
     }
     const actorDetails = await getActorDetails(request);
     
-    // Determine the best name for the notification based on available locales
-    const methodName = deletedPaymentMethod.name.get('en') || Array.from(deletedPaymentMethod.name.values())[0] || 'Unknown';
+    const methodName = deletedPaymentMethod.name.get('en') || Object.values(deletedPaymentMethod.name)[0] || 'Unknown';
 
     await NotificationService.createNotification({
       messageKey: 'Toasts.paymentMethodDeletedTitle',

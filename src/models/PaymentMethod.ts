@@ -29,15 +29,27 @@ const PaymentMethodSchema: Schema<PaymentMethodDocument> = new Schema({
   toJSON: { 
     virtuals: true,
     transform: (doc, ret) => {
-      if (ret.name && ret.name instanceof Map) ret.name = Object.fromEntries(ret.name);
-      if (ret.description && ret.description instanceof Map) ret.description = Object.fromEntries(ret.description);
+      if (ret.name instanceof Map) {
+        ret.name = Object.fromEntries(ret.name);
+      }
+      if (ret.description instanceof Map) {
+        ret.description = Object.fromEntries(ret.description);
+      }
+      delete ret._id;
+      delete ret.__v;
     }
   },
   toObject: { 
     virtuals: true,
     transform: (doc, ret) => {
-      if (ret.name && ret.name instanceof Map) ret.name = Object.fromEntries(ret.name);
-      if (ret.description && ret.description instanceof Map) ret.description = Object.fromEntries(ret.description);
+      if (ret.name instanceof Map) {
+        ret.name = Object.fromEntries(ret.name);
+      }
+      if (ret.description instanceof Map) {
+        ret.description = Object.fromEntries(ret.description);
+      }
+      delete ret._id;
+      delete ret.__v;
     }
   },
   collection: 'pos_payment_methods'
@@ -45,6 +57,17 @@ const PaymentMethodSchema: Schema<PaymentMethodDocument> = new Schema({
 
 PaymentMethodSchema.virtual('id').get(function(this: PaymentMethodDocument) {
   return this._id.toHexString();
+});
+
+// Ensure only one default payment method
+PaymentMethodSchema.pre('save', async function (next) {
+  if (this.isModified('isDefault') && this.isDefault) {
+    await (this.constructor as Model<PaymentMethodDocument>).updateMany(
+      { _id: { $ne: this._id }, isDefault: true },
+      { $set: { isDefault: false } }
+    );
+  }
+  next();
 });
 
 const PaymentMethod: Model<PaymentMethodDocument> = 
