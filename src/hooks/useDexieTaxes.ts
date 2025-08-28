@@ -17,28 +17,28 @@ export function useDexieTaxes() {
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
 
-    const count = await db.taxes.count();
-    if (count > 0) {
-      setIsLoading(false);
-      return;
-    }
+    const shouldFetch = navigator.onLine;
 
-    isPopulating = true;
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/taxes');
-      if (!response.ok) throw new Error('Failed to fetch initial taxes');
-      const result = await response.json();
-      if (result.success) {
-        await db.taxes.bulkAdd(result.data);
-      } else {
-        throw new Error(result.error || 'API error fetching initial taxes');
-      }
-    } catch (error) {
-      console.warn("[useDexieTaxes] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false;
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/taxes');
+            if (!response.ok) throw new Error('Failed to fetch initial taxes');
+            const result = await response.json();
+            if (result.success) {
+                await db.taxes.bulkPut(result.data);
+            } else {
+                throw new Error(result.error || 'API error fetching initial taxes');
+            }
+        } catch (error) {
+            console.warn("[useDexieTaxes] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
+        }
+    } else {
+        setIsLoading(false);
     }
   }, []);
 

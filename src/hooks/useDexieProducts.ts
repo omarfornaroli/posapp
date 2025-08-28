@@ -7,6 +7,7 @@ import type { Product } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+let isPopulating = false;
 
 export function useDexieProducts() {
   const [isLoading, setIsLoading] = useState(true);
@@ -16,26 +17,30 @@ export function useDexieProducts() {
 
   // Function to pull initial data from API to Dexie
   const populateInitialData = useCallback(async () => {
-    const productCount = await db.products.count();
-    if (productCount > 0) {
-      setIsLoading(false);
-      return;
-    }
+    if (isPopulating) return;
 
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/products');
-      if (!response.ok) throw new Error('Failed to fetch initial products');
-      const result = await response.json();
-      if (result.success) {
-        await db.products.bulkAdd(result.data);
-      } else {
-        throw new Error(result.error || 'API error fetching initial products');
-      }
-    } catch (error) {
-      console.warn("[useDexieProducts] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
+    const shouldFetch = navigator.onLine;
+
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/products');
+            if (!response.ok) throw new Error('Failed to fetch initial products');
+            const result = await response.json();
+            if (result.success) {
+                await db.products.bulkPut(result.data);
+            } else {
+                throw new Error(result.error || 'API error fetching initial products');
+            }
+        } catch (error) {
+            console.warn("[useDexieProducts] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
+        }
+    } else {
+        setIsLoading(false);
     }
   }, []);
   

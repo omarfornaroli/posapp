@@ -28,44 +28,41 @@ export function useDexieUsers() {
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
 
-    const count = await db.users.count();
-    if (count > 0) {
-      setIsLoading(false);
-      // Even if data exists, we might want to refresh it from the server if online
+    const shouldFetch = navigator.onLine;
+
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/users');
+            if (!response.ok) throw new Error('Failed to fetch initial users');
+            const result = await response.json();
+            if (result.success) {
+                await db.users.bulkPut(result.data); // Use bulkPut to add/update
+            } else {
+                throw new Error(result.error || 'API error fetching initial users');
+            }
+
+            // Also fetch role permissions
+            const permsResponse = await fetch('/api/role-permissions');
+            if (!permsResponse.ok) throw new Error('Failed to fetch initial role permissions');
+            const permsResult = await permsResponse.json();
+            if(permsResult.success) {
+                const permsToSave: RolePermission[] = permsResult.data.map((p: any) => ({
+                    id: p.id,
+                    role: p.role,
+                    permissions: p.permissions
+                }));
+                await db.rolePermissions.bulkPut(permsToSave);
+            }
+        } catch (error) {
+            console.warn("[useDexieUsers] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
+        }
     } else {
-      setIsLoading(true);
-    }
-    
-    isPopulating = true;
-    
-    try {
-      const response = await fetch('/api/users');
-      if (!response.ok) throw new Error('Failed to fetch initial users');
-      const result = await response.json();
-      if (result.success) {
-        await db.users.bulkPut(result.data); // Use bulkPut to add/update
-      } else {
-        throw new Error(result.error || 'API error fetching initial users');
-      }
-
-      // Also fetch role permissions
-      const permsResponse = await fetch('/api/role-permissions');
-       if (!permsResponse.ok) throw new Error('Failed to fetch initial role permissions');
-      const permsResult = await permsResponse.json();
-      if(permsResult.success) {
-        // The role itself is the primary key now, so we don't need a separate id
-        const permsToSave: RolePermission[] = permsResult.data.map((p: any) => ({
-            role: p.role,
-            permissions: p.permissions
-        }));
-        await db.rolePermissions.bulkPut(permsToSave);
-      }
-
-    } catch (error) {
-      console.warn("[useDexieUsers] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false;
+        setIsLoading(false);
     }
   }, []);
   

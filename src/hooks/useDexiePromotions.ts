@@ -16,35 +16,30 @@ export function useDexiePromotions() {
   const promotions = useLiveQuery(() => db.promotions.toArray(), []);
 
   const populateInitialData = useCallback(async () => {
-    if (isPopulating) {
-      return;
-    }
+    if (isPopulating) return;
     
-    const promotionCount = await db.promotions.count();
-    if (promotionCount > 0) {
-      setIsLoading(false);
-      return;
-    }
+    const shouldFetch = navigator.onLine;
 
-    isPopulating = true;
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/promotions');
-      if (!response.ok) throw new Error('Failed to fetch initial promotions');
-      const result = await response.json();
-      if (result.success) {
-        const currentCount = await db.promotions.count();
-        if (currentCount === 0) {
-            await db.promotions.bulkAdd(result.data);
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/promotions');
+            if (!response.ok) throw new Error('Failed to fetch initial promotions');
+            const result = await response.json();
+            if (result.success) {
+                await db.promotions.bulkPut(result.data);
+            } else {
+                throw new Error(result.error || 'API error fetching initial promotions');
+            }
+        } catch (error) {
+            console.warn("[useDexiePromotions] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
         }
-      } else {
-        throw new Error(result.error || 'API error fetching initial promotions');
-      }
-    } catch (error) {
-      console.warn("[useDexiePromotions] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false;
+    } else {
+        setIsLoading(false);
     }
   }, []);
   

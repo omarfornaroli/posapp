@@ -16,35 +16,31 @@ export function useDexieClients() {
   const clients = useLiveQuery(() => db.clients.toArray(), []);
 
   const populateInitialData = useCallback(async () => {
-    if (isPopulating) {
-      return;
-    }
-    
-    const clientCount = await db.clients.count();
-    if (clientCount > 0) {
-      setIsLoading(false);
-      return;
-    }
+    if (isPopulating) return;
 
-    isPopulating = true;
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/clients');
-      if (!response.ok) throw new Error('Failed to fetch initial clients');
-      const result = await response.json();
-      if (result.success) {
-        const currentCount = await db.clients.count();
-        if (currentCount === 0) {
-            await db.clients.bulkAdd(result.data);
+    const shouldFetch = navigator.onLine; // Always try to fetch if online
+
+    if (shouldFetch) {
+      isPopulating = true;
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/clients');
+        if (!response.ok) throw new Error('Failed to fetch initial clients');
+        const result = await response.json();
+        if (result.success) {
+            await db.clients.bulkPut(result.data);
+        } else {
+          throw new Error(result.error || 'API error fetching initial clients');
         }
-      } else {
-        throw new Error(result.error || 'API error fetching initial clients');
+      } catch (error) {
+        console.warn("[useDexieClients] Failed to populate initial data (likely offline):", error);
+      } finally {
+        setIsLoading(false);
+        isPopulating = false; // Reset the flag
       }
-    } catch (error) {
-      console.warn("[useDexieClients] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false; // Reset the flag
+    } else {
+       // If offline, just indicate loading is finished as we'll use whatever is in Dexie.
+       setIsLoading(false);
     }
   }, []);
   
@@ -89,7 +85,7 @@ export function useDexieClients() {
     }
   };
   
-  return { clients: clients || [], isLoading: isLoading || clients === undefined, addClient, updateClient, deleteClient };
+  return { clients: clients || [], isLoading: isLoading || clients === undefined, addClient, updateClient, deleteClient, refetch: populateInitialData };
 }
 
     

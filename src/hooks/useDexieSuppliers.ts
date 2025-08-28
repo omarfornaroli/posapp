@@ -17,32 +17,29 @@ export function useDexieSuppliers() {
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
     
-    const supplierCount = await db.suppliers.count();
-    if (supplierCount > 0) {
-      setIsLoading(false);
-      return;
-    }
+    const shouldFetch = navigator.onLine;
 
-    isPopulating = true;
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/suppliers');
-      if (!response.ok) throw new Error('Failed to fetch initial suppliers');
-      const result = await response.json();
-      if (result.success) {
-        const currentCount = await db.suppliers.count();
-        if (currentCount === 0) {
-            await db.suppliers.bulkAdd(result.data);
-            console.log(`[useDexieSuppliers] Added ${result.data.length} suppliers to Dexie.`);
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/suppliers');
+            if (!response.ok) throw new Error('Failed to fetch initial suppliers');
+            const result = await response.json();
+            if (result.success) {
+                await db.suppliers.bulkPut(result.data);
+                console.log(`[useDexieSuppliers] Synced ${result.data.length} suppliers to Dexie.`);
+            } else {
+                throw new Error(result.error || 'API error fetching initial suppliers');
+            }
+        } catch (error) {
+            console.warn("[useDexieSuppliers] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
         }
-      } else {
-        throw new Error(result.error || 'API error fetching initial suppliers');
-      }
-    } catch (error) {
-      console.warn("[useDexieSuppliers] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false;
+    } else {
+        setIsLoading(false);
     }
   }, []);
   

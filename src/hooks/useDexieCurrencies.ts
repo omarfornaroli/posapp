@@ -17,28 +17,28 @@ export function useDexieCurrencies() {
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
 
-    const count = await db.currencies.count();
-    if (count > 0) {
-      setIsLoading(false);
-      return;
-    }
+    const shouldFetch = navigator.onLine;
 
-    isPopulating = true;
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/currencies');
-      if (!response.ok) throw new Error('Failed to fetch initial currencies');
-      const result = await response.json();
-      if (result.success) {
-        await db.currencies.bulkAdd(result.data);
-      } else {
-        throw new Error(result.error || 'API error fetching initial currencies');
-      }
-    } catch (error) {
-      console.warn("[useDexieCurrencies] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false;
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/currencies');
+            if (!response.ok) throw new Error('Failed to fetch initial currencies');
+            const result = await response.json();
+            if (result.success) {
+                await db.currencies.bulkPut(result.data);
+            } else {
+                throw new Error(result.error || 'API error fetching initial currencies');
+            }
+        } catch (error) {
+            console.warn("[useDexieCurrencies] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
+        }
+    } else {
+        setIsLoading(false);
     }
   }, []);
 

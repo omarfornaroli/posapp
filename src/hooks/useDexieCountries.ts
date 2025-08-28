@@ -16,29 +16,29 @@ export function useDexieCountries() {
 
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
+    
+    const shouldFetch = navigator.onLine;
 
-    const count = await db.countries.count();
-    if (count > 0) {
-      setIsLoading(false);
-      return;
-    }
-
-    isPopulating = true;
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/countries');
-      if (!response.ok) throw new Error('Failed to fetch initial countries');
-      const result = await response.json();
-      if (result.success) {
-        await db.countries.bulkAdd(result.data);
-      } else {
-        throw new Error(result.error || 'API error fetching initial countries');
-      }
-    } catch (error) {
-      console.warn("[useDexieCountries] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false;
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/countries');
+            if (!response.ok) throw new Error('Failed to fetch initial countries');
+            const result = await response.json();
+            if (result.success) {
+                await db.countries.bulkPut(result.data);
+            } else {
+                throw new Error(result.error || 'API error fetching initial countries');
+            }
+        } catch (error) {
+            console.warn("[useDexieCountries] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
+        }
+    } else {
+        setIsLoading(false);
     }
   }, []);
 

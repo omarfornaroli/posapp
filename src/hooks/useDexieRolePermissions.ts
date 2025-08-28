@@ -15,36 +15,33 @@ export function useDexieRolePermissions() {
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
 
-    const count = await db.rolePermissions.count();
-    if (count > 0) {
-      setIsLoading(false);
-    } else {
-      setIsLoading(true); 
-    }
+    const shouldFetch = navigator.onLine;
 
-    isPopulating = true;
-    
-    try {
-      const response = await fetch('/api/role-permissions');
-      if (!response.ok) throw new Error('Failed to fetch initial role permissions');
-      const result = await response.json();
-      if (result.success) {
-        // The API returns an 'id' (mongoose _id) which we will use as the primary key.
-        // The data structure now directly matches the Dexie schema 'id, role'.
-        const permsToSave: RolePermission[] = result.data.map((p: any) => ({
-            id: p.id,
-            role: p.role,
-            permissions: p.permissions
-        }));
-        await db.rolePermissions.bulkPut(permsToSave);
-      } else {
-        throw new Error(result.error || 'API error fetching initial role permissions');
-      }
-    } catch (error) {
-      console.warn("[useDexieRolePermissions] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false;
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true); 
+        try {
+            const response = await fetch('/api/role-permissions');
+            if (!response.ok) throw new Error('Failed to fetch initial role permissions');
+            const result = await response.json();
+            if (result.success) {
+                const permsToSave: RolePermission[] = result.data.map((p: any) => ({
+                    id: p.id, // Use the MongoDB _id as the primary key
+                    role: p.role,
+                    permissions: p.permissions
+                }));
+                await db.rolePermissions.bulkPut(permsToSave);
+            } else {
+                throw new Error(result.error || 'API error fetching initial role permissions');
+            }
+        } catch (error) {
+            console.warn("[useDexieRolePermissions] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
+        }
+    } else {
+        setIsLoading(false);
     }
   }, []);
 
