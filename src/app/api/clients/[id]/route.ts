@@ -49,6 +49,16 @@ export async function PUT(request: Request, { params }: any) {
     }
 
     const body = await request.json() as Partial<Omit<ClientType, 'id'>>;
+
+    const existingClient = await Client.findById(id);
+    if (!existingClient) {
+        return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 });
+    }
+
+    if (body.updatedAt && existingClient.updatedAt && new Date(body.updatedAt) < new Date(existingClient.updatedAt)) {
+        return NextResponse.json({ success: false, error: 'Stale data. Server has a newer version.', data: existingClient }, { status: 409 });
+    }
+    
     const updateData = { ...body, updatedBy: actorId };
 
     const client = await Client.findByIdAndUpdate(id, updateData, {
@@ -56,15 +66,11 @@ export async function PUT(request: Request, { params }: any) {
       runValidators: true,
     });
 
-    if (!client) {
-      return NextResponse.json({ success: false, error: 'Client not found' }, { status: 404 });
-    }
-    
     await NotificationService.createNotification({
       messageKey: 'Notifications.clientUpdated',
-      messageParams: { clientName: client.name },
+      messageParams: { clientName: client!.name },
       type: 'success',
-      link: `/clients?highlight=${client.id}`,
+      link: `/clients?highlight=${client!.id}`,
       ...notificationDetails,
       actorId: actorId.toString(),
     });

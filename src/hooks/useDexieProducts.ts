@@ -29,7 +29,21 @@ export function useDexieProducts() {
             if (!response.ok) throw new Error('Failed to fetch initial products');
             const result = await response.json();
             if (result.success) {
-                await db.products.bulkPut(result.data);
+                const serverProducts: Product[] = result.data;
+                const localProducts = await db.products.toArray();
+                const localProductMap = new Map(localProducts.map(p => [p.id, p]));
+                
+                const productsToUpdate: Product[] = [];
+                for (const serverProduct of serverProducts) {
+                    const localProduct = localProductMap.get(serverProduct.id);
+                    if (!localProduct || new Date(serverProduct.updatedAt!) > new Date(localProduct.updatedAt!)) {
+                        productsToUpdate.push(serverProduct);
+                    }
+                }
+                if (productsToUpdate.length > 0) {
+                    await db.products.bulkPut(productsToUpdate);
+                    console.log(`[useDexieProducts] Synced ${productsToUpdate.length} products from server.`);
+                }
             } else {
                 throw new Error(result.error || 'API error fetching initial products');
             }
@@ -52,9 +66,12 @@ export function useDexieProducts() {
   const addProduct = async (newProduct: Omit<Product, 'id'>) => {
     // Generate a temporary client-side ID for immediate UI updates
     const tempId = generateId();
+    const now = new Date().toISOString();
     const productWithId: Product = {
       ...newProduct,
       id: tempId,
+      createdAt: now,
+      updatedAt: now,
     };
     
     try {
@@ -68,8 +85,9 @@ export function useDexieProducts() {
 
   const updateProduct = async (updatedProduct: Product) => {
      try {
-      await db.products.put(updatedProduct);
-      await syncService.addToQueue({ entity: 'product', operation: 'update', data: updatedProduct });
+      const productToUpdate = { ...updatedProduct, updatedAt: new Date().toISOString() };
+      await db.products.put(productToUpdate);
+      await syncService.addToQueue({ entity: 'product', operation: 'update', data: productToUpdate });
     } catch (error) {
       console.error("Failed to update product in Dexie:", error);
       throw error;

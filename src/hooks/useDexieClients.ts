@@ -28,7 +28,21 @@ export function useDexieClients() {
         if (!response.ok) throw new Error('Failed to fetch initial clients');
         const result = await response.json();
         if (result.success) {
-            await db.clients.bulkPut(result.data);
+            const serverClients: Client[] = result.data;
+            const localClients = await db.clients.toArray();
+            const localClientMap = new Map(localClients.map(c => [c.id, c]));
+
+            const clientsToUpdate: Client[] = [];
+            for (const serverClient of serverClients) {
+                const localClient = localClientMap.get(serverClient.id);
+                if (!localClient || new Date(serverClient.updatedAt!) > new Date(localClient.updatedAt!)) {
+                    clientsToUpdate.push(serverClient);
+                }
+            }
+            if(clientsToUpdate.length > 0) {
+              await db.clients.bulkPut(clientsToUpdate);
+              console.log(`[useDexieClients] Synced ${clientsToUpdate.length} clients from server.`);
+            }
         } else {
           throw new Error(result.error || 'API error fetching initial clients');
         }
@@ -50,10 +64,13 @@ export function useDexieClients() {
 
   const addClient = async (newClient: Omit<Client, 'id' | 'registrationDate'>) => {
     const tempId = generateId();
+    const now = new Date().toISOString();
     const clientWithId: Client = {
       ...newClient,
       id: tempId,
-      registrationDate: new Date().toISOString(),
+      registrationDate: now,
+      createdAt: now,
+      updatedAt: now,
     };
     
     try {
@@ -67,8 +84,9 @@ export function useDexieClients() {
 
   const updateClient = async (updatedClient: Client) => {
      try {
-      await db.clients.put(updatedClient);
-      await syncService.addToQueue({ entity: 'client', operation: 'update', data: updatedClient });
+      const clientToUpdate = { ...updatedClient, updatedAt: new Date().toISOString() };
+      await db.clients.put(clientToUpdate);
+      await syncService.addToQueue({ entity: 'client', operation: 'update', data: clientToUpdate });
     } catch (error) {
       console.error("Failed to update client in Dexie:", error);
       throw error;
@@ -87,5 +105,3 @@ export function useDexieClients() {
   
   return { clients: clients || [], isLoading: isLoading || clients === undefined, addClient, updateClient, deleteClient, refetch: populateInitialData };
 }
-
-    

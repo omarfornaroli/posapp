@@ -44,9 +44,16 @@ export async function PUT(request: Request, { params }: any) {
   try {
     const body = await request.json() as Partial<Omit<ProductType, 'id'>>;
     
-    const updateData: Partial<ProductType> = {};
+    const existingProduct = await Product.findById(id);
+    if (!existingProduct) {
+        return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
+    }
 
-    // This ensures only fields present in the body are added to the update object
+    if (body.updatedAt && existingProduct.updatedAt && new Date(body.updatedAt) < new Date(existingProduct.updatedAt)) {
+        return NextResponse.json({ success: false, error: 'Stale data. Server has a newer version.', data: existingProduct }, { status: 409 });
+    }
+
+    const updateData: Partial<ProductType> = {};
     (Object.keys(body) as Array<keyof typeof body>).forEach(key => {
         if (body[key] !== undefined) {
              (updateData as any)[key] = body[key];
@@ -66,15 +73,12 @@ export async function PUT(request: Request, { params }: any) {
       runValidators: true,
     });
 
-    if (!product) {
-      return NextResponse.json({ success: false, error: 'Product not found' }, { status: 404 });
-    }
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
       messageKey: 'Notifications.productUpdated',
-      messageParams: { productName: product.name },
+      messageParams: { productName: product!.name },
       type: 'success',
-      link: `/products?highlight=${product.id}`,
+      link: `/products?highlight=${product!.id}`,
       ...actorDetails
     });
 
