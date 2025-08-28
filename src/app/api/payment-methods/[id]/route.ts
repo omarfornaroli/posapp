@@ -49,9 +49,8 @@ export async function PUT(request: Request, { params }: any) {
   try {
     const body = await request.json() as Partial<Omit<PaymentMethodType, 'id'>>;
 
-    // The logic to convert to Map was incorrect. Mongoose handles plain objects correctly for Map types.
-    // The previous implementation was causing the validation to fail.
-    // No conversion is needed here. The incoming plain object is correct.
+    // The incoming body from the client will have name and description as plain objects.
+    // Mongoose's Map type can handle this directly when updating. No conversion is needed.
 
     if (body.isDefault === true) {
       await PaymentMethod.updateMany({ _id: { $ne: id } }, { $set: { isDefault: false } });
@@ -66,9 +65,13 @@ export async function PUT(request: Request, { params }: any) {
       return NextResponse.json({ success: false, error: 'Payment method not found' }, { status: 404 });
     }
     const actorDetails = await getActorDetails(request);
+    
+    // Determine the best name for the notification based on available locales
+    const methodName = updatedPaymentMethod.name.get('en') || Array.from(updatedPaymentMethod.name.values())[0] || 'Unknown';
+
     await NotificationService.createNotification({
       messageKey: body.isDefault === true ? 'Toasts.paymentMethodDefaultSetTitle' : 'Toasts.paymentMethodUpdatedTitle',
-      messageParams: { methodName: updatedPaymentMethod.name.get('en') || 'Unknown' },
+      messageParams: { methodName: methodName },
       type: 'success',
       link: `/payment-methods?highlight=${updatedPaymentMethod.id}`,
       ...actorDetails
@@ -87,6 +90,7 @@ export async function PUT(request: Request, { params }: any) {
     if (error instanceof Error && 'code' in error && (error as any).code === 11000) {
       return NextResponse.json({ success: false, error: 'Payment method name already exists.' }, { status: 409 });
     }
+    console.error("Error in PUT /api/payment-methods/[id]:", error);
     return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
@@ -103,9 +107,13 @@ export async function DELETE(request: Request, { params }: any) {
       return NextResponse.json({ success: false, error: 'Payment method not found' }, { status: 404 });
     }
     const actorDetails = await getActorDetails(request);
+    
+    // Determine the best name for the notification based on available locales
+    const methodName = deletedPaymentMethod.name.get('en') || Array.from(deletedPaymentMethod.name.values())[0] || 'Unknown';
+
     await NotificationService.createNotification({
       messageKey: 'Toasts.paymentMethodDeletedTitle',
-      messageParams: { methodName: deletedPaymentMethod.name.get('en') || 'Unknown' },
+      messageParams: { methodName: methodName },
       type: 'info',
       ...actorDetails
     });
