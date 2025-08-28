@@ -1,65 +1,61 @@
 
+
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useDebounce } from 'use-debounce';
+import { useRxTranslate } from '@/hooks/use-rx-translate';
+import { useDexieTranslations } from '@/hooks/useDexieTranslations';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Languages, Check, Search } from 'lucide-react';
+import { Loader2, Languages, Check, Search, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { TranslationRecord } from '@/models/Translation';
 import { useAuth } from '@/context/AuthContext';
 import AccessDeniedMessage from '@/components/AccessDeniedMessage';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import type { TranslationDexieRecord } from '@/lib/dexie-db';
 
-type EditableTranslation = {
-  keyPath: string;
-  values: { [key: string]: string };
-  isDirty?: boolean;
-};
+type EditableTranslation = TranslationDexieRecord & { isDirty?: boolean };
 
 export default function TranslationsManagerPage() {
   const { t } = useRxTranslate();
   const { hasPermission } = useAuth();
   const { toast } = useToast();
-
-  const [translations, setTranslations] = useState<EditableTranslation[]>([]);
+  
+  const { translations: dexieTranslations, isLoading, updateTranslation } = useDexieTranslations();
+  
+  const [editableTranslations, setEditableTranslations] = useState<EditableTranslation[]>([]);
   const [activeLocales, setActiveLocales] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
-
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/translations/all-details');
-      if (!response.ok) throw new Error('Failed to fetch translation data');
-      const result = await response.json();
-      if (result.success) {
-        setTranslations(result.data.translations);
-        setActiveLocales(result.data.activeLocales);
-      }
-    } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: t('Common.error'),
-        description: error instanceof Error ? error.message : 'Unknown error',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [t, toast]);
+  const [isApiKeySet, setIsApiKeySet] = useState(false);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+      if (dexieTranslations) {
+          setEditableTranslations(dexieTranslations.map(t => ({...t})));
+      }
+  }, [dexieTranslations]);
+
+  useEffect(() => {
+    async function checkKeyStatus() {
+        try {
+            const keyResponse = await fetch('/api/settings/ai');
+            const keyResult = await keyResponse.json();
+            setIsApiKeySet(keyResult.success && keyResult.data.isKeySet);
+        } catch (e) {
+            console.error("Could not verify AI Key status", e);
+            setIsApiKeySet(false);
+        }
+    }
+    checkKeyStatus();
+  }, []);
 
   const handleInputChange = (keyPath: string, locale: string, value: string) => {
-    setTranslations(prev =>
+    setEditableTranslations(prev =>
       prev.map(t =>
         t.keyPath === keyPath
           ? { ...t, values: { ...t.values, [locale]: value }, isDirty: true }
@@ -69,34 +65,69 @@ export default function TranslationsManagerPage() {
   };
   
   const handleSave = async (keyPath: string) => {
-    const translationToSave = translations.find(t => t.keyPath === keyPath);
-    if (!translationToSave) return;
+    const translationToSave = editableTranslations.find(t => t.keyPath === keyPath);
+    if (!translationToSave || !translationToSave.isDirty) return;
     
     try {
-        const response = await fetch('/api/translations/item', {
-            method: 'PUT',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ keyPath, valuesToUpdate: translationToSave.values })
-        });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
+        const { isDirty, ...dbRecord } = translationToSave;
+        await updateTranslation(dbRecord);
         
-        setTranslations(prev => prev.map(t => t.keyPath === keyPath ? {...t, isDirty: false} : t));
+        setEditableTranslations(prev => prev.map(t => t.keyPath === keyPath ? {...t, isDirty: false} : t));
         toast({ title: t('TranslationsManagerPage.saveSuccessTitle'), description: t('TranslationsManagerPage.saveSuccessDescription', {key: keyPath}) });
 
     } catch(e) {
         toast({ variant: 'destructive', title: t('Common.error'), description: e instanceof Error ? e.message : 'Unknown error' });
     }
   };
+
+  const handleAutoTranslateRow = async (keyPath: string) => {
+    const translationItem = editableTranslations.find(t => t.keyPath === keyPath);
+    if (!translationItem) return;
+
+    const sourceLang = 'en'; // Assuming English is the source of truth
+    const sourceText = translationItem.values[sourceLang];
+    if (!sourceText) {
+      toast({ variant: 'destructive', title: t('Common.error'), description: t('TranslationsManagerPage.errorNoSourceText') });
+      return;
+    }
+
+    const targetLocales = activeLocales.filter(loc => loc !== sourceLang && !translationItem.values[loc]);
+
+    if (targetLocales.length === 0) {
+      toast({ title: t('Common.info'), description: t('TranslationsManagerPage.infoNoLanguagesToTranslate') });
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/translations/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: sourceText, targetLangs: targetLocales, sourceLang }),
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error);
+      
+      setEditableTranslations(prev =>
+        prev.map(t =>
+          t.keyPath === keyPath
+            ? { ...t, values: { ...t.values, ...result.translations }, isDirty: true }
+            : t
+        )
+      );
+
+    } catch(e) {
+      toast({ variant: 'destructive', title: t('Common.error'), description: e instanceof Error ? e.message : 'Translation failed' });
+    }
+  };
   
   const filteredTranslations = useMemo(() => {
-    if (!debouncedSearchTerm) return translations;
+    if (!debouncedSearchTerm) return editableTranslations;
     const lowercasedTerm = debouncedSearchTerm.toLowerCase();
-    return translations.filter(t => 
+    return editableTranslations.filter(t => 
         t.keyPath.toLowerCase().includes(lowercasedTerm) || 
         Object.values(t.values).some(val => val.toLowerCase().includes(lowercasedTerm))
     );
-  }, [translations, debouncedSearchTerm]);
+  }, [editableTranslations, debouncedSearchTerm]);
 
 
   if (!hasPermission('manage_translations_page')) {
@@ -108,6 +139,15 @@ export default function TranslationsManagerPage() {
         <h1 className="text-3xl font-headline font-semibold text-primary flex items-center">
             <Languages className="mr-3 h-8 w-8" /> {t('TranslationsManagerPage.title')}
         </h1>
+        {isApiKeySet && (
+            <Alert variant="default" className="bg-blue-50 border-blue-200">
+                <Sparkles className="h-4 w-4 !text-blue-600" />
+                <AlertTitle className="text-blue-800">{t('TranslationsManagerPage.autoTranslateTitle')}</AlertTitle>
+                <AlertDescription className="text-blue-700">
+                    {t('TranslationsManagerPage.autoTranslateDescription')}
+                </AlertDescription>
+            </Alert>
+        )}
         <Card className="shadow-xl">
             <CardHeader>
                 <CardTitle>{t('TranslationsManagerPage.listTitle')}</CardTitle>
@@ -146,8 +186,11 @@ export default function TranslationsManagerPage() {
                                                 />
                                             </TableCell>
                                         ))}
-                                        <TableCell className="text-center">
-                                            <Button size="sm" onClick={() => handleSave(item.keyPath)} disabled={!item.isDirty} className={cn(!item.isDirty && "bg-green-600 hover:bg-green-600")}>
+                                        <TableCell className="text-center space-x-1">
+                                            {isApiKeySet && (
+                                              <Button size="icon" variant="ghost" onClick={() => handleAutoTranslateRow(item.keyPath)} className="h-8 w-8 text-blue-500 hover:text-blue-600"><Sparkles className="h-4 w-4"/></Button>
+                                            )}
+                                            <Button size="icon" variant="ghost" onClick={() => handleSave(item.keyPath)} disabled={!item.isDirty} className={cn("h-8 w-8", !item.isDirty && "text-green-600 hover:text-green-700")}>
                                                 <Check className="h-4 w-4" />
                                             </Button>
                                         </TableCell>
@@ -162,3 +205,4 @@ export default function TranslationsManagerPage() {
     </div>
   );
 }
+

@@ -1,22 +1,22 @@
 
+
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import Translation from '@/models/Translation';
 import type { TranslationRecord, TranslationDocument } from '@/models/Translation';
-
-interface UpdateTranslationRequestBody {
-  keyPath: string;
-  valuesToUpdate: Record<string, string>; // e.g., { "en": "New English", "fr": "Nouveau Français" }
-}
+import { translateText } from '@/ai/flows/translate-flow';
+import AppLanguage from '@/models/AppLanguage';
 
 export async function PUT(request: Request) {
   await dbConnect();
-  try {
-    const body = await request.json() as UpdateTranslationRequestBody;
-    const { keyPath, valuesToUpdate } = body;
 
-    if (!keyPath || typeof valuesToUpdate !== 'object' || valuesToUpdate === null) {
-      return NextResponse.json({ success: false, error: 'Missing required fields: keyPath, valuesToUpdate' }, { status: 400 });
+  try {
+    const isTranslateKeySet = !!process.env.GEMINI_API_KEY;
+    const body = await request.json() as TranslationRecord;
+    const { keyPath, values } = body;
+
+    if (!keyPath || typeof values !== 'object' || values === null) {
+      return NextResponse.json({ success: false, error: 'Missing required fields: keyPath, values' }, { status: 400 });
     }
 
     const translation = await Translation.findOne({ keyPath });
@@ -26,11 +26,11 @@ export async function PUT(request: Request) {
     }
 
     if (!translation.values) {
-      translation.values = new Map<string, string>(); // Initialize if somehow missing
+      translation.values = new Map<string, string>();
     }
-
-    // Update or add new language values
-    Object.entries(valuesToUpdate).forEach(([lang, value]) => {
+    
+    // The sync now sends the whole values object.
+    Object.entries(values).forEach(([lang, value]) => {
       translation.values.set(lang, value);
     });
 
@@ -38,7 +38,7 @@ export async function PUT(request: Request) {
 
     // Convert Mongoose Map to plain object for the response
     const responseData = {
-        ...translation.toObject({ virtuals: true }), // Includes id, createdAt, updatedAt if virtuals are set
+        ...translation.toObject({ virtuals: true }),
         values: Object.fromEntries(translation.values)
     };
 
@@ -49,3 +49,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }
+
