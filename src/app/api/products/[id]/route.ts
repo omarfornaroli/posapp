@@ -5,6 +5,7 @@ import Product from '@/models/Product';
 import User from '@/models/User';
 import type { Product as ProductType } from '@/types';
 import NotificationService from '@/services/notification.service';
+import Supplier from '@/models/Supplier';
 
 async function getActorDetails(request: Request) {
   const userEmail = request.headers.get('X-User-Email');
@@ -52,13 +53,17 @@ export async function PUT(request: Request, { params }: any) {
     if (body.updatedAt && existingProduct.updatedAt && new Date(body.updatedAt) < new Date(existingProduct.updatedAt)) {
         return NextResponse.json({ success: false, error: 'Stale data. Server has a newer version.', data: existingProduct }, { status: 409 });
     }
+    
+    const updateData: any = { ...body };
 
-    const updateData: Partial<ProductType> = {};
-    (Object.keys(body) as Array<keyof typeof body>).forEach(key => {
-        if (body[key] !== undefined) {
-             (updateData as any)[key] = body[key];
-        }
-    });
+    // If supplier is a string name, find the ObjectId
+    if (typeof body.supplier === 'string' && body.supplier) {
+        const supplierDoc = await Supplier.findOne({ name: body.supplier });
+        updateData.supplier = supplierDoc ? supplierDoc._id : null;
+    } else if (body.supplier === '' || body.supplier === null) {
+        updateData.supplier = null;
+    }
+
 
     if (body.imageUrl === '') updateData.imageUrl = undefined;
     if (body.cost === null) updateData.cost = undefined;
@@ -67,7 +72,7 @@ export async function PUT(request: Request, { params }: any) {
     if (body.reorderPoint === null) updateData.reorderPoint = undefined;
     if (body.preferredQuantity === null) updateData.preferredQuantity = undefined;
     if (body.warningQuantity === null) updateData.warningQuantity = undefined;
-
+    
     const product = await Product.findByIdAndUpdate(id, { $set: updateData }, {
       new: true,
       runValidators: true,

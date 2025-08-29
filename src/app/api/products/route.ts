@@ -5,6 +5,7 @@ import Product from '@/models/Product';
 import User from '@/models/User';
 import type { Product as ProductType } from '@/types';
 import NotificationService from '@/services/notification.service';
+import Supplier from '@/models/Supplier';
 
 async function getActorDetails(request: NextRequest) {
   const userEmail = request.headers.get('X-User-Email');
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json() as Omit<ProductType, 'id'>;
     
-    const productData: Omit<ProductType, 'id'> = {
+    const productData: any = { // Use any to dynamically add properties
       ...body,
       name: body.name.trim(),
       barcode: body.barcode.trim(),
@@ -45,7 +46,6 @@ export async function POST(request: NextRequest) {
       sku: body.sku?.trim(),
       productGroup: body.productGroup?.trim(),
       measurementUnit: body.measurementUnit?.trim(),
-      supplier: body.supplier,
       cost: body.cost !== undefined && body.cost !== null ? Number(body.cost) : undefined,
       markup: body.markup !== undefined && body.markup !== null ? Number(body.markup) : undefined,
       price: Number(body.price),
@@ -63,6 +63,14 @@ export async function POST(request: NextRequest) {
       imageUrl: body.imageUrl?.trim() || undefined,
       description: body.description?.trim(),
     };
+
+    // If supplier is a string name, find the ObjectId
+    if (typeof body.supplier === 'string' && body.supplier) {
+      const supplierDoc = await Supplier.findOne({ name: body.supplier });
+      productData.supplier = supplierDoc ? supplierDoc._id : null;
+    } else if (body.supplier === '' || body.supplier === null) {
+      productData.supplier = null;
+    }
     
     const product = await Product.create(productData);
     const actorDetails = await getActorDetails(request);
@@ -91,5 +99,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: false, error: errorMessage }, { status: 400 });
   }
 }
-
-    
