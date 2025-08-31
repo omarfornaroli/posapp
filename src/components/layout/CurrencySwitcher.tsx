@@ -58,7 +58,9 @@ export default function CurrencySwitcher() {
   [currencies, currentCurrency]);
 
 
-  if (isLoadingTranslations || isLoadingCurrencies) {
+  const isLoading = isLoadingTranslations || (isLoadingCurrencies && !currencies?.length);
+
+  if (isLoading) {
     return (
         <Button variant="ghost" size="icon" aria-label="Loading currencies..." disabled>
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -70,14 +72,14 @@ export default function CurrencySwitcher() {
     <Popover open={open} onOpenChange={setOpen}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <PopoverTrigger asChild disabled={!canChangeCurrency}>
+          <PopoverTrigger asChild>
             <Button
               variant="ghost"
               role="combobox"
               aria-expanded={open}
               aria-label={t('Header.switchCurrencyButton') || 'Switch Currency'}
               className={cn("h-10 px-2 flex items-center gap-1.5", !canChangeCurrency && "cursor-not-allowed opacity-70")}
-              disabled={!canChangeCurrency}
+              disabled={!canChangeCurrency || currencyOptions.length === 0}
             >
               <Landmark className="h-5 w-5 shrink-0" />
               {selectedCurrencyObject && (

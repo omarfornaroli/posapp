@@ -1,4 +1,3 @@
-
 // src/hooks/useDexieCurrencies.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -7,7 +6,6 @@ import type { Currency } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 
 const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-let isPopulating = false;
 
 export function useDexieCurrencies() {
   const [isLoading, setIsLoading] = useState(true);
@@ -15,40 +13,46 @@ export function useDexieCurrencies() {
   const currencies = useLiveQuery(() => db.currencies.orderBy('name').toArray(), []);
 
   const populateInitialData = useCallback(async () => {
-    if (isPopulating) return;
-
-    const shouldFetch = navigator.onLine;
-
-    if (shouldFetch) {
-        isPopulating = true;
-        setIsLoading(true);
-        try {
-            const response = await fetch('/api/currencies');
-            if (!response.ok) throw new Error('Failed to fetch initial currencies');
-            const result = await response.json();
-            if (result.success) {
-                // Use a transaction to clear old data and add new data atomically
-                await db.transaction('rw', db.currencies, async () => {
-                    await db.currencies.clear();
-                    await db.currencies.bulkAdd(result.data);
-                });
-                console.log(`[useDexieCurrencies] Synced ${result.data.length} currencies to Dexie.`);
-            } else {
-                throw new Error(result.error || 'API error fetching initial currencies');
-            }
-        } catch (error) {
-            console.warn("[useDexieCurrencies] Failed to populate initial data (likely offline):", error);
-        } finally {
-            setIsLoading(false);
-            isPopulating = false;
+    setIsLoading(true);
+    try {
+        const response = await fetch('/api/currencies');
+        if (!response.ok) throw new Error('Failed to fetch initial currencies');
+        const result = await response.json();
+        if (result.success) {
+            await db.transaction('rw', db.currencies, async () => {
+                await db.currencies.clear();
+                await db.currencies.bulkAdd(result.data);
+            });
+            console.log(`[useDexieCurrencies] Synced ${result.data.length} currencies to Dexie.`);
+        } else {
+            throw new Error(result.error || 'API error fetching initial currencies');
         }
-    } else {
+    } catch (error) {
+        console.warn("[useDexieCurrencies] Failed to populate initial data (likely offline):", error);
+    } finally {
         setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    populateInitialData();
+    const handleOnlineStatus = () => {
+        if (navigator.onLine) {
+            populateInitialData();
+        }
+    };
+
+    // Initial fetch
+    if (navigator.onLine) {
+      populateInitialData();
+    } else {
+      setIsLoading(false);
+    }
+    
+    window.addEventListener('online', handleOnlineStatus);
+    return () => {
+        window.removeEventListener('online', handleOnlineStatus);
+    };
+
   }, [populateInitialData]);
 
   const addCurrency = async (newCurrency: Omit<Currency, 'id'>) => {
