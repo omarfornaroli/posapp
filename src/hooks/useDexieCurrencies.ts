@@ -12,7 +12,7 @@ let isPopulating = false;
 export function useDexieCurrencies() {
   const [isLoading, setIsLoading] = useState(true);
 
-  const currencies = useLiveQuery(() => db.currencies.toArray(), []);
+  const currencies = useLiveQuery(() => db.currencies.orderBy('name').toArray(), []);
 
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
@@ -27,7 +27,12 @@ export function useDexieCurrencies() {
             if (!response.ok) throw new Error('Failed to fetch initial currencies');
             const result = await response.json();
             if (result.success) {
-                await db.currencies.bulkPut(result.data);
+                // Use a transaction to clear old data and add new data atomically
+                await db.transaction('rw', db.currencies, async () => {
+                    await db.currencies.clear();
+                    await db.currencies.bulkAdd(result.data);
+                });
+                console.log(`[useDexieCurrencies] Synced ${result.data.length} currencies to Dexie.`);
             } else {
                 throw new Error(result.error || 'API error fetching initial currencies');
             }
