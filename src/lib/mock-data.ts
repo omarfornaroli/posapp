@@ -903,3 +903,5 @@ export const mockSuppliers: Omit<Supplier, 'id'>[] = [
   { name: 'SunPower Tech', contactPerson: 'Leo Solar', email: 'info@sunpower.tech', phone: '555-0104', address: '400 Watt St, Electri-city', isEnabled: false },
   { name: 'The Coffee Roasters', contactPerson: 'Barry Bean', email: 'barry@thecoffeeroasters.com', phone: '555-0105', address: '500 Aroma Blvd, Javaville', isEnabled: true },
 ];
+
+    
