@@ -118,7 +118,12 @@
     "saveSuccessTitle": "Report Saved",
     "saveSuccessDescription": "Report \"{reportName}\" has been successfully saved.",
     "saveReportButton": "Save Report",
-    "aiNotConfigured": "The AI reporting feature is disabled. Please set your Gemini API Key in the settings to enable it."
+    "aiNotConfigured": "The AI reporting feature is disabled. Please set your Gemini API Key in the settings to enable it.",
+    "aiNotConfiguredDb": "The AI reporting feature is disabled. Please set your Gemini API Key in the settings to enable it.",
+    "basicReportsTab": "Basic Reports",
+    "advancedReportsTab": "AI-Powered Reports",
+    "basicSalesReportTitle": "Sales Report",
+    "basicSalesReportDescription": "Filter sales transactions by date range."
   },
   "LanguageSwitcher": {
     "changeLanguage": "Change Language",

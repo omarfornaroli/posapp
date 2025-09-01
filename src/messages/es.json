@@ -118,7 +118,12 @@
     "saveSuccessTitle": "Reporte Guardado",
     "saveSuccessDescription": "El reporte \"{reportName}\" ha sido guardado exitosamente.",
     "saveReportButton": "Guardar Reporte",
-    "aiNotConfigured": "La función de reportes con IA está deshabilitada. Por favor, configura tu Clave API de Gemini en los ajustes para habilitarla."
+    "aiNotConfigured": "La función de reportes con IA está deshabilitada. Por favor, configura tu Clave API de Gemini en los ajustes para habilitarla.",
+    "aiNotConfiguredDb": "La función de reportes con IA está deshabilitada. Por favor, configura tu Clave API de Gemini en los ajustes para habilitarla.",
+    "basicReportsTab": "Reportes Básicos",
+    "advancedReportsTab": "Reportes con IA",
+    "basicSalesReportTitle": "Reporte de Ventas",
+    "basicSalesReportDescription": "Filtra las transacciones de venta por rango de fechas."
   },
   "LanguageSwitcher": {
     "changeLanguage": "Cambiar Idioma",
