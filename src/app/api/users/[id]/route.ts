@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/models/User'; // Renamed to avoid conflict with User type
-import type { User as UserType } from '@/types';
+import type { User as UserType, UserDocument } from '@/types';
 import NotificationService from '@/services/notification.service';
 
 async function getActorDetails(request: Request) {
@@ -41,18 +41,40 @@ export async function PUT(request: Request, { params }: any) {
   await dbConnect();
 
   try {
-    const body = await request.json() as Partial<Omit<UserType, 'id'>>;
+    const body = await request.json() as Partial<Omit<UserType, 'id'>> & { password?: string };
+    
     if (body.imageUrl === '') {
        body.imageUrl = undefined;
     }
-    const user = await UserModel.findByIdAndUpdate(id, body, {
-      new: true,
-      runValidators: true,
-    });
+    
+    // Find the user first to handle password hashing conditionally
+    const user = await UserModel.findById(id).select('+password') as UserDocument | null;
 
     if (!user) {
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
+    
+    // Update non-password fields
+    user.name = body.name || user.name;
+    user.email = body.email || user.email;
+    user.role = body.role || user.role;
+    if (body.imageUrl !== undefined) {
+      user.imageUrl = body.imageUrl;
+    }
+    if(body.authorizationCode) {
+      user.authorizationCode = body.authorizationCode;
+    }
+
+    // Handle password update
+    if (body.password) {
+      if (body.password.length < 8) {
+        return NextResponse.json({ success: false, error: 'Password must be at least 8 characters long.' }, { status: 400 });
+      }
+      user.password = body.password; // The pre-save hook will hash it
+    }
+    
+    await user.save();
+
     const actorDetails = await getActorDetails(request);
     await NotificationService.createNotification({
       messageKey: 'Notifications.userUpdated',
@@ -62,7 +84,11 @@ export async function PUT(request: Request, { params }: any) {
       ...actorDetails
     });
 
-    return NextResponse.json({ success: true, data: user });
+    // Return user data without password
+    const userObject = user.toObject();
+    delete userObject.password;
+
+    return NextResponse.json({ success: true, data: userObject });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const actorDetails = await getActorDetails(request);

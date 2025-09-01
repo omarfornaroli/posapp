@@ -1156,13 +1156,18 @@
   "AiSettingsForm": {
     "title": "Configuración de Funciones de IA",
     "description": "Configura la integración de Genkit AI para habilitar funciones como los reportes asistidos por IA.",
+    "descriptionDb": "Configura la integración de Genkit AI guardando tu clave de API directamente en la base de datos.",
     "statusLabel": "Estado de IA:",
     "statusConfigured": "Configurado",
     "statusNotConfigured": "No Configurado",
     "instructionsTitle": "Cómo Configurar:",
     "instruction1": "Crea o abre el archivo `.env` en el directorio raíz de tu proyecto.",
     "instruction2": "Añade la siguiente línea, reemplazando el marcador de posición con tu Clave API de Gemini real:",
-    "instruction3": "Reinicia el servidor de tu aplicación para que los cambios surtan efecto."
+    "instruction3": "Reinicia el servidor de tu aplicación para que los cambios surtan efecto.",
+    "apiKeyLabel": "Clave API de Gemini",
+    "apiKeyPlaceholder": "Introduce tu clave API aquí",
+    "apiKeyDescription": "Tu clave se almacena de forma segura y no se expone al cliente.",
+    "saveSuccessDescription": "Tu configuración de IA ha sido guardada."
   },
   "POSBehaviorSettingsForm": {
     "title": "Comportamientos del Punto de Venta",
@@ -1279,5 +1284,19 @@
     "disableAriaLabel": "Deshabilitar {methodName}",
     "setDefaultAriaLabel": "Establecer {methodName} como predeterminado",
     "noDescription": "Sin descripción"
+  },
+  "EditUserDialog": {
+    "title": "Editar Usuario",
+    "description": "Actualizar detalles para el usuario {userName}.",
+    "authCodeLabel": "Código de Autorización",
+    "generateNewCodeAria": "Generar Nuevo Código de Autorización",
+    "pendingUserHelpText": "Este usuario no ha completado la configuración de su cuenta. Debe hacer clic en el enlace de su correo de invitación.",
+    "resendInviteButton": "Reenviar Invitación",
+    "resendingInviteButton": "Reenviando...",
+    "passwordSectionTitle": "Restablecer Contraseña",
+    "passwordHelpText": "Dejar en blanco para mantener la contraseña actual.",
+    "newPasswordLabel": "Nueva Contraseña",
+    "confirmPasswordLabel": "Confirmar Nueva Contraseña",
+    "saveButton": "Guardar Cambios"
   }
 }

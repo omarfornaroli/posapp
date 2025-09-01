@@ -1156,13 +1156,18 @@
   "AiSettingsForm": {
     "title": "AI Feature Settings",
     "description": "Configure the Genkit AI integration to enable features like AI-assisted reports.",
+    "descriptionDb": "Configure the Genkit AI integration by saving your API key directly to the database.",
     "statusLabel": "AI Status:",
     "statusConfigured": "Configured",
     "statusNotConfigured": "Not Configured",
     "instructionsTitle": "How to Configure:",
     "instruction1": "Create or open the `.env` file in your project's root directory.",
     "instruction2": "Add the following line, replacing the placeholder with your actual Gemini API Key:",
-    "instruction3": "Restart your application server for the changes to take effect."
+    "instruction3": "Restart your application server for the changes to take effect.",
+    "apiKeyLabel": "Gemini API Key",
+    "apiKeyPlaceholder": "Enter your API key here",
+    "apiKeyDescription": "Your key is stored securely and is not exposed to the client.",
+    "saveSuccessDescription": "Your AI settings have been saved."
   },
   "POSBehaviorSettingsForm": {
     "title": "POS Behaviors",
@@ -1279,5 +1284,19 @@
     "disableAriaLabel": "Disable {methodName}",
     "setDefaultAriaLabel": "Set {methodName} as default",
     "noDescription": "No description"
+  },
+  "EditUserDialog": {
+    "title": "Edit User",
+    "description": "Update details for user {userName}.",
+    "authCodeLabel": "Authorization Code",
+    "generateNewCodeAria": "Generate New Authorization Code",
+    "pendingUserHelpText": "This user has not completed their account setup. They must click the link in their invitation email.",
+    "resendInviteButton": "Resend Invitation",
+    "resendingInviteButton": "Resending...",
+    "passwordSectionTitle": "Reset Password",
+    "passwordHelpText": "Leave blank to keep the current password.",
+    "newPasswordLabel": "New Password",
+    "confirmPasswordLabel": "Confirm New Password",
+    "saveButton": "Save Changes"
   }
 }

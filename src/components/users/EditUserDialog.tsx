@@ -41,7 +41,19 @@ const userFormSchema = (t: Function) => z.object({
   role: z.enum(userRoles, { errorMap: () => ({ message: t('Common.formErrors.requiredField', {fieldName: t('AddUserDialog.roleLabel')}) }) }),
   imageUrl: z.string().url({ message: t('Common.formErrors.invalidUrl', {fieldName: t('AddUserDialog.imageUrlLabel')}) }).optional().or(z.literal('')),
   authorizationCode: z.string().optional(),
+  password: z.string().optional(),
+  confirmPassword: z.string().optional(),
+}).refine(data => {
+  if (data.password && data.password.length > 0 && data.password.length < 8) return false;
+  return true;
+}, {
+    message: t('AccountSetupPage.passwordMinLengthError'),
+    path: ['password'],
+}).refine(data => data.password === data.confirmPassword, {
+  message: t('AccountSetupPage.passwordsDoNotMatchError'),
+  path: ['confirmPassword'],
 });
+
 
 type UserFormData = z.infer<ReturnType<typeof userFormSchema>>;
 
@@ -71,6 +83,8 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
       role: 'Viewer',
       imageUrl: '',
       authorizationCode: '',
+      password: '',
+      confirmPassword: ''
     },
   });
 
@@ -104,6 +118,8 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
         role: user.role,
         imageUrl: user.imageUrl || '',
         authorizationCode: user.authorizationCode || '',
+        password: '',
+        confirmPassword: '',
       });
     } else if (!open) {
       form.reset({ 
@@ -112,6 +128,8 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
         role: 'Viewer',
         imageUrl: '',
         authorizationCode: '',
+        password: '',
+        confirmPassword: '',
       });
     }
   }, [user, form, open, isLoadingTranslations, t]);
@@ -289,6 +307,23 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
                       <img src={barcodeDataUrl} alt="Authorization Code Barcode" data-ai-hint="barcode" />
                   </div>
                   )}
+
+                  <h3 className="text-md font-semibold pt-4 border-t">{t('EditUserDialog.passwordSectionTitle')}</h3>
+                  <p className="text-sm text-muted-foreground -mt-2">{t('EditUserDialog.passwordHelpText')}</p>
+                   <FormField control={form.control} name="password" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('EditUserDialog.newPasswordLabel')}</FormLabel>
+                      <FormControl><Input type="password" {...field} autoComplete="new-password" /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
+                  <FormField control={form.control} name="confirmPassword" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('EditUserDialog.confirmPasswordLabel')}</FormLabel>
+                      <FormControl><Input type="password" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )} />
               </div>
               {user?.status === 'pending' && (
                 <div className="pt-4 mt-4 border-t pr-2">
@@ -302,7 +337,7 @@ export default function EditUserDialog({ open, onOpenChange, user, onSaveUser }:
             </ScrollArea>
             <DialogFooter className="pt-4 mt-auto shrink-0 border-t">
                 <DialogClose asChild>
-                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('AddUserDialog.cancelButton')}</Button>
+                    <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>{t('Common.cancel')}</Button>
                 </DialogClose>
                 <Button type="submit" className="bg-primary hover:bg-primary/90">{t('EditUserDialog.saveButton')}</Button>
             </DialogFooter>
