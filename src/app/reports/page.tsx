@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -25,6 +25,7 @@ import { DateRange } from 'react-day-picker';
 import SalesTable from '@/components/sales/SalesTable';
 import { useDexieSales } from '@/hooks/useDexieSales';
 import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 declare module 'jspdf' {
   interface jsPDF {
