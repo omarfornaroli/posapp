@@ -123,7 +123,11 @@
     "basicReportsTab": "Basic Reports",
     "advancedReportsTab": "AI-Powered Reports",
     "basicSalesReportTitle": "Sales Report",
-    "basicSalesReportDescription": "Filter sales transactions by date range."
+    "basicSalesReportDescription": "Filter sales transactions by date range.",
+    "salesReportTab": "Sales",
+    "productsReportTab": "Products",
+    "suppliersReportTab": "Suppliers",
+    "promotionsReportTab": "Promotions"
   },
   "LanguageSwitcher": {
     "changeLanguage": "Change Language",

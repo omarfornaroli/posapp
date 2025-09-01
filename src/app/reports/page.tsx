@@ -6,12 +6,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import type { Report as ReportType, GenerateReportOutput } from '@/types';
+import type { Report as ReportType, GenerateReportOutput, SaleTransaction, Product, Supplier, Promotion } from '@/types';
 import AccessDeniedMessage from '@/components/AccessDeniedMessage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { BrainCircuit, Loader2, Bot, Download, FileJson, Save, FileText as FileTextIcon, ListOrdered, BarChart } from 'lucide-react';
+import { BrainCircuit, Loader2, Bot, Download, FileJson, Save, FileText as FileTextIcon, ListOrdered, BarChart, Package, Building2, TicketPercent } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { generateReport } from '@/ai/flows/generate-report-flow';
 import ReportListTable from '@/components/reports/ReportListTable';
@@ -21,12 +21,10 @@ import { useDexieReports } from '@/hooks/useDexieReports';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DateRangePicker } from '@/components/ui/date-range-picker';
-import { DateRange } from 'react-day-picker';
-import SalesTable from '@/components/sales/SalesTable';
-import { useDexieSales } from '@/hooks/useDexieSales';
-import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import SalesReportTab from '@/components/reports/tabs/SalesReportTab';
+import ProductsReportTab from '@/components/reports/tabs/ProductsReportTab';
+import SuppliersReportTab from '@/components/reports/tabs/SuppliersReportTab';
+import PromotionsReportTab from '@/components/reports/tabs/PromotionsReportTab';
 
 declare module 'jspdf' {
   interface jsPDF {
@@ -48,8 +46,6 @@ export default function ReportsPage() {
   const { toast } = useToast();
   
   const { reports, isLoading: isLoadingReports, refetch: refetchReports } = useDexieReports();
-  const { sales, isLoading: isLoadingSales } = useDexieSales();
-  const { currencies, isLoading: isLoadingCurrencies } = useDexieCurrencies();
   const [isAiKeySet, setIsAiKeySet] = useState<boolean | null>(null);
 
   // State for AI Reports
@@ -63,9 +59,6 @@ export default function ReportsPage() {
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
 
-  // State for Basic Reports
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  
   useEffect(() => {
     async function checkKeyStatus() {
       try {
@@ -164,54 +157,6 @@ export default function ReportsPage() {
   };
 
   if (!hasPermission('manage_reports_page')) return <AccessDeniedMessage />;
-  
-  const filteredSales = useMemo(() => {
-    if (!sales) return [];
-    return sales.filter(transaction => {
-      if (dateRange?.from && new Date(transaction.date) < dateRange.from) return false;
-      if (dateRange?.to && new Date(transaction.date) > dateRange.to) return false;
-      return true;
-    });
-  }, [sales, dateRange]);
-  
-  const defaultCurrency = useMemo(() => currencies?.find(c => c.isDefault), [currencies]);
-
-  const salesTableColumns = useMemo(() => [
-      { key: 'id', label: t('SalesTable.headerTransactionId'), isSortable: true, isGroupable: false },
-      { key: 'date', label: t('SalesTable.headerDate'), isSortable: true, isGroupable: true },
-      { key: 'clientName', label: t('SalesTable.headerClient'), isSortable: true, isGroupable: true },
-      { key: 'totalAmount', label: t('SalesTable.headerTotalAmount'), isSortable: true, isGroupable: false, className: "text-right font-bold text-primary" },
-  ], [t]);
-
-
-  const renderBasicReports = () => (
-    <div className="space-y-6">
-        <Card>
-            <CardHeader>
-                <CardTitle>{t('ReportsPage.basicSalesReportTitle')}</CardTitle>
-                <CardDescription>{t('ReportsPage.basicSalesReportDescription')}</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="mb-4">
-                    <DateRangePicker date={dateRange} setDate={setDateRange} placeholder={t('SalesReportPage.pickDateRange')} />
-                </div>
-                {isLoadingSales || isLoadingCurrencies ? (
-                    <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>
-                ) : (
-                    <SalesTable
-                        transactions={filteredSales}
-                        displayColumns={salesTableColumns}
-                        columnDefinitions={salesTableColumns}
-                        onSort={() => {}}
-                        groupingKeys={[]}
-                        onToggleGroup={() => {}}
-                        defaultCurrency={defaultCurrency || null}
-                    />
-                )}
-            </CardContent>
-        </Card>
-    </div>
-  );
 
   const renderAdvancedReports = () => (
     <div className="space-y-6">
@@ -302,19 +247,31 @@ export default function ReportsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-3xl font-headline font-semibold text-primary flex items-center">
-          <BrainCircuit className="mr-3 h-8 w-8" /> {t('ReportsPage.title')}
+          <BarChart className="mr-3 h-8 w-8" /> {t('ReportsPage.title')}
         </h1>
       </div>
       
       <p className="text-muted-foreground">{t('ReportsPage.pageDescription')}</p>
 
-      <Tabs defaultValue="basic" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="basic"><BarChart className="mr-2"/>{t('ReportsPage.basicReportsTab')}</TabsTrigger>
+      <Tabs defaultValue="sales" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+            <TabsTrigger value="sales"><FileTextIcon className="mr-2"/>{t('ReportsPage.salesReportTab')}</TabsTrigger>
+            <TabsTrigger value="products"><Package className="mr-2"/>{t('ReportsPage.productsReportTab')}</TabsTrigger>
+            <TabsTrigger value="suppliers"><Building2 className="mr-2"/>{t('ReportsPage.suppliersReportTab')}</TabsTrigger>
+            <TabsTrigger value="promotions"><TicketPercent className="mr-2"/>{t('ReportsPage.promotionsReportTab')}</TabsTrigger>
             <TabsTrigger value="advanced"><Bot className="mr-2"/>{t('ReportsPage.advancedReportsTab')}</TabsTrigger>
         </TabsList>
-        <TabsContent value="basic" className="mt-6">
-            {renderBasicReports()}
+        <TabsContent value="sales" className="mt-6">
+            <SalesReportTab />
+        </TabsContent>
+         <TabsContent value="products" className="mt-6">
+            <ProductsReportTab />
+        </TabsContent>
+         <TabsContent value="suppliers" className="mt-6">
+            <SuppliersReportTab />
+        </TabsContent>
+         <TabsContent value="promotions" className="mt-6">
+            <PromotionsReportTab />
         </TabsContent>
         <TabsContent value="advanced" className="mt-6">
             {renderAdvancedReports()}
