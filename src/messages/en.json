@@ -129,6 +129,18 @@
     "suppliersReportTab": "Suppliers",
     "promotionsReportTab": "Promotions"
   },
+  "BarcodeScanner": {
+    "dialogTitle": "Scan Barcode",
+    "dialogDescription": "Position the barcode inside the frame to scan.",
+    "requestingPermission": "Requesting camera permission...",
+    "cameraAccessRequired": "Camera Access Required",
+    "permissionDeniedError": "Camera permission was denied. Please enable it in your browser settings.",
+    "noDeviceFoundError": "No camera device found. Please ensure a camera is connected and enabled.",
+    "genericCameraError": "An unexpected error occurred while accessing the camera.",
+    "noCameraSupportError": "This browser does not support camera access.",
+    "selectCameraLabel": "Select Camera",
+    "selectCameraPlaceholder": "Select a camera device"
+  },
   "LanguageSwitcher": {
     "changeLanguage": "Change Language",
     "en": "English",

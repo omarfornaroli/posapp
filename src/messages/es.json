@@ -129,6 +129,18 @@
     "suppliersReportTab": "Proveedores",
     "promotionsReportTab": "Promociones"
   },
+  "BarcodeScanner": {
+    "dialogTitle": "Escanear Código de Barras",
+    "dialogDescription": "Coloca el código de barras dentro del marco para escanear.",
+    "requestingPermission": "Solicitando permiso para la cámara...",
+    "cameraAccessRequired": "Se Requiere Acceso a la Cámara",
+    "permissionDeniedError": "El permiso para la cámara fue denegado. Por favor, actívalo en la configuración de tu navegador.",
+    "noDeviceFoundError": "No se encontró ningún dispositivo de cámara. Asegúrate de que una cámara esté conectada y habilitada.",
+    "genericCameraError": "Ocurrió un error inesperado al acceder a la cámara.",
+    "noCameraSupportError": "Este navegador no admite acceso a la cámara.",
+    "selectCameraLabel": "Seleccionar Cámara",
+    "selectCameraPlaceholder": "Seleccionar un dispositivo de cámara"
+  },
   "LanguageSwitcher": {
     "changeLanguage": "Cambiar Idioma",
     "en": "Inglés (English)",
