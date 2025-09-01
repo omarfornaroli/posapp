@@ -1,4 +1,3 @@
-
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -23,12 +22,13 @@ const entityToEndpointMap: Record<string, string> = {
   posSetting: 'pos-settings',
   receiptSetting: 'receipt-settings',
   smtpSetting: 'settings/smtp',
+  aiSetting: 'settings/ai',
   sale: 'sales',
   rolePermission: 'role-permissions',
   translation: 'translations',
 };
 
-const singletonEntities = ['posSetting', 'receiptSetting', 'smtpSetting'];
+const singletonEntities = ['posSetting', 'receiptSetting', 'smtpSetting', 'aiSetting'];
 
 type SyncStatus = 'idle' | 'syncing' | 'offline';
 type SyncTrigger = 'interval' | 'onlineEvent' | 'manual';
@@ -111,10 +111,13 @@ class SyncService {
             let body: string | undefined = JSON.stringify(item.data);
             
             if (item.operation === 'update') {
-              method = 'PUT';
-              if (!singletonEntities.includes(item.entity)) {
+              if (singletonEntities.includes(item.entity)) {
+                method = 'POST'; // Singleton settings use POST for updates
+              } else {
+                method = 'PUT';
                 endpoint = `${endpoint}/${item.data.id}`;
               }
+
               if(item.entity === 'rolePermission') {
                   endpoint = `/api/role-permissions/${item.data.role}`;
               }
