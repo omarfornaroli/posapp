@@ -1,5 +1,4 @@
 
-
 import type React from 'react';
 
 export type Permission =
@@ -347,6 +346,13 @@ export interface SmtpSetting {
   isConfigured?: boolean;
 }
 
+export interface AiSetting {
+  id: string;
+  key: string;
+  geminiApiKey?: string;
+  isKeySet?: boolean;
+}
+
 export interface SortConfig<T = any> {
   key: keyof T | string;
   direction: 'asc' | 'desc';
@@ -498,11 +504,18 @@ export interface ImportMappingTemplate {
   mappings: ColumnMapping[];
 }
 
-export interface Report {
+export interface GenerateReportOutput {
+  title: string;
+  summary: string;
+  headers: string[];
+  rows: (string | number)[][];
+}
+
+export interface Report extends Omit<GenerateReportOutput, 'rows'> {
   id: string;
   name: string;
   description?: string;
-  query: string; // The natural language query
+  query: string;
   reportData: {
     title: string;
     summary: string;
@@ -518,4 +531,3 @@ export interface Report {
 export interface MultiLanguageValue {
   [locale: string]: string;
 }
-    

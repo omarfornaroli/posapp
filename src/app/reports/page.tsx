@@ -10,7 +10,7 @@ import AccessDeniedMessage from '@/components/AccessDeniedMessage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { BrainCircuit, Loader2, Bot, Download, FileJson, Save } from 'lucide-react';
+import { BrainCircuit, Loader2, Bot, Download, FileJson, Save, FileText as FileTextIcon, ListOrdered, BarChart } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { generateReport } from '@/ai/flows/generate-report-flow';
 import ReportListTable from '@/components/reports/ReportListTable';
@@ -19,6 +19,12 @@ import SaveReportDialog from '@/components/reports/SaveReportDialog';
 import { useDexieReports } from '@/hooks/useDexieReports';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { DateRangePicker } from '@/components/ui/date-range-picker';
+import { DateRange } from 'react-day-picker';
+import SalesTable from '@/components/sales/SalesTable';
+import { useDexieSales } from '@/hooks/useDexieSales';
+import { useDexieCurrencies } from '@/hooks/useDexieCurrencies';
 
 declare module 'jspdf' {
   interface jsPDF {
@@ -40,19 +46,26 @@ export default function ReportsPage() {
   const { toast } = useToast();
   
   const { reports, isLoading: isLoadingReports, refetch: refetchReports } = useDexieReports();
+  const { sales, isLoading: isLoadingSales } = useDexieSales();
+  const { currencies, isLoading: isLoadingCurrencies } = useDexieCurrencies();
   const [isAiKeySet, setIsAiKeySet] = useState<boolean | null>(null);
 
+  // State for AI Reports
   const [query, setQuery] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedReport, setGeneratedReport] = useState<GenerateReportOutput | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // State for Saved Reports
   const [viewingReport, setViewingReport] = useState<ReportType | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
 
+  // State for Basic Reports
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  
   useEffect(() => {
-    const checkKeyStatus = async () => {
+    async function checkKeyStatus() {
       try {
         const response = await fetch('/api/settings/ai');
         const result = await response.json();
@@ -60,7 +73,7 @@ export default function ReportsPage() {
       } catch {
         setIsAiKeySet(false);
       }
-    };
+    }
     checkKeyStatus();
   }, []);
 
@@ -128,10 +141,10 @@ export default function ReportsPage() {
     const splitSummary = doc.splitTextToSize(generatedReport.summary, 180);
     doc.text(splitSummary, 14, 32);
 
-    doc.autoTable({
+    (doc as any).autoTable({
         head: [generatedReport.headers],
         body: generatedReport.rows,
-        startY: doc.previousAutoTable.finalY + 10 > 50 ? doc.previousAutoTable.finalY + 10 : 50,
+        startY: (doc as any).previousAutoTable.finalY + 10 > 50 ? (doc as any).previousAutoTable.finalY + 10 : 50,
         theme: 'striped'
     });
     doc.save(`${generatedReport.title.replace(/\s+/g, '_').toLowerCase()}.pdf`);
@@ -150,21 +163,60 @@ export default function ReportsPage() {
 
   if (!hasPermission('manage_reports_page')) return <AccessDeniedMessage />;
   
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h1 className="text-3xl font-headline font-semibold text-primary flex items-center">
-          <BrainCircuit className="mr-3 h-8 w-8" /> {t('ReportsPage.title')}
-        </h1>
-      </div>
-      
-      <p className="text-muted-foreground">{t('ReportsPage.pageDescription')}</p>
+  const filteredSales = useMemo(() => {
+    if (!sales) return [];
+    return sales.filter(transaction => {
+      if (dateRange?.from && new Date(transaction.date) < dateRange.from) return false;
+      if (dateRange?.to && new Date(transaction.date) > dateRange.to) return false;
+      return true;
+    });
+  }, [sales, dateRange]);
+  
+  const defaultCurrency = useMemo(() => currencies?.find(c => c.isDefault), [currencies]);
 
+  const salesTableColumns = useMemo(() => [
+      { key: 'id', label: t('SalesTable.headerTransactionId'), isSortable: true, isGroupable: false },
+      { key: 'date', label: t('SalesTable.headerDate'), isSortable: true, isGroupable: true },
+      { key: 'clientName', label: t('SalesTable.headerClient'), isSortable: true, isGroupable: true },
+      { key: 'totalAmount', label: t('SalesTable.headerTotalAmount'), isSortable: true, isGroupable: false, className: "text-right font-bold text-primary" },
+  ], [t]);
+
+
+  const renderBasicReports = () => (
+    <div className="space-y-6">
+        <Card>
+            <CardHeader>
+                <CardTitle>{t('ReportsPage.basicSalesReportTitle')}</CardTitle>
+                <CardDescription>{t('ReportsPage.basicSalesReportDescription')}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="mb-4">
+                    <DateRangePicker date={dateRange} setDate={setDateRange} placeholder={t('SalesReportPage.pickDateRange')} />
+                </div>
+                {isLoadingSales || isLoadingCurrencies ? (
+                    <div className="flex justify-center items-center h-64"><Loader2 className="h-8 w-8 animate-spin" /></div>
+                ) : (
+                    <SalesTable
+                        transactions={filteredSales}
+                        displayColumns={salesTableColumns}
+                        columnDefinitions={salesTableColumns}
+                        onSort={() => {}}
+                        groupingKeys={[]}
+                        onToggleGroup={() => {}}
+                        defaultCurrency={defaultCurrency || null}
+                    />
+                )}
+            </CardContent>
+        </Card>
+    </div>
+  );
+
+  const renderAdvancedReports = () => (
+    <div className="space-y-6">
       {isAiKeySet === false && (
           <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
               <AlertTitle>{t('Common.error')}</AlertTitle>
-              <AlertDescription>{t('ReportsPage.aiNotConfigured')}</AlertDescription>
+              <AlertDescription>{t('ReportsPage.aiNotConfiguredDb')}</AlertDescription>
           </Alert>
       )}
 
@@ -241,6 +293,31 @@ export default function ReportsPage() {
             <ReportListTable reports={reports} onViewReport={handleViewReport} onDeleteReport={handleDeleteReport} />
           </CardContent>
       </Card>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <h1 className="text-3xl font-headline font-semibold text-primary flex items-center">
+          <BrainCircuit className="mr-3 h-8 w-8" /> {t('ReportsPage.title')}
+        </h1>
+      </div>
+      
+      <p className="text-muted-foreground">{t('ReportsPage.pageDescription')}</p>
+
+      <Tabs defaultValue="basic" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="basic"><BarChart className="mr-2"/>{t('ReportsPage.basicReportsTab')}</TabsTrigger>
+            <TabsTrigger value="advanced"><Bot className="mr-2"/>{t('ReportsPage.advancedReportsTab')}</TabsTrigger>
+        </TabsList>
+        <TabsContent value="basic" className="mt-6">
+            {renderBasicReports()}
+        </TabsContent>
+        <TabsContent value="advanced" className="mt-6">
+            {renderAdvancedReports()}
+        </TabsContent>
+      </Tabs>
 
       <ViewReportDialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen} report={viewingReport} />
       <SaveReportDialog open={isSaveDialogOpen} onOpenChange={setIsSaveDialogOpen} onSave={handleSaveReport} initialQuery={query} />

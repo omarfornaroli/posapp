@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow for generating data reports from natural language.
@@ -9,6 +10,10 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
 import { getProductsData, getSalesData } from '../tools/reporting-tools';
+import dbConnect from '@/lib/dbConnect';
+import AiSetting from '@/models/AiSetting';
+import { configureGenkit } from 'genkit';
+import { googleAI } from '@genkit-ai/googleai';
 
 const GenerateReportOutputSchema = z.object({
   title: z.string().describe('A descriptive title for the generated report.'),
@@ -17,6 +22,21 @@ const GenerateReportOutputSchema = z.object({
   rows: z.array(z.array(z.union([z.string(), z.number()]))).describe('An array of arrays, where each inner array represents a row of data corresponding to the headers. Values can be strings or numbers.'),
 });
 export type GenerateReportOutput = z.infer<typeof GenerateReportOutputSchema>;
+
+async function getAiClient() {
+  await dbConnect();
+  const settings = await AiSetting.findOne({}).select('+geminiApiKey');
+  const apiKey = settings?.geminiApiKey || process.env.GEMINI_API_KEY;
+
+  if (!apiKey) {
+    throw new Error('Gemini API key is not configured.');
+  }
+
+  return genkit({
+    plugins: [googleAI({ apiKey })],
+    model: 'googleai/gemini-2.0-flash',
+  });
+}
 
 export async function generateReport(query: string): Promise<GenerateReportOutput> {
   return generateReportFlow(query);
@@ -29,7 +49,8 @@ const generateReportFlow = ai.defineFlow(
     outputSchema: GenerateReportOutputSchema,
   },
   async (query) => {
-    const llmResponse = await ai.generate({
+    const dynamicAi = await getAiClient();
+    const llmResponse = await dynamicAi.generate({
       prompt: query,
       model: 'googleai/gemini-2.0-flash',
       tools: [getSalesData, getProductsData],

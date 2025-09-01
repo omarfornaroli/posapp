@@ -1,5 +1,4 @@
 
-
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 // Mock data imports
@@ -26,6 +25,7 @@ import type { TranslationRecord } from '../models/Translation';
 import { SINGLETON_KEY as ReceiptSettingSingletonKey } from '../models/ReceiptSetting';
 import { SINGLETON_KEY as POSSettingSingletonKey } from '../models/POSSetting';
 import { SINGLETON_KEY as SmtpSettingSingletonKey } from '../models/SmtpSetting';
+import { SINGLETON_KEY as AiSettingSingletonKey } from '../models/AiSetting';
 import { DEFAULT_ROLE_PERMISSIONS } from './permissions'; 
 import type { UserRole, Product as ProductType, Supplier } from '../types';
 
@@ -42,6 +42,7 @@ import '../models/PaymentMethod';
 import '../models/ReceiptSetting';
 import '../models/POSSetting';
 import '../models/SmtpSetting';
+import '../models/AiSetting';
 import '../models/AppLanguage';
 import '../models/Notification'; 
 import '../models/RolePermission'; 
@@ -81,6 +82,7 @@ export async function runSeedOperations() {
   const ReceiptSetting = mongoose.model('ReceiptSetting');
   const POSSetting = mongoose.model('POSSetting');
   const SmtpSetting = mongoose.model('SmtpSetting');
+  const AiSetting = mongoose.model('AiSetting');
   const AppLanguage = mongoose.model('AppLanguage'); 
   const RolePermissionModel = mongoose.model('RolePermission');
   const Country = mongoose.model('Country');
@@ -140,6 +142,7 @@ export async function runSeedOperations() {
     ReceiptSetting.updateOne({ key: ReceiptSettingSingletonKey }, { $setOnInsert: { key: ReceiptSettingSingletonKey, ...mockReceiptSettings } }, { upsert: true, runValidators: true }),
     POSSetting.updateOne({ key: POSSettingSingletonKey }, { $setOnInsert: { key: POSSettingSingletonKey, requireAuthForCartItemRemoval: true, dispatchAtSaleDefault: true, separateCartAndPayment: false, sessionDuration: 30 } }, { upsert: true, runValidators: true }),
     SmtpSetting.updateOne({ key: SmtpSettingSingletonKey }, { $setOnInsert: { key: SmtpSettingSingletonKey } }, { upsert: true, runValidators: true }),
+    AiSetting.updateOne({ key: AiSettingSingletonKey }, { $setOnInsert: { key: AiSettingSingletonKey } }, { upsert: true, runValidators: true }),
     ...(Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]).map(role => 
         RolePermissionModel.updateOne({ role }, { $setOnInsert: { role, permissions: DEFAULT_ROLE_PERMISSIONS[role] } }, { upsert: true, runValidators: true })
     )
