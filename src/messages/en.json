@@ -778,7 +778,11 @@
     "supplierDeleted": "Supplier '{supplierName}' was deleted.",
     "supplierCreateFailed": "Failed to create supplier. Error: {error}",
     "supplierUpdateFailed": "Failed to update supplier. Error: {error}",
-    "supplierDeleteFailed": "Failed to delete supplier. Error: {error}"
+    "supplierDeleteFailed": "Failed to delete supplier. Error: {error}",
+    "smtpNotConfiguredTitle": "SMTP Not Configured",
+    "userInviteLoggedToConsole": "Invitation for {userEmail} logged to console due to missing SMTP configuration.",
+    "userInviteResentTitle": "Invitation Resent",
+    "userInviteResentDescription": "A new setup invitation has been sent to {userEmail}."
   },
   "NotificationsManagerPage": {
     "title": "Notification Manager",

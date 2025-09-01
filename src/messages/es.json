@@ -778,7 +778,11 @@
     "supplierDeleted": "Proveedor '{supplierName}' fue eliminado.",
     "supplierCreateFailed": "Error al crear proveedor. Error: {error}",
     "supplierUpdateFailed": "Error al actualizar proveedor. Error: {error}",
-    "supplierDeleteFailed": "Error al eliminar proveedor. Error: {error}"
+    "supplierDeleteFailed": "Error al eliminar proveedor. Error: {error}",
+    "smtpNotConfiguredTitle": "SMTP no Configurado",
+    "userInviteLoggedToConsole": "La invitación para {userEmail} se ha registrado en la consola debido a la falta de configuración SMTP.",
+    "userInviteResentTitle": "Invitación Reenviada",
+    "userInviteResentDescription": "Se ha enviado una nueva invitación de configuración a {userEmail}."
   },
   "NotificationsManagerPage": {
     "title": "Gestor de Notificaciones",
@@ -1166,20 +1170,20 @@
     "errorFetchingSettings": "Error al obtener los ajustes SMTP de la base de datos."
   },
   "AiSettingsForm": {
-    "title": "Configuración de Funciones de IA",
+    "title": "Ajustes de Funciones de IA",
     "description": "Configura la integración de Genkit AI para habilitar funciones como los reportes asistidos por IA.",
-    "descriptionDb": "Configura la integración de Genkit AI guardando tu clave de API directamente en la base de datos.",
+    "descriptionDb": "Configura la integración de Genkit AI guardando tu clave API directamente en la base de datos.",
     "statusLabel": "Estado de IA:",
     "statusConfigured": "Configurado",
-    "statusNotConfigured": "No Configurado",
+    "statusNotConfigured": "No configurado",
     "instructionsTitle": "Cómo Configurar:",
-    "instruction1": "Crea o abre el archivo `.env` en el directorio raíz de tu proyecto.",
-    "instruction2": "Añade la siguiente línea, reemplazando el marcador de posición con tu Clave API de Gemini real:",
+    "instruction1": "Crea o abre el archivo `.env` en la raíz de tu proyecto.",
+    "instruction2": "Añade la siguiente línea, reemplazando el marcador con tu Clave API de Gemini real:",
     "instruction3": "Reinicia el servidor de tu aplicación para que los cambios surtan efecto.",
     "apiKeyLabel": "Clave API de Gemini",
     "apiKeyPlaceholder": "Introduce tu clave API aquí",
     "apiKeyDescription": "Tu clave se almacena de forma segura y no se expone al cliente.",
-    "saveSuccessDescription": "Tu configuración de IA ha sido guardada."
+    "saveSuccessDescription": "Tus ajustes de IA han sido guardados."
   },
   "POSBehaviorSettingsForm": {
     "title": "Comportamientos del Punto de Venta",
@@ -1195,17 +1199,17 @@
     "sessionDurationPlaceholder": "Seleccionar duración",
     "sessionDurationDescription": "Duración de la sesión para usuarios que no marcaron 'Recordarme'.",
     "durationOptions": {
-        "5minutes": "5 minutos",
-        "10minutes": "10 minutos",
-        "15minutes": "15 minutos",
-        "20minutes": "20 minutos",
-        "30minutes": "30 minutos",
-        "1hour": "1 hora",
-        "3hours": "3 horas",
-        "5hours": "5 horas",
-        "8hours": "8 horas",
-        "10hours": "10 horas",
-        "12hours": "12 horas"
+      "5minutes": "5 minutos",
+      "10minutes": "10 minutos",
+      "15minutes": "15 minutos",
+      "20minutes": "20 minutos",
+      "30minutes": "30 minutos",
+      "1hour": "1 hora",
+      "3hours": "3 horas",
+      "5hours": "5 horas",
+      "8hours": "8 horas",
+      "10hours": "10 horas",
+      "12hours": "12 horas"
     }
   },
   "ReceiptSettingsForm": {

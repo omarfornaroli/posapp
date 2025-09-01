@@ -146,7 +146,7 @@ export default function AiSettingsForm() {
           <CardFooter>
             <Button type="submit" className="bg-primary hover:bg-primary/90" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Save className="mr-2 h-4 w-4" />)}
-              {form.formState.isSubmitting ? t('Common.savingButton') : t('ReceiptSettingsForm.saveButton')}
+              {form.formState.isSubmitting ? t('Common.savingButton') : t('Common.save')}
             </Button>
           </CardFooter>
         </form>
