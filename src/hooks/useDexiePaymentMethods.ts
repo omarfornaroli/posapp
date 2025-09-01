@@ -1,3 +1,4 @@
+
 // src/hooks/useDexiePaymentMethods.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -31,7 +32,12 @@ export function useDexiePaymentMethods() {
                     name: pm.name instanceof Map ? Object.fromEntries(pm.name) : pm.name,
                     description: pm.description instanceof Map ? Object.fromEntries(pm.description) : pm.description,
                 }));
-                await db.paymentMethods.bulkPut(methodsToStore);
+                
+                await db.transaction('rw', db.paymentMethods, async () => {
+                    await db.paymentMethods.clear();
+                    await db.paymentMethods.bulkAdd(methodsToStore);
+                });
+
             } else {
                 throw new Error(result.error || 'API error fetching initial payment methods');
             }
