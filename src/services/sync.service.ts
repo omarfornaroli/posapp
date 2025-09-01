@@ -1,3 +1,4 @@
+
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -25,7 +26,7 @@ const entityToEndpointMap: Record<string, string> = {
   aiSetting: 'settings/ai',
   sale: 'sales',
   rolePermission: 'role-permissions',
-  translation: 'translations',
+  translation: 'translations/item',
 };
 
 const singletonEntities = ['posSetting', 'receiptSetting', 'smtpSetting', 'aiSetting'];
@@ -115,11 +116,20 @@ class SyncService {
                 method = 'POST'; // Singleton settings use POST for updates
               } else {
                 method = 'PUT';
-                endpoint = `${endpoint}/${item.data.id}`;
+                // For most entities, the ID is part of the URL.
+                // Special cases are handled below.
+                if (item.data.id) {
+                    endpoint = `${endpoint}/${item.data.id}`;
+                }
               }
-
-              if(item.entity === 'rolePermission') {
+              // Special endpoint structures for specific entities
+              if (item.entity === 'rolePermission') {
                   endpoint = `/api/role-permissions/${item.data.role}`;
+                  method = 'PUT';
+              }
+               if (item.entity === 'translation') {
+                  // Translation uses PUT on the base endpoint with the key in the body
+                  method = 'PUT';
               }
             } else if (item.operation === 'delete') {
               method = 'DELETE';
