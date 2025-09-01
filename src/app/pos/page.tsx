@@ -4,7 +4,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { useDexieProducts } from '@/hooks/useDexieProducts';
 import { useDexieClients } from '@/hooks/useDexieClients';
@@ -75,6 +75,7 @@ export default function POSPage() {
   const { user } = useAuth();
   
   const form = useForm();
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   const { products, isLoading: isLoadingProducts } = useDexieProducts();
   const { clients, isLoading: isLoadingClients } = useDexieClients();
@@ -194,6 +195,33 @@ export default function POSPage() {
       fetchPendingCarts();
     }
   }, [currentView, posSettings]);
+
+  const filteredProducts = useMemo(() => {
+    if (!debouncedSearchTerm) return [];
+    const lowercasedTerm = debouncedSearchTerm.toLowerCase();
+    return products.filter(p =>
+      p.name.toLowerCase().includes(lowercasedTerm) ||
+      p.barcode.toLowerCase().includes(lowercasedTerm) ||
+      p.sku?.toLowerCase().includes(lowercasedTerm)
+    ).slice(0, 20);
+  }, [products, debouncedSearchTerm]);
+
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setSearchTerm(''); // This will clear the search term and hide the results
+      }
+    }
+    // Add listener only when search results are visible
+    if (filteredProducts.length > 0) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [filteredProducts.length]); // Re-add listener when visibility changes
+
 
   const addToCart = useCallback((product: Product) => {
     const existingItem = cart.find(item => item.id === product.id);
@@ -432,18 +460,6 @@ export default function POSPage() {
     setAppliedPayments(prev => prev.filter((_, i) => i !== index));
   };
 
-
-  const filteredProducts = useMemo(() => {
-    if (!debouncedSearchTerm) return [];
-    const lowercasedTerm = debouncedSearchTerm.toLowerCase();
-    return products.filter(p =>
-      p.name.toLowerCase().includes(lowercasedTerm) ||
-      p.barcode.toLowerCase().includes(lowercasedTerm) ||
-      p.sku?.toLowerCase().includes(lowercasedTerm)
-    ).slice(0, 20);
-  }, [products, debouncedSearchTerm]);
-
-
   const handleProcessSale = async () => {
     if (cart.length === 0) {
       toast({ variant: 'destructive', title: t('Toasts.emptyCartTitle'), description: t('Toasts.emptyCartDescription') });
@@ -522,7 +538,7 @@ export default function POSPage() {
                 <CardHeader className="p-3">
                     <CardTitle className="font-headline text-lg flex items-center gap-2"><Search /> {t('POSPage.scanOrSearchButton')}</CardTitle>
                 </CardHeader>
-                <CardContent className="p-3">
+                <CardContent className="p-3" ref={searchContainerRef}>
                     <div className="flex gap-2">
                         <Input
                             type="text"
