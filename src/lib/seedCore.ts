@@ -11,6 +11,10 @@ import {
   mockSalesTransactions,
   mockThemes,
   mockPaymentMethods,
+  mockCountries,
+  mockCurrencies,
+  mockSuppliers,
+  mockReceiptSettings
 } from './mock-data'; 
 
 // Translation messages
@@ -157,15 +161,13 @@ export async function runSeedOperations() {
       return { ...data, name: nameMap, description: descriptionMap };
   });
 
-  const paymentMethodOps = mappedPaymentMethods.map(item => ({
-      updateOne: {
-        filter: { 'name.en': item.name.get('en') },
-        update: { $setOnInsert: item },
-        upsert: true
-      }
-  }));
-  if (paymentMethodOps.length > 0) {
-    await PaymentMethod.bulkWrite(paymentMethodOps, { ordered: false });
+  for (const item of mappedPaymentMethods) {
+    const nameEn = item.name.get('en');
+    await PaymentMethod.updateOne(
+      { 'name.en': nameEn },
+      { $setOnInsert: item },
+      { upsert: true }
+    );
   }
 
   await conditionalUpsert(Country, 'codeAlpha2', mockCountries);
