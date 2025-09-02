@@ -1,4 +1,5 @@
 
+
 import type React from 'react';
 
 export type Permission =
@@ -8,6 +9,7 @@ export type Permission =
   | 'clear_cart_action'      // Specific action within POS
   | 'manage_products_page'
   | 'manage_sales_reports_page'
+  | 'manage_returns_page'
   | 'manage_clients_page'
   | 'manage_promotions_page'
   | 'manage_taxes_page'
@@ -187,6 +189,31 @@ export interface SaleTransaction {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface ReturnItem {
+  productId: string;
+  name: string;
+  price: number; // Price at the time of sale
+  quantity: number;
+  isService?: boolean;
+  barcode?: string;
+  category?: string;
+}
+
+export interface Return {
+  id: string;
+  originalSaleId: string;
+  returnDate: string;
+  items: ReturnItem[];
+  totalRefundAmount: number;
+  reason?: string;
+  notes?: string;
+  createdBy?: string;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 
 export interface PendingCart {
   id: string;
