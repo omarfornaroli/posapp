@@ -27,7 +27,29 @@ export function useDexieTaxes() {
             if (!response.ok) throw new Error('Failed to fetch initial taxes');
             const result = await response.json();
             if (result.success) {
-                await db.taxes.bulkPut(result.data);
+                const serverData: Tax[] = result.data;
+                await db.transaction('rw', db.taxes, async () => {
+                    const localData = await db.taxes.toArray();
+                    const localDataMap = new Map(localData.map(item => [item.id, item]));
+                    const dataToUpdate: Tax[] = [];
+
+                    for(const serverItem of serverData) {
+                        const localItem = localDataMap.get(serverItem.id);
+                        if (!localItem) {
+                            dataToUpdate.push(serverItem);
+                        } else {
+                            const localUpdatedAt = new Date(localItem.updatedAt || 0).getTime();
+                            const serverUpdatedAt = new Date(serverItem.updatedAt || 0).getTime();
+                            if (serverUpdatedAt > localUpdatedAt) {
+                                dataToUpdate.push(serverItem);
+                            }
+                        }
+                    }
+                    if (dataToUpdate.length > 0) {
+                        await db.taxes.bulkPut(dataToUpdate);
+                        console.log(`[useDexieTaxes] Synced ${dataToUpdate.length} taxes from server.`);
+                    }
+                });
             } else {
                 throw new Error(result.error || 'API error fetching initial taxes');
             }
@@ -48,17 +70,21 @@ export function useDexieTaxes() {
 
   const addTax = async (newTax: Omit<Tax, 'id'>) => {
     const tempId = generateId();
+    const now = new Date().toISOString();
     const taxWithId: Tax = {
       ...newTax,
       id: tempId,
+      createdAt: now,
+      updatedAt: now,
     };
     await db.taxes.add(taxWithId);
     await syncService.addToQueue({ entity: 'tax', operation: 'create', data: taxWithId });
   };
 
   const updateTax = async (updatedTax: Tax) => {
-    await db.taxes.put(updatedTax);
-    await syncService.addToQueue({ entity: 'tax', operation: 'update', data: updatedTax });
+    const taxToUpdate = { ...updatedTax, updatedAt: new Date().toISOString() };
+    await db.taxes.put(taxToUpdate);
+    await syncService.addToQueue({ entity: 'tax', operation: 'update', data: taxToUpdate });
   };
 
   const deleteTax = async (id: string) => {

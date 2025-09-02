@@ -30,7 +30,26 @@ export function useDexieRolePermissions() {
                     role: p.role,
                     permissions: p.permissions
                 }));
-                await db.rolePermissions.bulkPut(permsToSave);
+
+                 const localData = await db.rolePermissions.toArray();
+                 const localDataMap = new Map(localData.map(item => [item.id, item]));
+                 const dataToUpdate: RolePermission[] = [];
+
+                 for(const serverItem of permsToSave) {
+                     const localItem = localDataMap.get(serverItem.id);
+                     if (!localItem) {
+                         dataToUpdate.push(serverItem);
+                     }
+                     // For roles, we assume the server is always the source of truth
+                     // and don't do the updated_at check, just overwrite.
+                     else if(JSON.stringify(localItem.permissions.sort()) !== JSON.stringify(serverItem.permissions.sort())) {
+                         dataToUpdate.push(serverItem);
+                     }
+                 }
+                if (dataToUpdate.length > 0) {
+                   await db.rolePermissions.bulkPut(dataToUpdate);
+                   console.log(`[useDexieRolePermissions] Synced ${dataToUpdate.length} roles from server.`);
+                }
             } else {
                 throw new Error(result.error || 'API error fetching initial role permissions');
             }

@@ -34,13 +34,33 @@ export function useDexieUsers() {
         isPopulating = true;
         setIsLoading(true);
         try {
-            const response = await fetch('/api/users');
-            if (!response.ok) throw new Error('Failed to fetch initial users');
-            const result = await response.json();
-            if (result.success) {
-                await db.users.bulkPut(result.data); // Use bulkPut to add/update
+            const usersResponse = await fetch('/api/users');
+            if (!usersResponse.ok) throw new Error('Failed to fetch initial users');
+            const usersResult = await usersResponse.json();
+            if (usersResult.success) {
+                const serverData: User[] = usersResult.data;
+                const localData = await db.users.toArray();
+                const localDataMap = new Map(localData.map(item => [item.id, item]));
+                const dataToUpdate: User[] = [];
+
+                for (const serverItem of serverData) {
+                    const localItem = localDataMap.get(serverItem.id);
+                    if (!localItem) {
+                        dataToUpdate.push(serverItem);
+                    } else {
+                        const localUpdatedAt = new Date(localItem.updatedAt || 0).getTime();
+                        const serverUpdatedAt = new Date(serverItem.updatedAt || 0).getTime();
+                        if (serverUpdatedAt > localUpdatedAt) {
+                            dataToUpdate.push(serverItem);
+                        }
+                    }
+                }
+                if (dataToUpdate.length > 0) {
+                    await db.users.bulkPut(dataToUpdate);
+                    console.log(`[useDexieUsers] Synced ${dataToUpdate.length} users from server.`);
+                }
             } else {
-                throw new Error(result.error || 'API error fetching initial users');
+                throw new Error(usersResult.error || 'API error fetching initial users');
             }
 
             // Also fetch role permissions

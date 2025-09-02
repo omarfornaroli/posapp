@@ -5,7 +5,7 @@ import type { Product, Client, SaleTransaction, Tax, Promotion, PaymentMethod, S
 
 export interface SyncQueueItem {
   id?: number;
-  entity: 'product' | 'client' | 'supplier' | 'promotion' | 'tax' | 'paymentMethod' | 'country' | 'currency' | 'appLanguage' | 'theme' | 'user' | 'notification' | 'posSetting' | 'receiptSetting' | 'smtpSetting' | 'aiSetting' | 'sale' | 'translation' | 'rolePermission';
+  entity: 'product' | 'client' | 'supplier' | 'promotion' | 'tax' | 'paymentMethod' | 'country' | 'currency' | 'appLanguage' | 'theme' | 'user' | 'notification' | 'posSetting' | 'receiptSetting' | 'smtpSetting' | 'aiSetting' | 'sale' | 'return' | 'translation' | 'rolePermission';
   operation: 'create' | 'update' | 'delete';
   data: any;
   timestamp: number;
@@ -31,6 +31,7 @@ export class AppDexieDB extends Dexie {
   rolePermissions!: Table<RolePermission>;
   notifications!: Table<Notification>;
   sales!: Table<SaleTransaction>;
+  returns!: Table<Return>;
   reports!: Table<Report>;
   translations!: Table<TranslationDexieRecord>;
   syncQueue!: Table<SyncQueueItem>;
@@ -41,21 +42,22 @@ export class AppDexieDB extends Dexie {
 
   constructor() {
     super('posAppDB');
-    this.version(14).stores({
-        products: 'id, name, barcode, sku, category, supplier',
-        clients: 'id, name, email',
-        suppliers: 'id, name, email',
-        promotions: 'id, name, isActive',
-        taxes: 'id, name',
-        paymentMethods: 'id, name',
-        countries: 'id, name, codeAlpha2',
-        currencies: 'id, name, code, isDefault',
-        appLanguages: 'id, code',
-        themes: 'id, name, isDefault',
-        users: 'id, email, role',
-        rolePermissions: 'id, role',
+    this.version(15).stores({
+        products: 'id, name, barcode, sku, category, supplier, createdAt, updatedAt',
+        clients: 'id, name, email, createdAt, updatedAt',
+        suppliers: 'id, name, email, createdAt, updatedAt',
+        promotions: 'id, name, isActive, createdAt, updatedAt',
+        taxes: 'id, name, createdAt, updatedAt',
+        paymentMethods: 'id, name, createdAt, updatedAt',
+        countries: 'id, name, codeAlpha2, createdAt, updatedAt',
+        currencies: 'id, name, code, isDefault, createdAt, updatedAt',
+        appLanguages: 'id, code, createdAt, updatedAt',
+        themes: 'id, name, isDefault, createdAt, updatedAt',
+        users: 'id, email, role, createdAt, updatedAt',
+        rolePermissions: 'id, role', // 'id' is role name
         notifications: 'id, createdAt, isRead',
         sales: 'id, date, clientId, dispatchStatus',
+        returns: 'id, returnDate, originalSaleId',
         reports: 'id, createdAt',
         translations: 'keyPath',
         posSettings: 'key',

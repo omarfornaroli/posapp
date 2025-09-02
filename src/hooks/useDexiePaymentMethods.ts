@@ -27,15 +27,33 @@ export function useDexiePaymentMethods() {
             if (!response.ok) throw new Error('Failed to fetch initial payment methods');
             const result = await response.json();
             if (result.success) {
-                const methodsToStore = result.data.map((pm: any) => ({
+                const serverData: PaymentMethod[] = result.data.map((pm: any) => ({
                     ...pm,
                     name: pm.name instanceof Map ? Object.fromEntries(pm.name) : pm.name,
                     description: pm.description instanceof Map ? Object.fromEntries(pm.description) : pm.description,
                 }));
                 
                 await db.transaction('rw', db.paymentMethods, async () => {
-                    await db.paymentMethods.clear();
-                    await db.paymentMethods.bulkAdd(methodsToStore);
+                    const localData = await db.paymentMethods.toArray();
+                    const localDataMap = new Map(localData.map(item => [item.id, item]));
+                    const dataToUpdate: PaymentMethod[] = [];
+
+                    for(const serverItem of serverData) {
+                        const localItem = localDataMap.get(serverItem.id);
+                        if (!localItem) {
+                            dataToUpdate.push(serverItem);
+                        } else {
+                            const localUpdatedAt = new Date(localItem.updatedAt || 0).getTime();
+                            const serverUpdatedAt = new Date(serverItem.updatedAt || 0).getTime();
+                            if (serverUpdatedAt > localUpdatedAt) {
+                                dataToUpdate.push(serverItem);
+                            }
+                        }
+                    }
+                    if (dataToUpdate.length > 0) {
+                        await db.paymentMethods.bulkPut(dataToUpdate);
+                        console.log(`[useDexiePaymentMethods] Synced ${dataToUpdate.length} payment methods from server.`);
+                    }
                 });
 
             } else {

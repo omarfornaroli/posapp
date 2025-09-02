@@ -2,7 +2,7 @@
 
 import type { Product, SaleTransaction, Client, Tax, AppliedTaxEntry, User, Promotion, Theme, ThemeColors, PaymentMethod, AppliedPayment, ReceiptSetting, CartItem, ReceiptMargin, PromotionCondition, Country, Currency, Supplier } from '@/types';
 
-export const mockProducts: Omit<Product, 'id'>[] = [
+export const mockProducts: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>[] = [
   {
     name: 'Eco-Friendly Water Bottle',
     price: 15.99,
@@ -191,7 +191,7 @@ export const mockPaymentMethods: Omit<PaymentMethod, 'id' | 'createdAt' | 'updat
   },
 ];
 
-export const mockCountries: Omit<Country, 'id'>[] = [
+export const mockCountries: Omit<Country, 'id' | 'createdAt' | 'updatedAt'>[] = [
   { name: 'Afghanistan', codeAlpha2: 'AF', codeAlpha3: 'AFG', numericCode: '004', currencyCode: 'AFN', flagImageUrl: 'https://flagcdn.com/w40/af.png', isEnabled: true, isDefault: false },
   { name: 'Albania', codeAlpha2: 'AL', codeAlpha3: 'ALB', numericCode: '008', currencyCode: 'ALL', flagImageUrl: 'https://flagcdn.com/w40/al.png', isEnabled: true, isDefault: false },
   { name: 'Algeria', codeAlpha2: 'DZ', codeAlpha3: 'DZA', numericCode: '012', currencyCode: 'DZD', flagImageUrl: 'https://flagcdn.com/w40/dz.png', isEnabled: true, isDefault: false },
@@ -677,7 +677,7 @@ const blueThemeColors: ThemeColors = {
   ring: "220 75% 50%",
 };
 
-export const mockThemes: Omit<Theme, 'id'>[] = [
+export const mockThemes: Omit<Theme, 'id' | 'createdAt' | 'updatedAt'>[] = [
   { name: 'Light', isDefault: true, colors: lightThemeColors, fontBody: defaultFontBody, fontHeadline: defaultFontHeadline },
   { name: 'Dark', colors: darkThemeColors, fontBody: defaultFontBody, fontHeadline: defaultFontHeadline, isDefault: false },
   { name: 'Violette', colors: violetteThemeColors, fontBody: "'Caveat', cursive", fontHeadline: "'Pacifico', cursive", isDefault: false },
