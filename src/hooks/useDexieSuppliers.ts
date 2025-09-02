@@ -27,8 +27,39 @@ export function useDexieSuppliers() {
             if (!response.ok) throw new Error('Failed to fetch initial suppliers');
             const result = await response.json();
             if (result.success) {
-                await db.suppliers.bulkPut(result.data);
-                console.log(`[useDexieSuppliers] Synced ${result.data.length} suppliers to Dexie.`);
+                const serverSuppliers: Supplier[] = result.data;
+                const localSuppliers = await db.suppliers.toArray();
+                const localSupplierMap = new Map(localSuppliers.map(s => [s.id, s]));
+
+                const suppliersToUpdate: Supplier[] = [];
+                const conflicts: { local: Supplier, server: Supplier }[] = [];
+
+                for (const serverSupplier of serverSuppliers) {
+                    const localSupplier = localSupplierMap.get(serverSupplier.id);
+                    if (localSupplier) {
+                        const localUpdatedAt = new Date(localSupplier.updatedAt || 0).getTime();
+                        const serverUpdatedAt = new Date(serverSupplier.updatedAt || 0).getTime();
+                        const localCreatedAt = new Date(localSupplier.createdAt || 0).getTime();
+
+                        if (serverUpdatedAt > localUpdatedAt && localUpdatedAt === localCreatedAt) {
+                            suppliersToUpdate.push(serverSupplier);
+                        } else if (serverUpdatedAt > localUpdatedAt && localUpdatedAt > localCreatedAt) {
+                             conflicts.push({ local: localSupplier, server: serverSupplier });
+                             console.warn(`Conflict detected for Supplier ${serverSupplier.id}. Local changes will be kept for now.`);
+                        }
+                    } else {
+                        suppliersToUpdate.push(serverSupplier);
+                    }
+                }
+
+                if (suppliersToUpdate.length > 0) {
+                    await db.suppliers.bulkPut(suppliersToUpdate);
+                    console.log(`[useDexieSuppliers] Automatically synced ${suppliersToUpdate.length} suppliers from server.`);
+                }
+                if (conflicts.length > 0) {
+                    console.log("Unhandled supplier conflicts:", conflicts);
+                }
+
             } else {
                 throw new Error(result.error || 'API error fetching initial suppliers');
             }
@@ -47,11 +78,14 @@ export function useDexieSuppliers() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addSupplier = async (newSupplier: Omit<Supplier, 'id'>) => {
+  const addSupplier = async (newSupplier: Omit<Supplier, 'id'| 'createdAt' | 'updatedAt'>) => {
     const tempId = generateId();
+    const now = new Date().toISOString();
     const supplierWithId: Supplier = {
       ...newSupplier,
       id: tempId,
+      createdAt: now,
+      updatedAt: now,
     };
     
     try {
@@ -65,8 +99,9 @@ export function useDexieSuppliers() {
 
   const updateSupplier = async (updatedSupplier: Supplier) => {
      try {
-      await db.suppliers.put(updatedSupplier);
-      await syncService.addToQueue({ entity: 'supplier', operation: 'update', data: updatedSupplier });
+      const supplierToUpdate = { ...updatedSupplier, updatedAt: new Date().toISOString() };
+      await db.suppliers.put(supplierToUpdate);
+      await syncService.addToQueue({ entity: 'supplier', operation: 'update', data: supplierToUpdate });
     } catch (error) {
       console.error("Failed to update supplier in Dexie:", error);
       throw error;

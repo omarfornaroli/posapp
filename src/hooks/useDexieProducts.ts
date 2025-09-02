@@ -34,15 +34,33 @@ export function useDexieProducts() {
                 const localProductMap = new Map(localProducts.map(p => [p.id, p]));
                 
                 const productsToUpdate: Product[] = [];
+                const conflicts: { local: Product, server: Product }[] = [];
+
                 for (const serverProduct of serverProducts) {
                     const localProduct = localProductMap.get(serverProduct.id);
-                    if (!localProduct || new Date(serverProduct.updatedAt!) > new Date(localProduct.updatedAt!)) {
+                    if (localProduct) {
+                        const localUpdatedAt = new Date(localProduct.updatedAt || 0).getTime();
+                        const serverUpdatedAt = new Date(serverProduct.updatedAt || 0).getTime();
+                        const localCreatedAt = new Date(localProduct.createdAt || 0).getTime();
+
+                        if (serverUpdatedAt > localUpdatedAt && localUpdatedAt === localCreatedAt) {
+                            productsToUpdate.push(serverProduct);
+                        } else if (serverUpdatedAt > localUpdatedAt && localUpdatedAt > localCreatedAt) {
+                             conflicts.push({ local: localProduct, server: serverProduct });
+                             console.warn(`Conflict detected for Product ${serverProduct.id}. Local changes will be kept for now.`);
+                        }
+                    } else {
                         productsToUpdate.push(serverProduct);
                     }
                 }
+
                 if (productsToUpdate.length > 0) {
                     await db.products.bulkPut(productsToUpdate);
-                    console.log(`[useDexieProducts] Synced ${productsToUpdate.length} products from server.`);
+                    console.log(`[useDexieProducts] Automatically synced ${productsToUpdate.length} products from server.`);
+                }
+                 if (conflicts.length > 0) {
+                    // Here you would trigger the UI to show the conflict resolution dialog
+                    console.log("Unhandled product conflicts:", conflicts);
                 }
             } else {
                 throw new Error(result.error || 'API error fetching initial products');

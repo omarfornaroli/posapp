@@ -33,15 +33,39 @@ export function useDexieClients() {
             const localClientMap = new Map(localClients.map(c => [c.id, c]));
 
             const clientsToUpdate: Client[] = [];
+            const conflicts: { local: Client, server: Client }[] = [];
+
             for (const serverClient of serverClients) {
                 const localClient = localClientMap.get(serverClient.id);
-                if (!localClient || new Date(serverClient.updatedAt!) > new Date(localClient.updatedAt!)) {
+                if (localClient) {
+                    // It exists locally. Check for conflicts.
+                    const localUpdatedAt = new Date(localClient.updatedAt || 0).getTime();
+                    const serverUpdatedAt = new Date(serverClient.updatedAt || 0).getTime();
+                    const localCreatedAt = new Date(localClient.createdAt || 0).getTime();
+
+                    // If server is newer AND local has not been modified since creation, auto-update.
+                    if (serverUpdatedAt > localUpdatedAt && localUpdatedAt === localCreatedAt) {
+                        clientsToUpdate.push(serverClient);
+                    } else if (serverUpdatedAt > localUpdatedAt && localUpdatedAt > localCreatedAt) {
+                        // Conflict: both have been modified, and server is newer.
+                        // For now, we will log this. Later, we'll prompt the user.
+                        conflicts.push({ local: localClient, server: serverClient });
+                        console.warn(`Conflict detected for Client ${serverClient.id}. Local changes will be kept for now.`);
+                    }
+                } else {
+                    // Doesn't exist locally, so add it.
                     clientsToUpdate.push(serverClient);
                 }
             }
+
             if(clientsToUpdate.length > 0) {
               await db.clients.bulkPut(clientsToUpdate);
-              console.log(`[useDexieClients] Synced ${clientsToUpdate.length} clients from server.`);
+              console.log(`[useDexieClients] Automatically synced ${clientsToUpdate.length} clients from server.`);
+            }
+            if (conflicts.length > 0) {
+                 // Here you would trigger the UI to show the conflict resolution dialog
+                 // For now, we're just logging.
+                 console.log("Unhandled conflicts:", conflicts);
             }
         } else {
           throw new Error(result.error || 'API error fetching initial clients');
@@ -62,7 +86,7 @@ export function useDexieClients() {
     populateInitialData();
   }, [populateInitialData]);
 
-  const addClient = async (newClient: Omit<Client, 'id' | 'registrationDate'>) => {
+  const addClient = async (newClient: Omit<Client, 'id' | 'registrationDate' | 'createdAt' | 'updatedAt'>) => {
     const tempId = generateId();
     const now = new Date().toISOString();
     const clientWithId: Client = {
