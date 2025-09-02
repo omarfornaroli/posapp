@@ -115,26 +115,27 @@ export async function runSeedOperations() {
   // --- ESSENTIAL DATA (Non-destructive upserts) ---
   console.log('Seeding essential data...');
 
-  // User Seeding: Only insert if they don't exist. Never update existing users.
+  // User Seeding with conditional update
   const salt = await bcrypt.genSalt(10);
   const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || '1234';
   const hashedPassword = await bcrypt.hash(adminPassword, salt);
   
-  await Promise.all(
-    mockUsers.map(userData => {
-      const isAdmin = userData.email === 'admin@example.com';
-      const userPayload = {
+  for (const userData of mockUsers) {
+    const existingUser = await User.findOne({ email: userData.email }).exec();
+    const isAdmin = userData.email === 'admin@example.com';
+    const userPayload = {
         ...userData,
-        status: 'active' as const, // Admins and mock users are active by default now.
+        status: 'active' as const,
         password: isAdmin ? hashedPassword : undefined,
-      };
-      return User.updateOne(
-        { email: userData.email },
-        { $setOnInsert: userPayload },
-        { upsert: true, runValidators: true }
-      );
-    })
-  );
+    };
+    if (existingUser) {
+        if (existingUser.createdAt?.getTime() === existingUser.updatedAt?.getTime()) {
+            await User.updateOne({ _id: existingUser._id }, { $set: userPayload });
+        }
+    } else {
+        await User.create(userPayload);
+    }
+  }
   console.log('Users seeded/updated.');
   
   await Promise.all([
