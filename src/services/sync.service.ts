@@ -97,15 +97,13 @@ class SyncService {
     }
     
     console.log(`[SyncService] Found ${queueItems.length} items to sync.`);
+    const failedItems: { item: SyncQueueItem, reason: string }[] = [];
 
     for (const item of queueItems) {
         try {
-            console.log(`[SyncService] Processing item ID ${item.id}:`, item); // Log each item
             const endpointPath = entityToEndpointMap[item.entity];
             if (!endpointPath) {
-                console.warn(`[SyncService] No endpoint mapping for entity: ${item.entity}. Skipping.`);
-                await db.syncQueue.delete(item.id!);
-                continue;
+                throw new Error(`No endpoint mapping for entity: ${item.entity}.`);
             }
 
             let endpoint = `/api/${endpointPath}`;
@@ -119,13 +117,11 @@ class SyncService {
               } else if (item.entity === 'rolePermission') {
                   endpoint = `/api/role-permissions/${item.data.role}`;
               } else if (item.entity === 'translation') {
-                  // Translation uses PUT on the base endpoint with the key in the body
                   method = 'PUT';
               } else if (item.data.id) {
                 endpoint = `${endpoint}/${item.data.id}`;
               } else {
-                console.warn(`[SyncService] Update operation for ${item.entity} is missing an ID. Skipping.`);
-                continue;
+                throw new Error(`Update operation for ${item.entity} is missing an ID.`);
               }
             } else if (item.operation === 'delete') {
               method = 'DELETE';
@@ -133,11 +129,14 @@ class SyncService {
                  endpoint = `${endpoint}/${item.data.id}`;
                  body = undefined; // No body for DELETE
               } else {
-                 console.warn(`[SyncService] Delete operation for ${item.entity} is missing an ID. Skipping.`);
-                 continue;
+                 throw new Error(`Delete operation for ${item.entity} is missing an ID.`);
               }
             } else if(item.operation === 'create') {
-                method = 'POST';
+                if (item.entity === 'return') {
+                    method = 'POST'; // Returns API uses POST for creation
+                } else {
+                    method = 'POST';
+                }
             }
             
             const response = await fetch(endpoint, {
@@ -155,12 +154,26 @@ class SyncService {
                     throw new Error(`Backend error for ${item.entity}: ${result.error}`);
                 }
             } else {
-                throw new Error(`API error: ${response.status}`);
+                throw new Error(`API error: ${response.status} ${response.statusText}`);
             }
 
         } catch (error) {
-            console.error(`[SyncService] Failed to process item ID ${item.id} for entity ${item.entity}. Error:`, error);
+            const reason = error instanceof Error ? error.message : 'Unknown error';
+            failedItems.push({ item, reason });
+            console.error(`[SyncService] Failed to process item ID ${item.id} for entity ${item.entity}. Reason: ${reason}`);
         }
+    }
+
+    if (failedItems.length > 0) {
+        console.error(`[SyncService] Finished sync with ${failedItems.length} failures. Failed items:`, 
+            failedItems.map(f => ({
+                itemId: f.item.id,
+                entity: f.item.entity,
+                operation: f.item.operation,
+                dataId: f.item.data.id,
+                reason: f.reason
+            }))
+        );
     }
 
     this.isSyncing = false;
