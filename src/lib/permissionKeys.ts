@@ -1,4 +1,3 @@
-
 // src/lib/permissionKeys.ts
 import type { Permission } from '@/types';
 
@@ -9,6 +8,7 @@ export const ALL_PERMISSIONS: Permission[] = [
   'clear_cart_action',
   'manage_products_page',
   'manage_sales_reports_page',
+  'manage_returns_page',
   'manage_clients_page',
   'manage_promotions_page',
   'manage_taxes_page',
