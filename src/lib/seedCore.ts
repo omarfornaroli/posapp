@@ -123,14 +123,20 @@ export async function runSeedOperations() {
   for (const userData of mockUsers) {
     const existingUser = await User.findOne({ email: userData.email }).exec();
     const isAdmin = userData.email === 'admin@example.com';
-    const userPayload = {
+    const userPayload: any = {
         ...userData,
-        status: 'active' as const,
+        status: 'active',
+        // Only set password if it doesn't exist or for the specific admin user if we are seeding it
         password: isAdmin ? hashedPassword : undefined,
     };
+    // Ensure we don't nullify an existing password unless explicitly setting a new one
+    if(!isAdmin) delete userPayload.password;
+
     if (existingUser) {
-        if (existingUser.createdAt?.getTime() === existingUser.updatedAt?.getTime()) {
-            await User.updateOne({ _id: existingUser._id }, { $set: userPayload });
+        const hasBeenModified = existingUser.createdAt?.getTime() !== existingUser.updatedAt?.getTime();
+        // For admin user, we might want to update some fields, but be careful not to overwrite a user-set password unless intended
+        if (!hasBeenModified || isAdmin) {
+           await User.updateOne({ _id: existingUser._id }, { $set: userPayload });
         }
     } else {
         await User.create(userPayload);
@@ -149,8 +155,10 @@ export async function runSeedOperations() {
   for (const role of Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]) {
     const permissions = DEFAULT_ROLE_PERMISSIONS[role];
     const existingRole = await RolePermissionModel.findOne({ role }).exec();
+    // For Admin, always ensure they have all permissions. For other roles, respect user changes.
     if (existingRole) {
-      if (existingRole.createdAt?.getTime() === existingRole.updatedAt?.getTime()) {
+      const hasBeenModified = existingRole.createdAt?.getTime() !== existingRole.updatedAt?.getTime();
+      if (!hasBeenModified || role === 'Admin') {
         await RolePermissionModel.updateOne({ role }, { $set: { permissions } });
       }
     } else {

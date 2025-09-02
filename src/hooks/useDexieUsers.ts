@@ -68,8 +68,8 @@ export function useDexieUsers() {
             if (!permsResponse.ok) throw new Error('Failed to fetch initial role permissions');
             const permsResult = await permsResponse.json();
             if(permsResult.success) {
-                const permsToSave: RolePermission[] = permsResult.data.map((p: any) => ({
-                    id: p.id,
+                 const permsToSave: RolePermission[] = permsResult.data.map((p: any) => ({
+                    id: p.role, // Use role as the primary key for Dexie
                     role: p.role,
                     permissions: p.permissions
                 }));
