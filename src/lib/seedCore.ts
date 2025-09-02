@@ -91,6 +91,38 @@ export async function runSeedOperations() {
 
   const shouldLoadDemoData = process.env.LOAD_DEMO_DATA === 'true';
 
+  // Helper function for conditional upsert
+  async function conditionalUpsert(model: mongoose.Model<any>, uniqueKey: string, data: any[]) {
+    const bulkOps = data.map(item => ({
+      updateOne: {
+        filter: { 
+            [uniqueKey]: item[uniqueKey],
+            // Add the condition to only update if createdAt equals updatedAt
+            $expr: { $eq: [ "$createdAt", "$updatedAt" ] }
+        },
+        update: { $set: item },
+      }
+    }));
+
+    // Perform updates for existing, unmodified documents
+    if(bulkOps.length > 0) {
+       await model.bulkWrite(bulkOps, { ordered: false });
+    }
+
+    // Now, handle inserts for documents that do not exist at all
+    const insertOps = data.map(item => ({
+       updateOne: {
+         filter: { [uniqueKey]: item[uniqueKey] },
+         update: { $setOnInsert: item },
+         upsert: true
+       }
+    }));
+    if(insertOps.length > 0) {
+      await model.bulkWrite(insertOps, { ordered: false });
+    }
+  }
+
+
   // --- ESSENTIAL DATA (Non-destructive upserts) ---
   console.log('Seeding essential data...');
 
@@ -117,28 +149,6 @@ export async function runSeedOperations() {
   console.log('Users seeded/updated.');
   
   await Promise.all([
-    ...mockThemes.map(data => Theme.updateOne({ name: data.name }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
-    ...mockPaymentMethods.map(data => {
-        // Convert plain object names to Maps for Mongoose
-        const nameMap = new Map<string, string>();
-        if (typeof data.name === 'object' && data.name !== null) {
-            Object.entries(data.name).forEach(([key, value]) => nameMap.set(key, value));
-        }
-        const descriptionMap = new Map<string, string>();
-        if (typeof data.description === 'object' && data.description !== null) {
-            Object.entries(data.description).forEach(([key, value]) => descriptionMap.set(key, value));
-        }
-        
-        const englishName = nameMap.get('en') || `PaymentMethod-${Date.now()}`;
-
-        return PaymentMethod.updateOne(
-            { 'name.en': englishName }, 
-            { $setOnInsert: { ...data, name: nameMap, description: descriptionMap } }, 
-            { upsert: true, runValidators: true }
-        );
-    }),
-    ...mockCountries.map(data => Country.updateOne({ codeAlpha2: data.codeAlpha2 }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
-    ...mockCurrencies.map(data => Currency.updateOne({ code: data.code }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
     ReceiptSetting.updateOne({ key: ReceiptSettingSingletonKey }, { $setOnInsert: { key: ReceiptSettingSingletonKey, ...mockReceiptSettings } }, { upsert: true, runValidators: true }),
     POSSetting.updateOne({ key: POSSettingSingletonKey }, { $setOnInsert: { key: POSSettingSingletonKey, requireAuthForCartItemRemoval: true, dispatchAtSaleDefault: true, separateCartAndPayment: false, sessionDuration: 30 } }, { upsert: true, runValidators: true }),
     SmtpSetting.updateOne({ key: SmtpSettingSingletonKey }, { $setOnInsert: { key: SmtpSettingSingletonKey } }, { upsert: true, runValidators: true }),
@@ -147,6 +157,35 @@ export async function runSeedOperations() {
         RolePermissionModel.updateOne({ role }, { $setOnInsert: { role, permissions: DEFAULT_ROLE_PERMISSIONS[role] } }, { upsert: true, runValidators: true })
     )
   ]);
+  
+  await conditionalUpsert(Theme, 'name', mockThemes);
+  
+  const mappedPaymentMethods = mockPaymentMethods.map(data => {
+      const nameMap = new Map<string, string>();
+      if (typeof data.name === 'object' && data.name !== null) {
+          Object.entries(data.name).forEach(([key, value]) => nameMap.set(key, value));
+      }
+      const descriptionMap = new Map<string, string>();
+      if (typeof data.description === 'object' && data.description !== null) {
+          Object.entries(data.description).forEach(([key, value]) => descriptionMap.set(key, value));
+      }
+      return { ...data, name: nameMap, description: descriptionMap };
+  });
+
+  const paymentMethodOps = mappedPaymentMethods.map(item => ({
+      updateOne: {
+        filter: { 'name.en': item.name.get('en') },
+        update: { $setOnInsert: item },
+        upsert: true
+      }
+  }));
+  if (paymentMethodOps.length > 0) {
+    await PaymentMethod.bulkWrite(paymentMethodOps, { ordered: false });
+  }
+
+  await conditionalUpsert(Country, 'codeAlpha2', mockCountries);
+  await conditionalUpsert(Currency, 'code', mockCurrencies);
+  
   console.log('Core configuration data seeded/updated.');
   
   // App Languages and Translations should be managed carefully.
@@ -165,7 +204,6 @@ export async function runSeedOperations() {
     valuesMap.set('en', flatEnMessages[keyPath] || `[EN MISSING: ${keyPath}]`);
     valuesMap.set('es', flatEsMessages[keyPath] || `[ES MISSING: ${keyPath}]`);
     
-    // Use updateOne with upsert to avoid race conditions and ensure atomicity per key
     await Translation.updateOne(
         { keyPath: keyPath },
         { $setOnInsert: { keyPath: keyPath, values: valuesMap } },
@@ -176,14 +214,11 @@ export async function runSeedOperations() {
   
   // --- DEMO DATA (Conditional) ---
   if (shouldLoadDemoData) {
-    console.log('LOAD_DEMO_DATA is true. Seeding demo data (upsert mode)...');
+    console.log('LOAD_DEMO_DATA is true. Seeding demo data (conditional upsert mode)...');
     
-    await Promise.all(
-      mockSuppliers.map(data => Supplier.updateOne({ name: data.name }, { $setOnInsert: data }, { upsert: true, runValidators: true }))
-    );
+    await conditionalUpsert(Supplier, 'name', mockSuppliers);
     console.log('Demo Suppliers seeded/updated.');
     
-    // Have to fetch suppliers again to get their IDs for product mapping
     const seededSuppliers = await Supplier.find({ name: { $in: mockSuppliers.map(s => s.name) } });
     const supplierMap = new Map(seededSuppliers.map(s => [s.name, s._id]));
 
@@ -193,14 +228,13 @@ export async function runSeedOperations() {
     });
     
     await Promise.all([
-      ...productsWithSupplierIds.map((data: Partial<ProductType>) => Product.updateOne({ barcode: data.barcode }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
-      ...mockClients.map(data => Client.updateOne({ email: data.email }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
-      ...mockTaxes.map(data => Tax.updateOne({ name: data.name }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
-      ...mockPromotions.map(data => Promotion.updateOne({ name: data.name }, { $setOnInsert: data }, { upsert: true, runValidators: true })),
+      conditionalUpsert(Product, 'barcode', productsWithSupplierIds),
+      conditionalUpsert(Client, 'email', mockClients),
+      conditionalUpsert(Tax, 'name', mockTaxes),
+      conditionalUpsert(Promotion, 'name', mockPromotions),
     ]);
     console.log('Demo catalog data (Products, Clients, Taxes, Promotions) seeded/updated.');
     
-    // For sales, it's safer to just add if the collection is empty to avoid duplicates
     const salesCount = await SaleTransaction.countDocuments();
     if (salesCount === 0) {
       const salesToSeed = mockSalesTransactions.map(sale => ({ ...sale, date: new Date(sale.date) }));
