@@ -57,6 +57,7 @@ export function useDexieSuppliers() {
                     console.log(`[useDexieSuppliers] Automatically synced ${suppliersToUpdate.length} suppliers from server.`);
                 }
                 if (conflicts.length > 0) {
+                    // This is where a conflict resolution UI would be triggered
                     console.log("Unhandled supplier conflicts:", conflicts);
                 }
 
