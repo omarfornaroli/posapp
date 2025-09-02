@@ -11,10 +11,6 @@ import {
   mockSalesTransactions,
   mockThemes,
   mockPaymentMethods,
-  mockReceiptSettings,
-  mockCountries,
-  mockCurrencies,
-  mockSuppliers,
 } from './mock-data'; 
 
 // Translation messages
@@ -93,32 +89,21 @@ export async function runSeedOperations() {
 
   // Helper function for conditional upsert
   async function conditionalUpsert(model: mongoose.Model<any>, uniqueKey: string, data: any[]) {
-    const bulkOps = data.map(item => ({
-      updateOne: {
-        filter: { 
-            [uniqueKey]: item[uniqueKey],
-            // Add the condition to only update if createdAt equals updatedAt
-            $expr: { $eq: [ "$createdAt", "$updatedAt" ] }
-        },
-        update: { $set: item },
+    if (data.length === 0) return;
+
+    for (const item of data) {
+      const existingDoc = await model.findOne({ [uniqueKey]: item[uniqueKey] }).exec();
+
+      if (existingDoc) {
+        // Document exists, check if it was user-modified
+        if (existingDoc.createdAt?.getTime() === existingDoc.updatedAt?.getTime()) {
+          // Not user-modified, so we can update it.
+          await model.updateOne({ _id: existingDoc._id }, { $set: item });
+        }
+      } else {
+        // Document does not exist, insert it.
+        await model.create(item);
       }
-    }));
-
-    // Perform updates for existing, unmodified documents
-    if(bulkOps.length > 0) {
-       await model.bulkWrite(bulkOps, { ordered: false });
-    }
-
-    // Now, handle inserts for documents that do not exist at all
-    const insertOps = data.map(item => ({
-       updateOne: {
-         filter: { [uniqueKey]: item[uniqueKey] },
-         update: { $setOnInsert: item },
-         upsert: true
-       }
-    }));
-    if(insertOps.length > 0) {
-      await model.bulkWrite(insertOps, { ordered: false });
     }
   }
 
