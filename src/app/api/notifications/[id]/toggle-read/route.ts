@@ -4,9 +4,16 @@ import dbConnect from '@/lib/dbConnect';
 import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
 
-export async function POST(request: Request, { params }: any) {
+export async function POST(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
 
+  if (!id) {
+    return NextResponse.json({ success: false, error: 'Notification ID is required.' }, { status: 400 });
+  }
+  
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return NextResponse.json({ success: false, error: 'Invalid notification ID format' }, { status: 400 });
   }
