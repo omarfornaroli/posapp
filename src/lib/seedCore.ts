@@ -142,11 +142,22 @@ export async function runSeedOperations() {
     ReceiptSetting.updateOne({ key: ReceiptSettingSingletonKey }, { $setOnInsert: { key: ReceiptSettingSingletonKey, ...mockReceiptSettings } }, { upsert: true, runValidators: true }),
     POSSetting.updateOne({ key: POSSettingSingletonKey }, { $setOnInsert: { key: POSSettingSingletonKey, requireAuthForCartItemRemoval: true, dispatchAtSaleDefault: true, separateCartAndPayment: false, sessionDuration: 30 } }, { upsert: true, runValidators: true }),
     SmtpSetting.updateOne({ key: SmtpSettingSingletonKey }, { $setOnInsert: { key: SmtpSettingSingletonKey } }, { upsert: true, runValidators: true }),
-    AiSetting.updateOne({ key: AiSettingSingletonKey }, { $setOnInsert: { key: AiSettingSingletonKey } }, { upsert: true, runValidators: true }),
-    ...(Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]).map(role => 
-        RolePermissionModel.updateOne({ role }, { $setOnInsert: { role, permissions: DEFAULT_ROLE_PERMISSIONS[role] } }, { upsert: true, runValidators: true })
-    )
+    AiSetting.updateOne({ key: AiSettingSingletonKey }, { $setOnInsert: { key: AiSettingSingletonKey } }, { upsert: true, runValidators: true })
   ]);
+  
+  // Conditional upsert for Roles
+  for (const role of Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]) {
+    const permissions = DEFAULT_ROLE_PERMISSIONS[role];
+    const existingRole = await RolePermissionModel.findOne({ role }).exec();
+    if (existingRole) {
+      if (existingRole.createdAt?.getTime() === existingRole.updatedAt?.getTime()) {
+        await RolePermissionModel.updateOne({ role }, { $set: { permissions } });
+      }
+    } else {
+      await RolePermissionModel.create({ role, permissions });
+    }
+  }
+  console.log('Role Permissions seeded/updated.');
   
   await conditionalUpsert(Theme, 'name', mockThemes);
   
