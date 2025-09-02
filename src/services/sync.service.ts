@@ -25,6 +25,7 @@ const entityToEndpointMap: Record<string, string> = {
   smtpSetting: 'settings/smtp',
   aiSetting: 'settings/ai',
   sale: 'sales',
+  return: 'returns',
   rolePermission: 'role-permissions',
   translation: 'translations/item',
 };
@@ -112,29 +113,31 @@ class SyncService {
             let body: string | undefined = JSON.stringify(item.data);
             
             if (item.operation === 'update') {
+              method = 'PUT';
               if (singletonEntities.includes(item.entity)) {
-                method = 'POST'; // Singleton settings use POST for updates
-              } else {
-                method = 'PUT';
-                // For most entities, the ID is part of the URL.
-                // Special cases are handled below.
-                if (item.data.id) {
-                    endpoint = `${endpoint}/${item.data.id}`;
-                }
-              }
-              // Special endpoint structures for specific entities
-              if (item.entity === 'rolePermission') {
+                method = 'POST';
+              } else if (item.entity === 'rolePermission') {
                   endpoint = `/api/role-permissions/${item.data.role}`;
-                  method = 'PUT';
-              }
-               if (item.entity === 'translation') {
+              } else if (item.entity === 'translation') {
                   // Translation uses PUT on the base endpoint with the key in the body
                   method = 'PUT';
+              } else if (item.data.id) {
+                endpoint = `${endpoint}/${item.data.id}`;
+              } else {
+                console.warn(`[SyncService] Update operation for ${item.entity} is missing an ID. Skipping.`);
+                continue;
               }
             } else if (item.operation === 'delete') {
               method = 'DELETE';
-              endpoint = `${endpoint}/${item.data.id}`;
-              body = undefined; // No body for DELETE
+              if (item.data.id) {
+                 endpoint = `${endpoint}/${item.data.id}`;
+                 body = undefined; // No body for DELETE
+              } else {
+                 console.warn(`[SyncService] Delete operation for ${item.entity} is missing an ID. Skipping.`);
+                 continue;
+              }
+            } else if(item.operation === 'create') {
+                method = 'POST';
             }
             
             const response = await fetch(endpoint, {
