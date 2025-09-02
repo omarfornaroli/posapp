@@ -25,7 +25,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 
-const SaleCard = ({ transaction, t }: { transaction: SaleTransaction, t: Function }) => {
+const SaleCard = ({ transaction, t, currentLocale }: { transaction: SaleTransaction, t: Function, currentLocale: string }) => {
   return (
     <Card className="mb-2">
         <CardHeader className="p-4">
@@ -207,7 +207,7 @@ export default function SalesTable({
           );
         }
         const transaction = item as SaleTransaction;
-        return <SaleCard key={transaction.id} transaction={transaction} t={t} />;
+        return <SaleCard key={transaction.id} transaction={transaction} t={t} currentLocale={currentLocale}/>;
       })}
     </>
   );
@@ -221,7 +221,7 @@ export default function SalesTable({
             return (
               <React.Fragment key={`group-${item.groupKey}-${item.groupValue}-${level}`}>
                 <TableRow className="bg-muted/60 hover:bg-muted/80">
-                  <TableCell colSpan={displayColumns.length + 2} className="py-2 font-semibold text-primary" style={{ paddingLeft: `${level * 1.5 + 1}rem` }}>
+                  <TableCell colSpan={displayColumns.length + 1} className="py-2 font-semibold text-primary" style={{ paddingLeft: `${level * 1.5 + 1}rem` }}>
                     {groupDef?.label || item.groupKey}: {item.groupValue}
                   </TableCell>
                 </TableRow>
