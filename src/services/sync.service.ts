@@ -114,9 +114,8 @@ class SyncService {
               if (singletonEntities.includes(item.entity)) {
                 method = 'POST';
               } else if (item.entity === 'notification') {
-                  // Special handling for toggling read status
-                  method = 'PUT';
-                  endpoint = `/api/notifications/${item.data.id}`;
+                  method = 'POST';
+                  endpoint = `/api/notifications/${item.data.id}/mark-as-read`;
                   body = JSON.stringify({ isRead: item.data.isRead });
               } else if (item.entity === 'rolePermission') {
                   endpoint = `/api/role-permissions/${item.data.role}`;
