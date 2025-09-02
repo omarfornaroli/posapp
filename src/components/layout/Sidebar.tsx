@@ -68,8 +68,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
   const menuItemsConfig: MenuItemConfig[] = useMemo(() => {
     const baseConfig: MenuItemConfig[] = [
       { href: '/', labelKey: 'Header.dashboardLink', icon: LayoutDashboard, permission: 'access_dashboard_page', category: 'main', offlineAccess: true },
-      // POS items will be inserted here
-      { href: '/returns', labelKey: 'Header.returnsLink', icon: Undo, permission: 'manage_returns_page', category: 'main', offlineAccess: true },
+      // POS items will be inserted here, followed by Returns
       { href: '/sales-report', labelKey: 'Header.salesReportsLink', icon: FileText, permission: 'manage_sales_reports_page', category: 'sales', offlineAccess: true },
       { href: '/reports', labelKey: 'Header.reportsLink', icon: BrainCircuit, permission: 'manage_reports_page', category: 'sales', offlineAccess: false },
       { href: '/dispatches', labelKey: 'Header.dispatchesLink', icon: Truck, permission: 'manage_dispatches_page', category: 'sales', offlineAccess: true },
@@ -91,7 +90,6 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
     ];
 
     const posItems: MenuItemConfig[] = [];
-
     if (posSettings?.separateCartAndPayment) {
         posItems.push({ href: '/pos', labelKey: 'Header.cartLink', icon: ShoppingCart, permission: 'access_pos_page', category: 'main', offlineAccess: true });
         posItems.push({ href: '/pos?view=checkout', labelKey: 'Header.checkoutLink', icon: CreditCardIcon, permission: 'access_pos_page', category: 'main', offlineAccess: true });
@@ -99,7 +97,10 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
         posItems.push({ href: '/pos', labelKey: 'Header.posLink', icon: LayoutGrid, permission: 'access_pos_page', category: 'main', offlineAccess: true });
     }
 
-    baseConfig.splice(1, 0, ...posItems); // Insert after Dashboard
+    const returnsItem: MenuItemConfig = { href: '/returns', labelKey: 'Header.returnsLink', icon: Undo, permission: 'manage_returns_page', category: 'main', offlineAccess: true };
+    
+    // Insert POS item(s) and then Returns item right after Dashboard
+    baseConfig.splice(1, 0, ...posItems, returnsItem);
 
     return baseConfig;
   }, [posSettings]);
