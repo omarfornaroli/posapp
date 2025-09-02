@@ -1,4 +1,3 @@
-
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -116,6 +115,12 @@ class SyncService {
                 method = 'POST';
               } else if (item.entity === 'rolePermission') {
                   endpoint = `/api/role-permissions/${item.data.role}`;
+                  method = 'PUT';
+              } else if (item.entity === 'notification') {
+                  // Notification updates are for toggling read status
+                  method = 'POST';
+                  endpoint = `/api/notifications/${item.data.id}/toggle-read`;
+                  body = undefined; // No body needed for this specific action
               } else if (item.entity === 'translation') {
                   method = 'PUT';
               } else if (item.data.id) {
@@ -132,11 +137,7 @@ class SyncService {
                  throw new Error(`Delete operation for ${item.entity} is missing an ID.`);
               }
             } else if(item.operation === 'create') {
-                if (item.entity === 'return') {
-                    method = 'POST'; // Returns API uses POST for creation
-                } else {
-                    method = 'POST';
-                }
+                method = 'POST';
             }
             
             const response = await fetch(endpoint, {
