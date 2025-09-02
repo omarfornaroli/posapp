@@ -26,8 +26,8 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 }
 
-// POST handler to toggle the read status of a notification
-export async function POST(
+// PUT handler to toggle the read status of a notification
+export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
 ) {
@@ -40,13 +40,19 @@ export async function POST(
   await dbConnect();
 
   try {
+    const body = await request.json();
+    const { isRead } = body;
+    
+    if (typeof isRead !== 'boolean') {
+        return NextResponse.json({ success: false, error: 'isRead property must be a boolean.' }, { status: 400 });
+    }
+
     const notification = await Notification.findById(id);
     if (!notification) {
       return NextResponse.json({ success: false, error: 'Notification not found' }, { status: 404 });
     }
     
-    // This now toggles the read status
-    notification.isRead = !notification.isRead; 
+    notification.isRead = isRead;
     await notification.save();
     
     return NextResponse.json({ success: true, data: notification });

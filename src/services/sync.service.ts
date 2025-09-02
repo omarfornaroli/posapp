@@ -113,14 +113,14 @@ class SyncService {
             if (item.operation === 'update') {
               if (singletonEntities.includes(item.entity)) {
                 method = 'POST';
+              } else if (item.entity === 'notification') {
+                  // Special handling for toggling read status
+                  method = 'PUT';
+                  endpoint = `/api/notifications/${item.data.id}`;
+                  body = JSON.stringify({ isRead: item.data.isRead });
               } else if (item.entity === 'rolePermission') {
                   endpoint = `/api/role-permissions/${item.data.role}`;
                   method = 'PUT';
-              } else if (item.entity === 'notification') {
-                  // Special handling for toggling read status
-                  method = 'POST'; 
-                  endpoint = `/api/notifications/${item.data.id}`;
-                  body = undefined; // No body needed, the action is implicit in the POST
               } else if (item.entity === 'translation') {
                   method = 'PUT';
               } else if (item.data.id) {
@@ -137,7 +137,7 @@ class SyncService {
               } else {
                  throw new Error(`Delete operation for ${item.entity} is missing an ID.`);
               }
-            } else if(item.operation === 'create' && item.entity === 'return') {
+            } else if(item.operation === 'create') {
                 method = 'POST';
             }
             
