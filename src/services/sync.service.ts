@@ -1,3 +1,4 @@
+
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -110,20 +111,19 @@ class SyncService {
             let body: string | undefined = JSON.stringify(item.data);
             
             if (item.operation === 'update') {
-              method = 'PUT';
               if (singletonEntities.includes(item.entity)) {
                 method = 'POST';
               } else if (item.entity === 'rolePermission') {
                   endpoint = `/api/role-permissions/${item.data.role}`;
                   method = 'PUT';
               } else if (item.entity === 'notification') {
-                  // This is the specific fix
                   method = 'POST';
-                  endpoint = `/api/notifications/${item.data.id}/mark-as-read`;
-                  body = undefined; // No body needed for this action
+                  endpoint = `/api/notifications/${item.data.id}`;
+                  body = undefined; // Body is not needed, action is implicit.
               } else if (item.entity === 'translation') {
                   method = 'PUT';
               } else if (item.data.id) {
+                method = 'PUT';
                 endpoint = `${endpoint}/${item.data.id}`;
               } else {
                 throw new Error(`Update operation for ${item.entity} is missing an ID.`);
