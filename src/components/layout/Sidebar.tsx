@@ -4,7 +4,7 @@
 
 import { useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { LayoutGrid, Package, FileText, Users, Percent, Languages, UserCog, TicketPercent, Palette, CreditCardIcon, Cog, Loader2, X, Bell, ShieldAlert, Lock, MapIcon, Landmark, Building2, Truck, BrainCircuit, LayoutDashboard, ListCollapse, ShoppingCart } from 'lucide-react'; 
+import { LayoutGrid, Package, FileText, Users, Percent, Languages, UserCog, TicketPercent, Palette, CreditCardIcon, Cog, Loader2, X, Bell, ShieldAlert, Lock, MapIcon, Landmark, Building2, Truck, BrainCircuit, LayoutDashboard, ListCollapse, ShoppingCart, Undo } from 'lucide-react'; 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
@@ -70,6 +70,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
     const baseConfig: MenuItemConfig[] = [
       { href: '/', labelKey: 'Header.dashboardLink', icon: LayoutDashboard, permission: 'access_dashboard_page', category: 'main', offlineAccess: true },
       // POS items will be inserted here
+      { href: '/returns', labelKey: 'Header.returnsLink', icon: Undo, permission: 'manage_returns_page', category: 'main', offlineAccess: true },
       { href: '/sales-report', labelKey: 'Header.salesReportsLink', icon: FileText, permission: 'manage_sales_reports_page', category: 'sales', offlineAccess: true },
       { href: '/reports', labelKey: 'Header.reportsLink', icon: BrainCircuit, permission: 'manage_reports_page', category: 'sales', offlineAccess: false },
       { href: '/dispatches', labelKey: 'Header.dispatchesLink', icon: Truck, permission: 'manage_dispatches_page', category: 'sales', offlineAccess: true },

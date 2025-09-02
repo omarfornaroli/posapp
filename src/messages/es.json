@@ -3,7 +3,7 @@
   "Header": {
     "title": "POSAPP",
     "dashboardLink": "Dashboard",
-    "posLink": "PDV",
+    "posLink": "Punto de Venta (PDV)",
     "cartLink": "Carrito",
     "checkoutLink": "Caja",
     "productsLink": "Productos",
@@ -29,7 +29,7 @@
     "dispatchesLink": "Despachos",
     "suppliersLink": "Proveedores",
     "reportsLink": "Reportes",
-    "returnsLink": "Devoluciones"
+    "returnsLink": "Punto de Devolucion (PDD)"
   },
   "SyncStatus": {
     "idle": "Sincronizado con la nube",
@@ -219,7 +219,7 @@
     "clearDiscountButton": "Limpiar",
     "itemEffectivePriceLabel": "Precio Efectivo",
     "originalSubtotalLabel": "Subtotal (Original)",
-    "totalItemDiscountLabel": "Descuentos por Artículo",
+    "totalItemDiscountLabel": "Total Descuentos por Artículo",
     "subtotalAfterItemDiscountsLabel": "Subtotal (tras desc. por art.)",
     "overallSaleDiscountSectionTitle": "Descuento General de la Venta",
     "overallDiscountAppliedLabel": "Descuento General Aplicado",

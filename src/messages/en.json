@@ -28,7 +28,8 @@
     "selectCurrencyLabel": "Select Currency",
     "dispatchesLink": "Dispatches",
     "suppliersLink": "Suppliers",
-    "reportsLink": "Reports"
+    "reportsLink": "Reports",
+    "returnsLink": "Returns"
   },
   "SyncStatus": {
     "idle": "Synced with the cloud",
@@ -217,7 +218,7 @@
     "itemEffectivePriceLabel": "Effective Price",
     "originalSubtotalLabel": "Original Subtotal",
     "totalItemDiscountLabel": "Total Item Discounts",
-    "subtotalAfterItemDiscountsLabel": "Subtotal (after item discounts)",
+    "subtotalAfterItemDiscountsLabel": "Subtotal (After Item Disc.)",
     "overallSaleDiscountSectionTitle": "Overall Sale Discount",
     "overallDiscountAppliedLabel": "Overall Discount Applied",
     "subtotalBeforePromotionsLabel": "Subtotal (before promotions)",
@@ -878,6 +879,7 @@
     "clear_cart_action": "Clear Cart (POS Action)",
     "manage_products_page": "Manage Products Page",
     "manage_sales_reports_page": "Manage Sales Page",
+    "manage_returns_page": "Manage Returns Page",
     "manage_clients_page": "Manage Clients Page",
     "manage_promotions_page": "Manage Promotions Page",
     "manage_taxes_page": "Manage Taxes Page",
