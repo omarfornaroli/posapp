@@ -28,7 +28,8 @@
     "selectCurrencyLabel": "Seleccionar Moneda",
     "dispatchesLink": "Despachos",
     "suppliersLink": "Proveedores",
-    "reportsLink": "Reportes"
+    "reportsLink": "Reportes",
+    "returnsLink": "Devoluciones"
   },
   "SyncStatus": {
     "idle": "Sincronizado con la nube",
@@ -127,7 +128,9 @@
     "salesReportTab": "Ventas",
     "productsReportTab": "Productos",
     "suppliersReportTab": "Proveedores",
-    "promotionsReportTab": "Promociones"
+    "promotionsReportTab": "Promociones",
+    "returnsReportTab": "Devoluciones",
+    "profitMarginReportTab": "Margen de Ganancia"
   },
   "BarcodeScanner": {
     "dialogTitle": "Escanear Código de Barras",
@@ -896,7 +899,8 @@
     "manage_currencies_page": "Gestionar Página de Monedas",
     "manage_ai_reports_page": "Gestionar Página de Reportes IA",
     "manage_reports_page": "Gestionar Página de Reportes",
-    "change_global_currency": "Cambiar Moneda Global"
+    "change_global_currency": "Cambiar Moneda Global",
+    "manage_returns_page": "Gestionar Página de Devoluciones"
   },
   "CountryManagerPage": {
     "title": "Gestor de Países",
@@ -1314,5 +1318,40 @@
     "newPasswordLabel": "Nueva Contraseña",
     "confirmPasswordLabel": "Confirmar Nueva Contraseña",
     "saveButton": "Guardar Cambios"
+  },
+  "ReturnsPage": {
+    "findSaleTitle": "Encontrar Venta para Devolución",
+    "findSaleDescription": "Busca por ID de venta para iniciar una devolución.",
+    "searchPlaceholder": "Ingresar ID de venta...",
+    "returnItemsTitle": "Procesar Devolución",
+    "returnItemsDescription": "Artículos de la venta {saleId}. Selecciona las cantidades a devolver.",
+    "quantityPurchased": "Comprado",
+    "quantityToReturn": "A Devolver",
+    "reasonLabel": "Motivo de la Devolución (Opcional)",
+    "reasonPlaceholder": "Ej: Producto dañado, talla incorrecta",
+    "notesLabel": "Notas Adicionales (Opcional)",
+    "notesPlaceholder": "Ej: El cliente prefiere un cambio.",
+    "totalRefundLabel": "Reembolso Total",
+    "processReturnButton": "Procesar Devolución",
+    "errorNoItems": "Por favor, especifica una cantidad para al menos un artículo a devolver.",
+    "errorProcessing": "Error al procesar la devolución.",
+    "returnSuccessTitle": "Devolución Exitosa",
+    "returnSuccessDescription": "Se ha procesado un reembolso de {amount}.",
+    "reportDescription": "Se encontraron {count} devoluciones, con un total de {total} reembolsados.",
+    "noReturnsFound": "No se encontraron devoluciones.",
+    "tableHeaderDate": "Fecha de Devolución",
+    "tableHeaderOriginalSale": "ID Venta Original",
+    "tableHeaderItems": "Artículos Devueltos",
+    "tableHeaderRefundAmount": "Monto Reembolsado"
+  },
+  "ProfitMarginReport": {
+    "title": "Reporte de Margen de Ganancia",
+    "description": "Analiza la rentabilidad calculando el margen de ganancia basado en ingresos, costos y devoluciones.",
+    "totalRevenue": "Ingresos Totales",
+    "totalCogs": "Costo de Mercancía Vendida",
+    "totalReturns": "Devoluciones Totales",
+    "grossProfit": "Ganancia Bruta",
+    "marginTitle": "Margen de Ganancia Neta",
+    "marginDescription": "Porcentaje de los ingresos que es ganancia pura."
   }
 }

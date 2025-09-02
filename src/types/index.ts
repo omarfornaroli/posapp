@@ -43,7 +43,8 @@ export interface Product {
   isPriceChangeAllowed?: boolean; 
   isUsingDefaultQuantity?: boolean; 
   isService?: boolean; 
-  isEnabled?: boolean; 
+  isEnabled?: boolean;
+  dispatchAtSale?: boolean;
   description?: string;
   quantity: number; 
   supplier?: Supplier | string;
