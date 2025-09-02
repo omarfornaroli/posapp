@@ -1,4 +1,3 @@
-
 // src/services/sync.service.ts
 import { db } from '@/lib/dexie-db';
 import type { SyncQueueItem } from '@/lib/dexie-db';
@@ -118,10 +117,10 @@ class SyncService {
                   endpoint = `/api/role-permissions/${item.data.role}`;
                   method = 'PUT';
               } else if (item.entity === 'notification') {
-                  // The toggle read status action is a POST to the item's endpoint
+                  // This is the specific fix
                   method = 'POST';
-                  endpoint = `/api/notifications/${item.data.id}`;
-                  body = undefined; // No body needed for this specific action
+                  endpoint = `/api/notifications/${item.data.id}/mark-as-read`;
+                  body = undefined; // No body needed for this action
               } else if (item.entity === 'translation') {
                   method = 'PUT';
               } else if (item.data.id) {
