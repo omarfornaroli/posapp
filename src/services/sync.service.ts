@@ -117,9 +117,10 @@ class SyncService {
                   endpoint = `/api/role-permissions/${item.data.role}`;
                   method = 'PUT';
               } else if (item.entity === 'notification') {
-                  method = 'POST';
+                  // Special handling for toggling read status
+                  method = 'POST'; 
                   endpoint = `/api/notifications/${item.data.id}`;
-                  body = undefined; // Body is not needed, action is implicit.
+                  body = undefined; // No body needed, the action is implicit in the POST
               } else if (item.entity === 'translation') {
                   method = 'PUT';
               } else if (item.data.id) {
@@ -155,7 +156,7 @@ class SyncService {
                     throw new Error(`Backend error for ${item.entity}: ${result.error}`);
                 }
             } else {
-                throw new Error(`API error: ${response.status} ${response.statusText}`);
+                throw new Error(`API error: ${response.status}`);
             }
 
         } catch (error) {

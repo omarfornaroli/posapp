@@ -5,7 +5,7 @@ import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
 
 // This GET handler can be used if you need to fetch a single notification by ID directly.
-export async function GET(request: Request, { params }: any) {
+export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -57,7 +57,7 @@ export async function POST(
 }
 
 
-export async function DELETE(request: Request, { params }: any) {
+export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
