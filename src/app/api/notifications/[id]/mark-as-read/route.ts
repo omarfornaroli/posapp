@@ -4,7 +4,10 @@ import dbConnect from '@/lib/dbConnect';
 import Notification from '@/models/Notification';
 import mongoose from 'mongoose';
 
-export async function POST(request: Request, { params }: any) {
+export async function POST(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -14,13 +17,18 @@ export async function POST(request: Request, { params }: any) {
   await dbConnect();
 
   try {
-    const notification = await Notification.findByIdAndUpdate(id, { isRead: true }, { new: true });
+    const notification = await Notification.findById(id);
     if (!notification) {
       return NextResponse.json({ success: false, error: 'Notification not found' }, { status: 404 });
     }
+    
+    // This now toggles the read status
+    notification.isRead = !notification.isRead; 
+    await notification.save();
+    
     return NextResponse.json({ success: true, data: notification });
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error marking notification as read';
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error toggling notification read status';
     return NextResponse.json({ success: false, error: errorMessage }, { status: 500 });
   }
 }
