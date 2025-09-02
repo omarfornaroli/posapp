@@ -41,13 +41,11 @@ async function dbConnect() {
       return null;
     }
     
-    // Check if seeding is needed by checking a key collection (e.g., users)
-    const userCount = await mongoose.models.User.countDocuments();
-    if (userCount === 0) {
-      console.log('No users found. Running initial database seed...');
-      await runSeedOperations();
-      console.log('Database seeding completed.');
-    }
+    // Always run the seed operations on connection. 
+    // The seedCore function now handles the logic to prevent overwriting user data.
+    console.log('Database connected. Running seed operations...');
+    await runSeedOperations();
+    console.log('Seed operations completed.');
     
   } catch (e) {
     cached.promise = null;
