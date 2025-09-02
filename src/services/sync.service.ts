@@ -118,8 +118,9 @@ class SyncService {
                   endpoint = `/api/role-permissions/${item.data.role}`;
                   method = 'PUT';
               } else if (item.entity === 'notification') {
+                  // The toggle read status action is a POST to the item's endpoint
                   method = 'POST';
-                  endpoint = `/api/notifications/${item.data.id}/mark-as-read`;
+                  endpoint = `/api/notifications/${item.data.id}`;
                   body = undefined; // No body needed for this specific action
               } else if (item.entity === 'translation') {
                   method = 'PUT';
