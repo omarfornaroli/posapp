@@ -1,4 +1,5 @@
 
+
 import { NextResponse, type NextRequest } from 'next/server';
 import dbConnect from '@/lib/dbConnect';
 import UserModel from '@/models/User';
@@ -7,16 +8,12 @@ import type { User as UserType, Permission } from '@/types';
 
 export async function GET(request: NextRequest) {
   // In a real app, user identification would come from a session cookie or auth token.
-  // For this mock setup, we'll rely on an email passed in a header or query param.
+  // For this mock setup, we'll rely on an email passed in a header.
   // THIS IS NOT SECURE FOR PRODUCTION.
-  const userEmailFromHeader = request.headers.get('X-User-Email');
-  const { searchParams } = request.nextUrl;
-  const userEmailFromQuery = searchParams.get('email');
-
-  const userEmail = userEmailFromHeader || userEmailFromQuery;
+  const userEmail = request.headers.get('X-User-Email');
 
   if (!userEmail) {
-    return NextResponse.json({ success: false, error: 'User email not provided' }, { status: 401 });
+    return NextResponse.json({ success: false, error: 'User email not provided in X-User-Email header' }, { status: 401 });
   }
 
   try {
