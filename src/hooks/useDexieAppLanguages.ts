@@ -53,28 +53,50 @@ export function useDexieAppLanguages() {
   const populateInitialData = useCallback(async () => {
     if (isPopulating) return;
 
-    const count = await db.appLanguages.count();
-    if (count > 0) {
-      setIsLoading(false);
-      return;
-    }
+    const shouldFetch = navigator.onLine;
 
-    isPopulating = true;
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/languages');
-      if (!response.ok) throw new Error('Failed to fetch initial app languages');
-      const result = await response.json();
-      if (result.success) {
-        await db.appLanguages.bulkAdd(result.data);
-      } else {
-        throw new Error(result.error || 'API error fetching initial app languages');
-      }
-    } catch (error) {
-      console.warn("[useDexieAppLanguages] Failed to populate initial data (likely offline):", error);
-    } finally {
-      setIsLoading(false);
-      isPopulating = false;
+    if (shouldFetch) {
+        isPopulating = true;
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/languages');
+            if (!response.ok) throw new Error('Failed to fetch initial app languages');
+            const result = await response.json();
+            if (result.success) {
+                const serverData: AppLanguage[] = result.data;
+                await db.transaction('rw', db.appLanguages, async () => {
+                    const localData = await db.appLanguages.toArray();
+                    const localDataMap = new Map(localData.map(item => [item.id, item]));
+                    const dataToUpdate: AppLanguage[] = [];
+
+                    for(const serverItem of serverData) {
+                        const localItem = localDataMap.get(serverItem.id);
+                        if (!localItem) {
+                            dataToUpdate.push(serverItem);
+                        } else {
+                            const localUpdatedAt = new Date(localItem.updatedAt || 0).getTime();
+                            const serverUpdatedAt = new Date(serverItem.updatedAt || 0).getTime();
+                            if (serverUpdatedAt > localUpdatedAt) {
+                                dataToUpdate.push(serverItem);
+                            }
+                        }
+                    }
+                    if (dataToUpdate.length > 0) {
+                        await db.appLanguages.bulkPut(dataToUpdate);
+                        console.log(`[useDexieAppLanguages] Synced ${dataToUpdate.length} app languages from server.`);
+                    }
+                });
+            } else {
+                throw new Error(result.error || 'API error fetching initial app languages');
+            }
+        } catch (error) {
+            console.warn("[useDexieAppLanguages] Failed to populate initial data (likely offline):", error);
+        } finally {
+            setIsLoading(false);
+            isPopulating = false;
+        }
+    } else {
+        setIsLoading(false);
     }
   }, []);
 
@@ -84,9 +106,12 @@ export function useDexieAppLanguages() {
 
   const addLanguage = async (newLang: Omit<AppLanguage, 'id'>) => {
     const tempId = generateId();
+    const now = new Date().toISOString();
     const langWithId: AppLanguage = {
       ...newLang,
       id: tempId,
+      createdAt: now,
+      updatedAt: now,
     };
     await db.appLanguages.add(langWithId);
     await syncService.addToQueue({ entity: 'appLanguage', operation: 'create', data: langWithId });
@@ -103,15 +128,16 @@ export function useDexieAppLanguages() {
   };
 
   const updateLanguage = async (updatedLang: AppLanguage) => {
-    // If setting a new default, unset the old one locally first.
+    const langToUpdate = { ...updatedLang, updatedAt: new Date().toISOString() };
     if (updatedLang.isDefault) {
         const oldDefault = await db.appLanguages.filter(lang => !!lang.isDefault).first();
         if (oldDefault && oldDefault.id !== updatedLang.id) {
             await db.appLanguages.update(oldDefault.id, { isDefault: false });
+            await syncService.addToQueue({ entity: 'appLanguage', operation: 'update', data: { ...oldDefault, isDefault: false, updatedAt: new Date().toISOString() } });
         }
     }
-    await db.appLanguages.put(updatedLang);
-    await syncService.addToQueue({ entity: 'appLanguage', operation: 'update', data: updatedLang });
+    await db.appLanguages.put(langToUpdate);
+    await syncService.addToQueue({ entity: 'appLanguage', operation: 'update', data: langToUpdate });
   };
 
   const deleteLanguage = async (id: string) => {
