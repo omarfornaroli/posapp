@@ -25,23 +25,23 @@ export function useDexieRolePermissions() {
             if (!response.ok) throw new Error('Failed to fetch initial role permissions');
             const result = await response.json();
             if (result.success) {
-                const permsToSave: RolePermission[] = result.data.map((p: any) => ({
-                    id: p.id, // Use the MongoDB _id as the primary key
+                const serverData: RolePermission[] = result.data.map((p: any) => ({
+                    id: p.role, // Use the role name as the primary key
                     role: p.role,
                     permissions: p.permissions
                 }));
 
                  const localData = await db.rolePermissions.toArray();
-                 const localDataMap = new Map(localData.map(item => [item.id, item]));
+                 const localDataMap = new Map(localData.map(item => [item.role, item])); // Use role name as the key
                  const dataToUpdate: RolePermission[] = [];
 
-                 for(const serverItem of permsToSave) {
-                     const localItem = localDataMap.get(serverItem.id);
+                 for(const serverItem of serverData) {
+                     const localItem = localDataMap.get(serverItem.role);
                      if (!localItem) {
                          dataToUpdate.push(serverItem);
                      }
                      // For roles, we assume the server is always the source of truth
-                     // and don't do the updated_at check, just overwrite.
+                     // and don't do an updated_at check, just overwrite if permissions differ.
                      else if(JSON.stringify(localItem.permissions.sort()) !== JSON.stringify(serverItem.permissions.sort())) {
                          dataToUpdate.push(serverItem);
                      }
