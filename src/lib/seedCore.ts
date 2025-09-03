@@ -152,17 +152,16 @@ export async function runSeedOperations() {
   
   // Conditional upsert for Roles
   for (const role of Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]) {
-    const permissions = DEFAULT_ROLE_PERMISSIONS[role];
-    const existingRole = await RolePermissionModel.findOne({ role }).exec();
+    const dbPermissions = await RolePermissionModel.findOne({ role }).lean();
     
-    // For Admin, always ensure they have all permissions. For other roles, respect user changes.
-    if (existingRole) {
-      const hasBeenModified = existingRole.createdAt?.getTime() !== existingRole.updatedAt?.getTime();
-      if (!hasBeenModified || role === 'Admin') {
-        await RolePermissionModel.updateOne({ role }, { $set: { permissions: ALL_PERMISSIONS } });
-      }
+    if (dbPermissions) {
+        // For Admin, always ensure they have all permissions.
+        if (role === 'Admin') {
+            await RolePermissionModel.updateOne({ role }, { $set: { permissions: ALL_PERMISSIONS } });
+        }
     } else {
-      await RolePermissionModel.create({ role, permissions });
+        // If the role doesn't exist, create it with default permissions.
+        await RolePermissionModel.create({ role, permissions: DEFAULT_ROLE_PERMISSIONS[role] });
     }
   }
   console.log('Role Permissions seeded/updated.');
