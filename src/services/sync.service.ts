@@ -147,15 +147,16 @@ class SyncService {
             });
 
             if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    await db.syncQueue.delete(item.id!);
-                    console.log(`[SyncService] Synced ${item.operation} for ${item.entity} ID ${item.data.id || '(new)'}`);
-                } else {
-                    throw new Error(`Backend error for ${item.entity}: ${result.error}`);
-                }
+                await db.syncQueue.delete(item.id!);
+                console.log(`[SyncService] Synced ${item.operation} for ${item.entity} ID ${item.data.id || '(new)'}`);
+            } else if (response.status === 404 && (item.operation === 'update' || item.operation === 'delete')) {
+                // If the item wasn't found on an update/delete, it's already gone.
+                // We can consider this a "success" from the queue's perspective and remove it.
+                console.log(`[SyncService] Item ${item.entity} ID ${item.data.id} not found on server (404). Assuming it was already deleted. Removing from queue.`);
+                await db.syncQueue.delete(item.id!);
             } else {
-                throw new Error(`API error: ${response.status}`);
+                 const result = await response.json().catch(() => ({ error: 'Could not parse error response.' }));
+                 throw new Error(`API error: ${response.status} - ${result.error || response.statusText}`);
             }
 
         } catch (error) {
