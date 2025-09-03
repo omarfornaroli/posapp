@@ -29,6 +29,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     'change_global_currency',
   ],
   Viewer: [
+    'access_dashboard_page',
     'access_pos_page',
     'manage_notifications_page',
   ],

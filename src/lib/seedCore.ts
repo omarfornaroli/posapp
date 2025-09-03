@@ -27,6 +27,7 @@ import { SINGLETON_KEY as POSSettingSingletonKey } from '../models/POSSetting';
 import { SINGLETON_KEY as SmtpSettingSingletonKey } from '../models/SmtpSetting';
 import { SINGLETON_KEY as AiSettingSingletonKey } from '../models/AiSetting';
 import { DEFAULT_ROLE_PERMISSIONS } from './permissions'; 
+import { ALL_PERMISSIONS } from './permissionKeys';
 import type { UserRole, Product as ProductType, Supplier } from '../types';
 
 // Ensure all models are imported so they are registered with Mongoose.
@@ -126,12 +127,8 @@ export async function runSeedOperations() {
     const userPayload: any = {
         ...userData,
         status: 'active',
-        // Only set password if it doesn't exist or for the specific admin user if we are seeding it
-        password: isAdmin ? hashedPassword : undefined,
     };
-    // Ensure we don't nullify an existing password unless explicitly setting a new one
-    if(!isAdmin) delete userPayload.password;
-
+    
     if (existingUser) {
         const hasBeenModified = existingUser.createdAt?.getTime() !== existingUser.updatedAt?.getTime();
         // For admin user, we might want to update some fields, but be careful not to overwrite a user-set password unless intended
@@ -139,6 +136,8 @@ export async function runSeedOperations() {
            await User.updateOne({ _id: existingUser._id }, { $set: userPayload });
         }
     } else {
+        // Only set password on initial creation
+        userPayload.password = hashedPassword;
         await User.create(userPayload);
     }
   }
@@ -155,11 +154,12 @@ export async function runSeedOperations() {
   for (const role of Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]) {
     const permissions = DEFAULT_ROLE_PERMISSIONS[role];
     const existingRole = await RolePermissionModel.findOne({ role }).exec();
+    
     // For Admin, always ensure they have all permissions. For other roles, respect user changes.
     if (existingRole) {
       const hasBeenModified = existingRole.createdAt?.getTime() !== existingRole.updatedAt?.getTime();
       if (!hasBeenModified || role === 'Admin') {
-        await RolePermissionModel.updateOne({ role }, { $set: { permissions } });
+        await RolePermissionModel.updateOne({ role }, { $set: { permissions: ALL_PERMISSIONS } });
       }
     } else {
       await RolePermissionModel.create({ role, permissions });
