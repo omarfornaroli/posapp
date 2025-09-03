@@ -13,8 +13,8 @@ interface UseRxTranslateReturn {
 
 export function useRxTranslate(): UseRxTranslateReturn {
   const [translations, setTranslations] = useState<Record<string, any> | null>(translationRxService.getTranslationsValue());
-  const [isLoading, setIsLoading] = useState(translationRxService.getIsLoadingValue()); // Reflects service loading state
-  const [currentLocale, setCurrentLocale] = useState(translationRxService.getCurrentLocaleValue()); // Use getter for initial value
+  const [isLoading, setIsLoading] = useState(translationRxService.getIsLoadingValue());
+  const [currentLocale, setCurrentLocale] = useState(translationRxService.getCurrentLocaleValue());
 
   useEffect(() => {
     const subscriptions: Subscription[] = [];
@@ -36,7 +36,6 @@ export function useRxTranslate(): UseRxTranslateReturn {
     );
 
     // Initial check if service is already initialized and has a locale
-    // This helps if the hook mounts after the service has already been initialized by AppLayout
     const serviceInitialLocale = translationRxService.getCurrentLocaleValue();
     if (serviceInitialLocale !== currentLocale) {
         setCurrentLocale(serviceInitialLocale);
@@ -54,15 +53,11 @@ export function useRxTranslate(): UseRxTranslateReturn {
     return () => {
       subscriptions.forEach(sub => sub.unsubscribe());
     };
-  }, []); // Empty dependency array: setup subscriptions once
-
-  // This function is called by components, typically with the server-rendered locale.
-  // The service itself will decide if it needs to re-fetch or use this as a hint.
-  const initializeTranslations = useCallback((locale: string) => {
-    // The service's initialize method (called from AppLayout) is now the primary initializer.
-    // This can be a no-op or a way to ensure the service is aware of the page's context if needed in future.
-    // For now, AppLayout's initialization of the service should cover it.
   }, []);
+
+  // This function is now a no-op as initialization is handled globally in AppLayout.
+  // It's kept for API compatibility in case any components still call it.
+  const initializeTranslations = useCallback((locale: string) => {}, []);
 
   const t = useCallback((key: string, params?: Record<string, string | number>, options?: { fallback?: string }): string => {
     if (isLoading) {
