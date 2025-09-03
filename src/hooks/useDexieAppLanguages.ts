@@ -50,8 +50,8 @@ export function useDexieAppLanguages() {
 
   const appLanguages = useLiveQuery(() => db.appLanguages.toArray(), []);
 
-  const populateInitialData = useCallback(async () => {
-    if (isPopulating) return;
+  const populateInitialData = useCallback(async (force = false) => {
+    if (isPopulating && !force) return;
 
     const shouldFetch = navigator.onLine;
 
@@ -145,5 +145,5 @@ export function useDexieAppLanguages() {
     await syncService.addToQueue({ entity: 'appLanguage', operation: 'delete', data: { id } });
   };
 
-  return { appLanguages: appLanguages || [], isLoading: isLoading || appLanguages === undefined, refetch: populateInitialData, addLanguage, updateLanguage, deleteLanguage };
+  return { appLanguages: appLanguages || [], isLoading: isLoading || appLanguages === undefined, refetch: () => populateInitialData(true), addLanguage, updateLanguage, deleteLanguage };
 }
