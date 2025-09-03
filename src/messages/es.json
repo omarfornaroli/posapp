@@ -881,6 +881,7 @@
     "clear_cart_action": "Vaciar Carrito (Acción de PDV)",
     "manage_products_page": "Gestionar Página de Productos",
     "manage_sales_reports_page": "Gestionar Página de Ventas",
+    "manage_returns_page": "Gestionar Página de Devoluciones",
     "manage_clients_page": "Gestionar Página de Clientes",
     "manage_promotions_page": "Gestionar Página de Promociones",
     "manage_taxes_page": "Gestionar Página de Impuestos",
@@ -899,8 +900,7 @@
     "manage_currencies_page": "Gestionar Página de Monedas",
     "manage_ai_reports_page": "Gestionar Página de Reportes IA",
     "manage_reports_page": "Gestionar Página de Reportes",
-    "change_global_currency": "Cambiar Moneda Global",
-    "manage_returns_page": "Gestionar Página de Devoluciones"
+    "change_global_currency": "Cambiar Moneda Global"
   },
   "CountryManagerPage": {
     "title": "Gestor de Países",
@@ -1355,3 +1355,5 @@
     "marginDescription": "Porcentaje de los ingresos que es ganancia pura."
   }
 }
+
+    
