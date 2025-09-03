@@ -10,6 +10,7 @@ import AccessDeniedMessage from '@/components/AccessDeniedMessage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Undo, Search, Loader2, MinusCircle, PlusCircle, AlertTriangle } from 'lucide-react';
