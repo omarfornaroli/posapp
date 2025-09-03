@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import type React from 'react';
-import { createContext, useContext, useMemo, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import type { User, Permission } from '@/types';
 
 interface UserWithPermissions extends User {
@@ -13,6 +14,7 @@ interface AuthContextType {
   user: UserWithPermissions | null;
   isAuthenticated: boolean;
   hasPermission: (permission: Permission) => boolean;
+  fetchUserSession: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,9 +24,9 @@ export function AuthProvider({
   value,
 }: {
   children: React.ReactNode;
-  value: { user: UserWithPermissions | null }; // User object now expected to have permissions
+  value: { user: UserWithPermissions | null, fetchUserSession: (email: string) => Promise<void> };
 }) {
-  const { user } = value;
+  const { user, fetchUserSession } = value;
   const isAuthenticated = !!user;
 
   const hasPermission = useMemo(() => (permissionToCheck: Permission): boolean => {
@@ -34,8 +36,10 @@ export function AuthProvider({
     return user.permissions.includes(permissionToCheck);
   }, [user]);
   
+  const contextValue = useMemo(() => ({ user, isAuthenticated, hasPermission, fetchUserSession }), [user, isAuthenticated, hasPermission, fetchUserSession]);
+  
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, hasPermission }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

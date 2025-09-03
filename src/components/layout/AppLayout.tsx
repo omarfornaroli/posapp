@@ -31,10 +31,9 @@ const SESSION_WARNING_MS = 60 * 1000; // 60 seconds before expiration
 
 function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode, userSessionKey: string }) {
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, fetchUserSession } = useAuth(); // Assume fetchUserSession is provided by context
 
   const [authStatusDetermined, setAuthStatusDetermined] = useState(false);
-  const [userIsLoggedIn, setUserIsLoggedIn] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const [isSessionWarningVisible, setIsSessionWarningVisible] = useState(false);
@@ -75,7 +74,6 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loggedInUserEmail');
     localStorage.removeItem('sessionExpiresAt');
-    setUserIsLoggedIn(false);
     // Full page reload to login, clearing all state
     window.location.assign(`/login`);
   }, []);
@@ -92,40 +90,43 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';
-      setUserIsLoggedIn(loggedInStatus);
       const storedExpiresAt = localStorage.getItem('sessionExpiresAt');
       setSessionExpiresAt(storedExpiresAt ? parseInt(storedExpiresAt, 10) : null);
 
       if (!loggedInStatus && !isPublicPage) {
         window.location.assign(`/login`);
+      } else if (loggedInStatus) {
+        syncService.start();
       }
       setAuthStatusDetermined(true);
 
       const storedSidebarState = localStorage.getItem(SIDEBAR_STORAGE_KEY);
       if (storedSidebarState !== null) setIsSidebarOpen(JSON.parse(storedSidebarState));
     }
+    return () => syncService.stop();
   }, [pathname, isPublicPage]);
 
   useEffect(() => {
-    if (userIsLoggedIn) {
-      syncService.start();
-      return () => syncService.stop();
-    }
-  }, [userIsLoggedIn]);
-
-  useEffect(() => {
-    if (!userIsLoggedIn || !sessionExpiresAt) {
-      setIsSessionWarningVisible(false);
-      return;
+    if (user && !isPublicPage && !isSessionWarningVisible) {
+      const timeLeft = sessionExpiresAt ? sessionExpiresAt - Date.now() : -1;
+      if (timeLeft <= 0) {
+        handleLogout();
+      } else if (timeLeft <= SESSION_WARNING_MS) {
+        setIsSessionWarningVisible(true);
+      }
     }
     const interval = setInterval(() => {
-      const timeLeft = sessionExpiresAt - Date.now();
-      if (timeLeft <= 0) handleLogout();
-      else if (timeLeft <= SESSION_WARNING_MS) setIsSessionWarningVisible(true);
-      else setIsSessionWarningVisible(false);
+      if (user && !isPublicPage && !isSessionWarningVisible) {
+        const timeLeft = sessionExpiresAt ? sessionExpiresAt - Date.now() : -1;
+        if (timeLeft <= 0) {
+           handleLogout();
+        } else if (timeLeft <= SESSION_WARNING_MS) {
+           setIsSessionWarningVisible(true);
+        }
+      }
     }, 5000);
     return () => clearInterval(interval);
-  }, [userIsLoggedIn, sessionExpiresAt, handleLogout]);
+  }, [user, isPublicPage, sessionExpiresAt, isSessionWarningVisible, handleLogout]);
 
   const toggleSidebar = useCallback(() => {
     setIsSidebarOpen(prev => {
@@ -135,9 +136,9 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
     });
   }, []);
   
-  const showHeaderAndSidebarLogic = userIsLoggedIn && !isPublicPage;
+  const showHeaderAndSidebarLogic = !!user && !isPublicPage;
 
-  if (!authStatusDetermined || (userIsLoggedIn && !user?.permissions)) {
+  if (!authStatusDetermined || (!!localStorage.getItem('isLoggedIn') && !user?.permissions)) {
     return (
       <div className="flex min-h-screen bg-background">
         <aside className="w-72 bg-card p-4 flex flex-col space-y-4 border-r h-screen sticky top-0">
@@ -184,76 +185,54 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserWithPermissions | null>(null);
-    const [userSessionKey, setUserSessionKey] = useState('initial'); // Added for re-mounting
+    const [userSessionKey, setUserSessionKey] = useState('initial');
 
     const fetchUserSession = useCallback(async (email: string) => {
-        
-        const loadFromDexie = async () => {
+        try {
             const userFromDb = await db.users.where('email').equalsIgnoreCase(email).first();
-            if (userFromDb) {
-                const permissions = await db.rolePermissions.get(userFromDb.role);
-                setUser({ ...userFromDb, permissions: permissions?.permissions || [] });
-                setUserSessionKey(email);
-                return true;
+            const rolePermissions = userFromDb ? await db.rolePermissions.get(userFromDb.role) : null;
+            if (userFromDb && rolePermissions) {
+                 setUser({ ...userFromDb, permissions: rolePermissions.permissions });
+                 setUserSessionKey(email);
             }
-            return false;
-        };
-        
-        const localUserExists = await loadFromDexie();
+        } catch(e) {
+            console.error("Error loading user from Dexie", e);
+        }
 
         if (navigator.onLine) {
             try {
-                const response = await fetch(`/api/auth/session`, {
-                    headers: { 'X-User-Email': email }
-                });
-                if (!response.ok) throw new Error('Failed to fetch user session');
-                
+                const response = await fetch(`/api/auth/session`, { headers: { 'X-User-Email': email } });
+                if (!response.ok) throw new Error('Failed to fetch user session from API');
                 const result = await response.json();
                 if (result.success && result.data) {
-                    setUser(result.data as UserWithPermissions);
-                    const { permissions, ...userToSave } = result.data;
-                    await db.users.put(userToSave); // Update local user data
-                    const rolePermsResponse = await fetch(`/api/role-permissions`);
-                    const rolePermsResult = await rolePermsResponse.json();
-                    if(rolePermsResult.success) {
-                         const permsWithId: RolePermission[] = rolePermsResult.data.map((p: any) => ({ ...p, id: p.role }));
-                         await db.rolePermissions.bulkPut(permsWithId);
-                    }
-                    if (userSessionKey !== email) setUserSessionKey(email); 
+                    const userWithPermissions = result.data as UserWithPermissions;
+                    setUser(userWithPermissions);
+                    const { permissions, ...userToSave } = userWithPermissions;
+                    await db.users.put(userToSave); 
+                    if (userSessionKey !== email) setUserSessionKey(email);
                 } else {
                     throw new Error(result.error || 'User session data not found');
                 }
             } catch (error) {
-                console.error('Error fetching user session (online):', error);
-                if (!localUserExists) {
-                    // Only log out if there's no local data to fall back on
+                console.error('Error refreshing user session (online):', error);
+                const localUser = await db.users.where('email').equalsIgnoreCase(email).first();
+                if (!localUser) {
                     localStorage.removeItem('isLoggedIn');
                     localStorage.removeItem('loggedInUserEmail');
                     setUser(null);
                     setUserSessionKey('logged-out'); 
-                    if (!window.location.pathname.startsWith('/login')) {
-                        window.location.assign(`/login`);
-                    }
+                    if (!window.location.pathname.startsWith('/login')) window.location.assign(`/login`);
                 }
             }
-        } else if (!localUserExists) {
-            // Offline and no local data = can't log in
-            console.error("Offline and no local user data found. Redirecting to login.");
-            if (!window.location.pathname.startsWith('/login')) {
-                window.location.assign(`/login`);
-            }
         }
-
     }, [userSessionKey]);
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const userEmail = localStorage.getItem('loggedInUserEmail');
-            if (userEmail) {
-                fetchUserSession(userEmail);
-            } else {
-                 setUserSessionKey('no-user'); 
-            }
+        const userEmail = typeof window !== 'undefined' ? localStorage.getItem('loggedInUserEmail') : null;
+        if (userEmail) {
+            fetchUserSession(userEmail);
+        } else {
+             setUserSessionKey('no-user'); 
         }
         
         const handleProfileUpdate = (event: Event) => {
@@ -262,16 +241,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         };
         window.addEventListener('userProfileUpdated', handleProfileUpdate);
         return () => window.removeEventListener('userProfileUpdated', handleProfileUpdate);
-
     }, [fetchUserSession]);
 
     return (
-        <AuthProvider value={{ user }}>
+        <AuthProvider value={{ user, fetchUserSession }}>
             <MainAppLayout userSessionKey={userSessionKey}>
                 {children}
             </MainAppLayout>
         </AuthProvider>
     );
 }
-
-    

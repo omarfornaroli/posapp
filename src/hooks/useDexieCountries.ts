@@ -1,72 +1,16 @@
 
+
 // src/hooks/useDexieCountries.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import { syncService } from '@/services/sync.service';
 import type { Country } from '@/types';
-import { useState, useEffect, useCallback } from 'react';
 
 const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-let isPopulating = false;
 
 export function useDexieCountries() {
-  const [isLoading, setIsLoading] = useState(true);
-
   const countries = useLiveQuery(() => db.countries.toArray(), []);
-
-  const populateInitialData = useCallback(async () => {
-    if (isPopulating) return;
-    
-    const shouldFetch = navigator.onLine;
-
-    if (shouldFetch) {
-        isPopulating = true;
-        setIsLoading(true);
-        try {
-            const response = await fetch('/api/countries');
-            if (!response.ok) throw new Error('Failed to fetch initial countries');
-            const result = await response.json();
-            if (result.success) {
-                const serverData: Country[] = result.data;
-                 await db.transaction('rw', db.countries, async () => {
-                    const localData = await db.countries.toArray();
-                    const localDataMap = new Map(localData.map(item => [item.id, item]));
-                    const dataToUpdate: Country[] = [];
-
-                    for(const serverItem of serverData) {
-                        const localItem = localDataMap.get(serverItem.id);
-                        if (!localItem) {
-                            dataToUpdate.push(serverItem);
-                        } else {
-                            const localUpdatedAt = new Date(localItem.updatedAt || 0).getTime();
-                            const serverUpdatedAt = new Date(serverItem.updatedAt || 0).getTime();
-                            if (serverUpdatedAt > localUpdatedAt) {
-                                dataToUpdate.push(serverItem);
-                            }
-                        }
-                    }
-                    if (dataToUpdate.length > 0) {
-                        await db.countries.bulkPut(dataToUpdate);
-                        console.log(`[useDexieCountries] Synced ${dataToUpdate.length} countries from server.`);
-                    }
-                });
-            } else {
-                throw new Error(result.error || 'API error fetching initial countries');
-            }
-        } catch (error) {
-            console.warn("[useDexieCountries] Failed to populate initial data (likely offline):", error);
-        } finally {
-            setIsLoading(false);
-            isPopulating = false;
-        }
-    } else {
-        setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    populateInitialData();
-  }, [populateInitialData]);
+  const isLoading = countries === undefined;
 
   const addCountry = async (newCountry: Omit<Country, 'id'>) => {
     const tempId = generateId();
@@ -99,5 +43,5 @@ export function useDexieCountries() {
     await syncService.addToQueue({ entity: 'country', operation: 'delete', data: { id } });
   };
 
-  return { countries: countries || [], isLoading: isLoading || countries === undefined, refetch: populateInitialData, addCountry, updateCountry, deleteCountry };
+  return { countries: countries || [], isLoading, addCountry, updateCountry, deleteCountry };
 }

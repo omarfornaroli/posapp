@@ -1,4 +1,5 @@
 
+
 // src/hooks/useDexieAppLanguages.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -8,7 +9,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { toast } from './use-toast';
 
 const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-let isPopulating = false;
 
 async function translateAndPopulate(newLangCode: string) {
     const allTranslations = await db.translations.toArray();
@@ -46,63 +46,8 @@ async function translateAndPopulate(newLangCode: string) {
 
 
 export function useDexieAppLanguages() {
-  const [isLoading, setIsLoading] = useState(true);
-
   const appLanguages = useLiveQuery(() => db.appLanguages.toArray(), []);
-
-  const populateInitialData = useCallback(async (force = false) => {
-    if (isPopulating && !force) return;
-
-    const shouldFetch = navigator.onLine;
-
-    if (shouldFetch) {
-        isPopulating = true;
-        setIsLoading(true);
-        try {
-            const response = await fetch('/api/languages');
-            if (!response.ok) throw new Error('Failed to fetch initial app languages');
-            const result = await response.json();
-            if (result.success) {
-                const serverData: AppLanguage[] = result.data;
-                await db.transaction('rw', db.appLanguages, async () => {
-                    const localData = await db.appLanguages.toArray();
-                    const localDataMap = new Map(localData.map(item => [item.id, item]));
-                    const dataToUpdate: AppLanguage[] = [];
-
-                    for(const serverItem of serverData) {
-                        const localItem = localDataMap.get(serverItem.id);
-                        if (!localItem) {
-                            dataToUpdate.push(serverItem);
-                        } else {
-                            const localUpdatedAt = new Date(localItem.updatedAt || 0).getTime();
-                            const serverUpdatedAt = new Date(serverItem.updatedAt || 0).getTime();
-                            if (serverUpdatedAt > localUpdatedAt) {
-                                dataToUpdate.push(serverItem);
-                            }
-                        }
-                    }
-                    if (dataToUpdate.length > 0) {
-                        await db.appLanguages.bulkPut(dataToUpdate);
-                        console.log(`[useDexieAppLanguages] Synced ${dataToUpdate.length} app languages from server.`);
-                    }
-                });
-            } else {
-                throw new Error(result.error || 'API error fetching initial app languages');
-            }
-        } catch (error) {
-            console.warn("[useDexieAppLanguages] Failed to populate initial data (likely offline):", error);
-        } finally {
-            setIsLoading(false);
-            isPopulating = false;
-        }
-    } else {
-        setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    populateInitialData();
-  }, [populateInitialData]);
+  const isLoading = appLanguages === undefined;
 
   const addLanguage = async (newLang: Omit<AppLanguage, 'id'>) => {
     const tempId = generateId();
@@ -145,5 +90,5 @@ export function useDexieAppLanguages() {
     await syncService.addToQueue({ entity: 'appLanguage', operation: 'delete', data: { id } });
   };
 
-  return { appLanguages: appLanguages || [], isLoading: isLoading || appLanguages === undefined, refetch: () => populateInitialData(true), addLanguage, updateLanguage, deleteLanguage };
+  return { appLanguages: appLanguages || [], isLoading, addLanguage, updateLanguage, deleteLanguage };
 }
