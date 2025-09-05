@@ -117,29 +117,30 @@ export async function runSeedOperations() {
   console.log('Seeding essential data...');
 
   // User Seeding with conditional update
+  const adminPasswordHash = '$2a$10$ilPWobJlP0tg.HvdeK8T2etPEQkHWQJBG5aYS8.2W.Kv3At73E.jK';
   const salt = await bcrypt.genSalt(10);
-  const adminPassword = process.env.ADMIN_DEFAULT_PASSWORD || '1234';
-  const hashedPassword = await bcrypt.hash(adminPassword, salt);
+  const otherUserPassword = await bcrypt.hash('1234', salt);
   
   for (const userData of mockUsers) {
     const existingUser = await User.findOne({ email: userData.email }).exec();
     const isAdmin = userData.email === 'admin@example.com';
+    
     const userPayload: any = {
-        ...userData,
-        status: 'active',
+      ...userData,
+      status: 'active',
     };
     
-    if (existingUser) {
-        const hasBeenModified = existingUser.createdAt?.getTime() !== existingUser.updatedAt?.getTime();
-        // For admin user, we might want to update some fields, but be careful not to overwrite a user-set password unless intended
-        if (!hasBeenModified || isAdmin) {
-           await User.updateOne({ _id: existingUser._id }, { $set: userPayload });
-        }
-    } else {
-        // Only set password on initial creation
-        userPayload.password = hashedPassword;
+    // Only set the password if the user does not exist.
+    // For admin, we use the specific hash. For others, a generic one.
+    if (!existingUser) {
+        userPayload.password = isAdmin ? adminPasswordHash : otherUserPassword;
         await User.create(userPayload);
+    } else if (isAdmin) {
+        // If the admin user exists, ensure their password is the one provided.
+        // This is a specific override for the admin user.
+        await User.updateOne({ _id: existingUser._id }, { $set: { ...userPayload, password: adminPasswordHash } });
     }
+    // We don't update other existing users' passwords.
   }
   console.log('Users seeded/updated.');
   
@@ -150,19 +151,21 @@ export async function runSeedOperations() {
     AiSetting.updateOne({ key: AiSettingSingletonKey }, { $setOnInsert: { key: AiSettingSingletonKey } }, { upsert: true, runValidators: true })
   ]);
   
-  // Conditional upsert for Roles
+  // Always ensure Admin has all permissions. This acts as a self-healing mechanism.
+  await RolePermissionModel.updateOne(
+    { role: 'Admin' }, 
+    { $set: { permissions: ALL_PERMISSIONS } },
+    { upsert: true }
+  );
+
+  // Conditional upsert for other roles
   for (const role of Object.keys(DEFAULT_ROLE_PERMISSIONS) as UserRole[]) {
-    const dbPermissions = await RolePermissionModel.findOne({ role }).lean();
-    
-    if (dbPermissions) {
-        // For Admin, always ensure they have all permissions.
-        if (role === 'Admin') {
-            await RolePermissionModel.updateOne({ role }, { $set: { permissions: ALL_PERMISSIONS } });
-        }
-    } else {
-        // If the role doesn't exist, create it with default permissions.
-        await RolePermissionModel.create({ role, permissions: DEFAULT_ROLE_PERMISSIONS[role] });
-    }
+    if (role === 'Admin') continue; // Skip admin as it's already handled
+    await RolePermissionModel.updateOne(
+      { role }, 
+      { $setOnInsert: { role, permissions: DEFAULT_ROLE_PERMISSIONS[role] } },
+      { upsert: true }
+    );
   }
   console.log('Role Permissions seeded/updated.');
   
@@ -233,13 +236,15 @@ export async function runSeedOperations() {
       return { ...productData, supplier: supplierId };
     });
     
+    await conditionalUpsert(Product, 'barcode', productsWithSupplierIds);
+    console.log('Demo Products seeded/updated.');
+    
     await Promise.all([
-      conditionalUpsert(Product, 'barcode', productsWithSupplierIds),
       conditionalUpsert(Client, 'email', mockClients),
       conditionalUpsert(Tax, 'name', mockTaxes),
       conditionalUpsert(Promotion, 'name', mockPromotions),
     ]);
-    console.log('Demo catalog data (Products, Clients, Taxes, Promotions) seeded/updated.');
+    console.log('Demo catalog data (Clients, Taxes, Promotions) seeded/updated.');
     
     const salesCount = await SaleTransaction.countDocuments();
     if (salesCount === 0) {
