@@ -69,7 +69,7 @@ function flattenMessages(messages: NestedMessages, prefix = ''): Record<string, 
 
 
 export async function runSeedOperations() {
-  console.log('Running seed operations (non-destructive mode for user configs)...');
+  console.log('Running seed operations...');
   
   const Product = mongoose.model('Product');
   const Client = mongoose.model('Client');
@@ -251,8 +251,6 @@ export async function runSeedOperations() {
     }
     
   } else {
-    console.log('LOAD_DEMO_DATA is not true. Skipping demo data.');
+    console.log('LOAD_DEMO_DATA is not set to "true". Skipping demo data seeding.');
   }
-  
-  console.log('Seed operations completed.');
 }
