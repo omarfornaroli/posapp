@@ -130,9 +130,6 @@ const nextConfig: NextConfig = {
     '@opentelemetry/sdk-node', 
     'handlebars'
   ],
-  serverActions: {
-    bodySizeLimit: '2mb', // A standard configuration to ensure server actions can handle reasonable payloads
-  },
 };
 
 const pwaPlugin = withPWA(pwaConfig);
