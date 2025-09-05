@@ -1,5 +1,4 @@
 
-
 // src/components/layout/AppLayout.tsx
 'use client';
 
@@ -10,11 +9,13 @@ import Header from './Header';
 import Sidebar from './Sidebar';
 import SessionExpirationDialog from './SessionExpirationDialog';
 import { syncService } from '@/services/sync.service';
-import type { User, Permission, RolePermission, POSSetting } from '@/types';
+import type { User, Permission } from '@/types';
 import { translationRxService } from '@/services/translation.rx.service';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider, useAuth } from '@/context/AuthContext';
+import { useInitialSync } from '@/context/InitialSyncContext';
+import InitialSyncScreen from './InitialSyncScreen';
 import { cn } from '@/lib/utils';
 import { db } from '@/lib/dexie-db';
 
@@ -31,7 +32,8 @@ const SESSION_WARNING_MS = 60 * 1000; // 60 seconds before expiration
 
 function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode, userSessionKey: string }) {
   const pathname = usePathname();
-  const { user, fetchUserSession } = useAuth(); // Assume fetchUserSession is provided by context
+  const { user, fetchUserSession } = useAuth();
+  const { isInitialSyncComplete, startInitialSync } = useInitialSync();
 
   const [authStatusDetermined, setAuthStatusDetermined] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -74,7 +76,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('loggedInUserEmail');
     localStorage.removeItem('sessionExpiresAt');
-    // Full page reload to login, clearing all state
+    localStorage.removeItem('initialSyncCompleted');
     window.location.assign(`/login`);
   }, []);
 
@@ -97,6 +99,9 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
         window.location.assign(`/login`);
       } else if (loggedInStatus) {
         syncService.start();
+        if (localStorage.getItem('initialSyncCompleted') !== 'true') {
+          startInitialSync();
+        }
       }
       setAuthStatusDetermined(true);
 
@@ -104,7 +109,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
       if (storedSidebarState !== null) setIsSidebarOpen(JSON.parse(storedSidebarState));
     }
     return () => syncService.stop();
-  }, [pathname, isPublicPage]);
+  }, [pathname, isPublicPage, startInitialSync]);
 
   useEffect(() => {
     if (user && !isPublicPage && !isSessionWarningVisible) {
@@ -157,6 +162,10 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
         </div><Toaster />
       </div>
     );
+  }
+
+  if (showHeaderAndSidebarLogic && !isInitialSyncComplete) {
+    return <InitialSyncScreen />;
   }
 
   const mainContainerClass = isPublicPage ? "flex-grow" : "flex-grow container mx-auto px-4 py-8";

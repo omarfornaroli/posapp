@@ -1,5 +1,4 @@
 
-
 // src/hooks/useDexieCurrencies.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -12,7 +11,7 @@ export function useDexieCurrencies() {
   const currencies = useLiveQuery(() => db.currencies.orderBy('name').toArray(), []);
   const isLoading = currencies === undefined;
 
-  const addCurrency = async (newCurrency: Omit<Currency, 'id'>) => {
+  const addCurrency = async (newCurrency: Omit<Currency, 'id' | 'createdAt' | 'updatedAt'>) => {
     const tempId = generateId();
     const now = new Date().toISOString();
     const currencyWithId: Currency = {

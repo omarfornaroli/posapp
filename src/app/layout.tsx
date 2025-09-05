@@ -5,6 +5,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { Toaster } from '@/components/ui/toaster';
 import { CurrencyProvider } from '@/context/CurrencyContext';
 import ThemeStyleInjector from '@/components/layout/ThemeStyleInjector';
+import { InitialSyncProvider } from '@/context/InitialSyncContext';
 
 import '@/app/globals.css';
 
@@ -33,12 +34,14 @@ export default function RootLayout({
       </head>
       <body>
         <ThemeStyleInjector />
-        <CurrencyProvider>
-          <AppLayout>
-            {children}
-          </AppLayout>
-          <Toaster />
-        </CurrencyProvider>
+        <InitialSyncProvider>
+          <CurrencyProvider>
+            <AppLayout>
+              {children}
+            </AppLayout>
+            <Toaster />
+          </CurrencyProvider>
+        </InitialSyncProvider>
       </body>
     </html>
   );

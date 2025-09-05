@@ -1,5 +1,4 @@
 
-
 // src/hooks/useDexieCountries.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -12,7 +11,7 @@ export function useDexieCountries() {
   const countries = useLiveQuery(() => db.countries.toArray(), []);
   const isLoading = countries === undefined;
 
-  const addCountry = async (newCountry: Omit<Country, 'id'>) => {
+  const addCountry = async (newCountry: Omit<Country, 'id' | 'createdAt' | 'updatedAt'>) => {
     const tempId = generateId();
     const now = new Date().toISOString();
     const countryWithId: Country = {

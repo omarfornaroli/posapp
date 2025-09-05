@@ -1,5 +1,4 @@
 
-
 // src/hooks/useDexiePaymentMethods.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -12,7 +11,7 @@ export function useDexiePaymentMethods() {
   const paymentMethods = useLiveQuery(() => db.paymentMethods.toArray(), []);
   const isLoading = paymentMethods === undefined;
 
-  const addPaymentMethod = async (newMethod: Omit<PaymentMethod, 'id'>) => {
+  const addPaymentMethod = async (newMethod: Omit<PaymentMethod, 'id' | 'createdAt' | 'updatedAt'>) => {
     const tempId = generateId();
     const now = new Date().toISOString();
     const methodWithId: PaymentMethod = {
