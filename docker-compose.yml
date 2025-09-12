@@ -1,6 +1,4 @@
 # docker-compose.yml
-version: '3.8'
-
 services:
   app:
     build:
@@ -8,7 +6,7 @@ services:
       dockerfile: Dockerfile
     container_name: posapp-nextjs
     ports:
-      - "9002:9002"
+      - "3000:3000"
     environment:
       # This is the connection string for the mongo service defined below.
       - MONGODB_URI=mongodb://mongo:27017/posapp
