@@ -15,6 +15,7 @@ services:
       - LOAD_DEMO_DATA=false
       # Add your Gemini API key here to enable AI features.
       - GEMINI_API_KEY=
+      - NEXT_PUBLIC_BASE_PATH=/posapp
     volumes:
       # Mount the current directory into the container to allow git pull
       - .:/app
