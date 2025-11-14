@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -21,6 +20,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, MailQuestion } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getApiPath } from '@/lib/utils';
 
 const forgotPasswordSchema = (t: Function) => z.object({
   email: z.string().email({ message: t('Common.formErrors.invalidEmail') }),
@@ -52,7 +52,7 @@ export default function ForgotPasswordDialog({ open, onOpenChange }: ForgotPassw
   async function onSubmit(values: ForgotPasswordFormValues) {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/auth/request-password-reset', {
+      const response = await fetch(getApiPath('/api/auth/request-password-reset'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),

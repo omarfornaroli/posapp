@@ -1,5 +1,3 @@
-
-
 // src/hooks/useDexieAppLanguages.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
@@ -7,6 +5,7 @@ import { syncService } from '@/services/sync.service';
 import type { AppLanguage, TranslationRecord } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from './use-toast';
+import { getApiPath } from '@/lib/utils';
 
 const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
@@ -20,7 +19,7 @@ async function translateAndPopulate(newLangCode: string) {
         const sourceText = record.values[sourceLang];
         if (sourceText && !record.values[newLangCode]) {
             try {
-                const response = await fetch('/api/translations/translate', {
+                const response = await fetch(getApiPath('/api/translations/translate'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: sourceText, targetLangs: [newLangCode], sourceLang }),
@@ -62,7 +61,7 @@ export function useDexieAppLanguages() {
     await syncService.addToQueue({ entity: 'appLanguage', operation: 'create', data: langWithId });
 
     // Trigger auto-translation
-    const keyRes = await fetch('/api/settings/ai');
+    const keyRes = await fetch(getApiPath('/api/settings/ai'));
     const keyData = await keyRes.json();
     if(keyData.success && keyData.data.isKeySet) {
         toast({ title: "Auto-translation started", description: `Translating all keys to ${newLang.name}...` });

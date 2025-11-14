@@ -1,4 +1,3 @@
-
 import nodemailer from 'nodemailer';
 import dbConnect from '@/lib/dbConnect';
 import SmtpSetting from '@/models/SmtpSetting';
@@ -35,7 +34,8 @@ export class EmailService {
    * @param invitingUser The user who created the new account.
    */
   public static async sendUserSetupEmail(email: string, token: string, invitingUser?: { name?: string }): Promise<EmailSendResult> {
-    const setupLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/setup-account/${token}`;
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+    const setupLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}${basePath}/setup-account/${token}`;
 
     const subject = "You're invited to join POSAPP!";
     
@@ -82,7 +82,8 @@ The POSAPP Team
    * @param token The user's unique reset token.
    */
   public static async sendPasswordResetEmail(email: string, token: string): Promise<EmailSendResult> {
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/reset-password/${token}`;
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}${basePath}/reset-password/${token}`;
 
     const subject = "Password Reset Request for POSAPP";
     

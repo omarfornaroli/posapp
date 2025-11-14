@@ -1,9 +1,9 @@
-
 // src/hooks/useDexieAiSettings.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import type { AiSetting } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
+import { getApiPath } from '@/lib/utils';
 
 const SINGLETON_KEY = 'global_ai_settings';
 let isPopulating = false;
@@ -35,7 +35,7 @@ export function useDexieAiSettings() {
     isPopulating = true;
     setIsLoading(true);
     try {
-      const response = await fetch('/api/settings/ai');
+      const response = await fetch(getApiPath('/api/settings/ai'));
       if (!response.ok) throw new Error('Failed to fetch initial AI settings');
       const result = await response.json();
       if (result.success) {

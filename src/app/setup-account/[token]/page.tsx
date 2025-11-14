@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
+import { getApiPath } from '@/lib/utils';
 
 import enMessages from '@/messages/en.json';
 import esMessages from '@/messages/es.json';
@@ -76,7 +77,7 @@ export default function SetupAccountPage() {
 
   async function onSubmit(values: SetupFormValues) {
     try {
-      const response = await fetch('/api/users/setup-account', {
+      const response = await fetch(getApiPath('/api/users/setup-account'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,7 +94,7 @@ export default function SetupAccountPage() {
         title: translations.AccountSetupPage.setupSuccessTitle,
         description: translations.AccountSetupPage.setupSuccessDescription,
       });
-      router.push('/login');
+      router.push(getApiPath('/login'));
     } catch (error) {
       toast({
         variant: 'destructive',

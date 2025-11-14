@@ -1,9 +1,9 @@
-
 // src/hooks/useDexieTranslations.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type TranslationDexieRecord } from '@/lib/dexie-db';
 import { syncService } from '@/services/sync.service';
 import { useState, useEffect, useCallback } from 'react';
+import { getApiPath } from '@/lib/utils';
 
 let isPopulating = false;
 
@@ -21,11 +21,14 @@ export function useDexieTranslations() {
       isPopulating = true;
       setIsLoading(true);
       try {
-        const response = await fetch('/api/translations/all-details');
+        const response = await fetch(getApiPath('/api/translations/all-details'));
         if (!response.ok) throw new Error('Failed to fetch initial translations');
         const result = await response.json();
         if (result.success && result.data?.translations) {
-            const serverData: TranslationDexieRecord[] = result.data.translations;
+            const serverData: TranslationDexieRecord[] = result.data.translations.map((entry: any) => ({
+              keyPath: entry.keyPath,
+              values: entry.values,
+            }));
             await db.transaction('rw', db.translations, async () => {
                 const localData = await db.translations.toArray();
                 const localDataMap = new Map(localData.map(item => [item.keyPath, item]));

@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
+import { getApiPath } from '@/lib/utils';
 
 import enMessages from '@/messages/en.json';
 import esMessages from '@/messages/es.json';
@@ -58,7 +59,7 @@ export default function ResetPasswordPage() {
 
   async function onSubmit(values: ResetPasswordFormValues) {
     try {
-      const response = await fetch('/api/auth/reset-password', {
+      const response = await fetch(getApiPath('/api/auth/reset-password'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password: values.password }),
@@ -72,7 +73,7 @@ export default function ResetPasswordPage() {
         title: translations.resetSuccessTitle,
         description: translations.resetSuccessDescription,
       });
-      router.push('/login');
+      router.push(getApiPath('/login'));
     } catch (error) {
       toast({
         variant: 'destructive',

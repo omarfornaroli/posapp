@@ -1,15 +1,49 @@
-
 // src/hooks/useDexieCountries.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import { syncService } from '@/services/sync.service';
 import type { Country } from '@/types';
+import { getApiPath } from '@/lib/utils';
+import { useState, useEffect, useCallback } from 'react';
 
 const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+let isPopulating = false;
 
 export function useDexieCountries() {
+  const [isLoading, setIsLoading] = useState(true);
   const countries = useLiveQuery(() => db.countries.toArray(), []);
-  const isLoading = countries === undefined;
+
+  const populateInitialData = useCallback(async () => {
+    if (isPopulating) return;
+
+    const count = await db.countries.count();
+    if (count > 0) {
+      setIsLoading(false);
+      return;
+    }
+    
+    isPopulating = true;
+    setIsLoading(true);
+    try {
+        const response = await fetch(getApiPath('/api/countries'));
+        if (!response.ok) throw new Error('Failed to fetch initial countries');
+        const result = await response.json();
+        if (result.success) {
+            await db.countries.bulkPut(result.data);
+        } else {
+            throw new Error(result.error || 'API error fetching countries');
+        }
+    } catch (error) {
+        console.error("[useDexieCountries] Failed to populate initial data:", error);
+    } finally {
+        setIsLoading(false);
+        isPopulating = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    populateInitialData();
+  }, [populateInitialData]);
 
   const addCountry = async (newCountry: Omit<Country, 'id' | 'createdAt' | 'updatedAt'>) => {
     const tempId = generateId();
@@ -42,5 +76,5 @@ export function useDexieCountries() {
     await syncService.addToQueue({ entity: 'country', operation: 'delete', data: { id } });
   };
 
-  return { countries: countries || [], isLoading, addCountry, updateCountry, deleteCountry };
+  return { countries: countries || [], isLoading: isLoading || countries === undefined, addCountry, updateCountry, deleteCountry };
 }

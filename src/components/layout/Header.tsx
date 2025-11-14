@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -24,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useToast } from '@/hooks/use-toast';
 import SyncStatusIndicator from './SyncStatusIndicator';
 import { cn } from '@/lib/utils';
+import { getApiPath } from '@/lib/utils';
 
 interface HeaderProps {
   toggleSidebar?: () => void;
@@ -55,7 +55,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
       localStorage.removeItem('sessionExpiresAt');
     }
     setIsLoggedIn(false);
-    window.location.assign(`/login`);
+    window.location.assign(getApiPath(`/login`));
   };
 
   const handleThemeSwitch = async (themeId: string) => {
@@ -111,7 +111,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                     </TooltipContent>
                     </Tooltip>
                 )}
-                <Link href={`/`} className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
+                <Link href={getApiPath(`/`)} className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
                     <Store className="h-6 w-6" />
                     <h1 className="text-lg sm:text-xl font-headline font-semibold">{t('Header.title')}</h1>
                 </Link>

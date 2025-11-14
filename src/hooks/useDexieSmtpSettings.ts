@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import type { SmtpSetting } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
+import { getApiPath } from '@/lib/utils';
 
 const SINGLETON_KEY = 'global_smtp_settings';
 let isPopulating = false;
@@ -32,7 +33,7 @@ export function useDexieSmtpSettings() {
     isPopulating = true;
     setIsLoading(true);
     try {
-      const response = await fetch('/api/settings/smtp');
+      const response = await fetch(getApiPath('/api/settings/smtp'));
       if (!response.ok) throw new Error('Failed to fetch initial smtp settings');
       const result = await response.json();
       if (result.success) {

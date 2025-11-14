@@ -1,4 +1,3 @@
-
 // src/components/layout/AppLayout.tsx
 'use client';
 
@@ -18,6 +17,7 @@ import { useInitialSync } from '@/context/InitialSyncContext';
 import InitialSyncScreen from './InitialSyncScreen';
 import { cn } from '@/lib/utils';
 import { db } from '@/lib/dexie-db';
+import { getApiPath } from '@/lib/utils';
 
 interface UserWithPermissions extends User {
   permissions: Permission[];
@@ -41,8 +41,9 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
   const [isSessionWarningVisible, setIsSessionWarningVisible] = useState(false);
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [sessionDurationMinutes, setSessionDurationMinutes] = useState(30);
-
-  const publicPaths = ['/login', '/setup-account', '/reset-password'];
+  
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  const publicPaths = ['/login', '/setup-account', '/reset-password'].map(p => `${basePath}${p}`);
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
   
   useEffect(() => {
@@ -77,8 +78,8 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
     localStorage.removeItem('loggedInUserEmail');
     localStorage.removeItem('sessionExpiresAt');
     localStorage.removeItem('initialSyncCompleted');
-    window.location.assign(`/login`);
-  }, []);
+    window.location.assign(`${basePath}/login`);
+  }, [basePath]);
 
   const handleExtendSession = useCallback(() => {
     const wasRemembered = (sessionExpiresAt && sessionExpiresAt - Date.now() > 5 * 60 * 1000 + SESSION_WARNING_MS); // check if original duration was longer than standard
@@ -96,7 +97,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
       setSessionExpiresAt(storedExpiresAt ? parseInt(storedExpiresAt, 10) : null);
 
       if (!loggedInStatus && !isPublicPage) {
-        window.location.assign(`/login`);
+        window.location.assign(`${basePath}/login`);
       } else if (loggedInStatus) {
         syncService.start();
         if (localStorage.getItem('initialSyncCompleted') !== 'true') {
@@ -109,7 +110,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
       if (storedSidebarState !== null) setIsSidebarOpen(JSON.parse(storedSidebarState));
     }
     return () => syncService.stop();
-  }, [pathname, isPublicPage, startInitialSync]);
+  }, [pathname, isPublicPage, startInitialSync, basePath]);
 
   useEffect(() => {
     if (user && !isPublicPage && !isSessionWarningVisible) {
@@ -195,6 +196,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
 export function AppLayout({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserWithPermissions | null>(null);
     const [userSessionKey, setUserSessionKey] = useState('initial');
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
     const fetchUserSession = useCallback(async (email: string) => {
         try {
@@ -210,7 +212,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         if (navigator.onLine) {
             try {
-                const response = await fetch(`/api/auth/session`, { headers: { 'X-User-Email': email } });
+                const response = await fetch(getApiPath(`/api/auth/session`), { headers: { 'X-User-Email': email } });
                 if (!response.ok) throw new Error('Failed to fetch user session from API');
                 const result = await response.json();
                 if (result.success && result.data) {
@@ -230,11 +232,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     localStorage.removeItem('loggedInUserEmail');
                     setUser(null);
                     setUserSessionKey('logged-out'); 
-                    if (!window.location.pathname.startsWith('/login')) window.location.assign(`/login`);
+                    if (!window.location.pathname.startsWith(`${basePath}/login`)) window.location.assign(`${basePath}/login`);
                 }
             }
         }
-    }, [userSessionKey]);
+    }, [userSessionKey, basePath]);
 
     useEffect(() => {
         const userEmail = typeof window !== 'undefined' ? localStorage.getItem('loggedInUserEmail') : null;

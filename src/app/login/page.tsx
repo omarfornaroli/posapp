@@ -14,6 +14,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Loader2 } from 'lucide-react';
 import ForgotPasswordDialog from '@/components/auth/ForgotPasswordDialog';
+import { getApiPath } from '@/lib/utils';
 
 import enMessages from '@/messages/en.json';
 import esMessages from '@/messages/es.json';
@@ -61,7 +62,7 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginFormValues) {
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(getApiPath('/api/auth/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
@@ -83,7 +84,7 @@ export default function LoginPage() {
       localStorage.setItem('sessionExpiresAt', result.expiresAt);
 
       // Use window.location.assign for a full page reload to re-initialize layout and data fetching.
-      window.location.assign('/');
+      window.location.assign(process.env.NEXT_PUBLIC_BASE_PATH || '/');
       
     } catch (error) {
       toast({

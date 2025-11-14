@@ -1,11 +1,10 @@
-
-
 // src/hooks/useDexieClients.ts
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/lib/dexie-db';
 import { syncService } from '@/services/sync.service';
 import type { Client } from '@/types';
 import { useState, useEffect, useCallback } from 'react';
+import { getApiPath } from '@/lib/utils';
 
 const generateId = () => `temp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 

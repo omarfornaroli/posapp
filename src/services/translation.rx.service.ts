@@ -4,6 +4,7 @@ import { switchMap } from 'rxjs/operators';
 import type { TranslationData } from '@/types';
 import { db, type TranslationDexieRecord } from '@/lib/dexie-db';
 import { liveQuery } from 'dexie';
+import { getApiPath } from '@/lib/utils';
 
 const defaultLocale = 'en';
 const TRANSLATION_POLLING_INTERVAL = 60000; // 1 minute
@@ -95,7 +96,7 @@ class TranslationRxServiceController {
 
   private async populateTranslationsFromApi(isInitialLoad: boolean): Promise<void> {
     try {
-      const response = await fetch('/api/translations/all-details');
+      const response = await fetch(getApiPath('/api/translations/all-details'));
       if (!response.ok) throw new Error(`API Error: ${response.status} ${response.statusText}`);
       
       const result = await response.json();
