@@ -43,8 +43,9 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [sessionDurationMinutes, setSessionDurationMinutes] = useState(30);
   
-  const publicPaths = ['/login', '/setup-account', '/reset-password'].map(p => getApiPath(p));
-  const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
+  const publicPaths = ['/login', '/setup-account', '/reset-password'];
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/pepito';
+  const isPublicPage = publicPaths.some(p => pathname === `${basePath}${p}` || pathname.startsWith(`${basePath}${p}/`));
   
   useEffect(() => {
     if (process.env.NODE_ENV === 'production' && typeof window !== 'undefined' && 'serviceWorker' in navigator) {
