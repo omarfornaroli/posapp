@@ -18,6 +18,6 @@ export function getInitials(name?: string): string {
 }
 
 export function getApiPath(path: string) {
-    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/pepito';
     return `${basePath}${path}`;
 }
