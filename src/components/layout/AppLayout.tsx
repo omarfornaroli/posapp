@@ -231,7 +231,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     localStorage.removeItem('loggedInUserEmail');
                     setUser(null);
                     setUserSessionKey('logged-out'); 
-                    if (!window.location.pathname.startsWith(getApiPath('/login'))) window.location.assign(getApiPath('/login'));
+                    if (!window.location.pathname.startsWith(getApiPath('/login'))) {
+                        window.location.assign(getApiPath('/login'));
+                    }
                 }
             }
         }
