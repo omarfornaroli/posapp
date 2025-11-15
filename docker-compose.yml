@@ -9,14 +9,14 @@ services:
       - "${APP_PORT:-9002}:3000"
     environment:
       # Use an environment variable for the MongoDB URI, with a default value.
-      - MONGODB_URI=${MONGODB_URI:-mongodb://mongo:27017/posapp}
+      - MONGODB_URI=mongodb://mongo:${MONGO_PORT:-27017}${NEXT_PUBLIC_BASE_PATH:-/posapp}
       # Demo data is disabled for this Docker setup.
       # Change to 'true' if you want to load demo data on first run.
       - LOAD_DEMO_DATA=false
       # Add your Gemini API key here to enable AI features.
       - GEMINI_API_KEY=
       - NEXT_PUBLIC_BASE_PATH=/posapp
-      - NEXT_PUBLIC_APP_NAME=POSAPP
+      - APP_NAME=POSAPP
     volumes:
       # Mount the current directory into the container to allow git pull
       - .:/app
