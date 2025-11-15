@@ -1,3 +1,4 @@
+
 // src/services/translation.rx.service.ts
 import { BehaviorSubject, Observable, Subscription, interval, from } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -96,7 +97,7 @@ class TranslationRxServiceController {
 
   private async populateTranslationsFromApi(isInitialLoad: boolean): Promise<void> {
     try {
-      const response = await fetch(getApiPath('/api/translations/all-details'));
+      const response = await fetch(getApiPath('/api/translations/all'));
       if (!response.ok) throw new Error(`API Error: ${response.status} ${response.statusText}`);
       
       const result = await response.json();
