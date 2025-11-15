@@ -31,7 +31,7 @@ const syncOperations = [
   { key: 'smtpSettings', model: db.smtpSettings, endpoint: '/api/settings/smtp' },
   { key: 'aiSettings', model: db.aiSettings, endpoint: '/api/settings/ai' },
   { key: 'appLanguages', model: db.appLanguages, endpoint: '/api/languages' },
-  { key: 'translations', model: db.translations, endpoint: '/api/translations/all-details'},
+  { key: 'translations', model: db.translations, endpoint: '/api/translations/all'},
 ];
 
 export function InitialSyncProvider({ children }: { children: ReactNode }) {
