@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -34,6 +35,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
+  const appName = process.env.NEXT_PUBLIC_APP_NAME || 'POSAPP';
 
   const { themes, isLoading: isLoadingThemes, updateTheme } = useDexieThemes();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -113,7 +115,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
                 )}
                 <Link href={getApiPath(`/`)} className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors">
                     <Store className="h-6 w-6" />
-                    <h1 className="text-lg sm:text-xl font-headline font-semibold">{t('Header.title')}</h1>
+                    <h1 className="text-lg sm:text-xl font-headline font-semibold">{appName}</h1>
                 </Link>
             </div>
 
