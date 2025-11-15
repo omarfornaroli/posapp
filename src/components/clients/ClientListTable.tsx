@@ -9,12 +9,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 
 
-const ClientCard = ({ client, onEditClient, onDeleteClient, getInitials, t, hasPermission }: { client: Client, onEditClient: (id: string) => void, onDeleteClient: (id: string) => void, getInitials: (name: string) => string, t: (key: string, params?: any) => string, hasPermission: (p: any) => boolean }) => {
+const ClientCard = ({ client, onEditClient, onDeleteClient, t, hasPermission }: { client: Client, onEditClient: (id: string) => void, onDeleteClient: (id: string) => void, t: (key: string, params?: any) => string, hasPermission: (p: any) => boolean }) => {
   return (
     <Card className="mb-2">
       <CardHeader className="p-4">
@@ -81,11 +81,6 @@ export default function ClientListTable({
   useEffect(() => {
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
-  
-  const getInitials = (name: string) => {
-    const names = name.split(' ');
-    return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase() : name.substring(0, 2).toUpperCase();
-  };
   
   const renderCellContent = (client: Client, columnKey: keyof Client | string) => {
     if (columnKey === 'registrationDate') {
@@ -204,7 +199,6 @@ export default function ClientListTable({
             client={client}
             onEditClient={onEditClient}
             onDeleteClient={onDeleteClient}
-            getInitials={getInitials}
             t={t}
             hasPermission={hasPermission}
           />

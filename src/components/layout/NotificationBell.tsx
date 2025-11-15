@@ -32,14 +32,14 @@ interface NotificationItemProps {
   currentLocale: string;
 }
 
-const NotificationIcon: React.FC<{ type: NotificationType['type'] }> = ({ type }) => {
+const NotificationIcon: React.FC<{ type: NotificationType['type'] }> = ({ type, className }) => {
   switch (type) {
-    case 'success': return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    case 'error': return <XCircle className="h-5 w-5 text-destructive" />;
-    case 'warning': return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+    case 'success': return <CheckCircle2 className={cn("h-5 w-5 text-green-500", className)} />;
+    case 'error': return <XCircle className={cn("h-5 w-5 text-destructive", className)} />;
+    case 'warning': return <AlertTriangle className={cn("h-5 w-5 text-yellow-500", className)} />;
     case 'info':
     case 'system':
-    default: return <Info className="h-5 w-5 text-blue-500" />;
+    default: return <Info className={cn("h-5 w-5 text-blue-500", className)} />;
   }
 };
 

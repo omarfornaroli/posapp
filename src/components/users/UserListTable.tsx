@@ -22,7 +22,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserListTableProps {
@@ -60,14 +60,6 @@ export default function UserListTable({
   if (!users || users.length === 0) {
     return <p className="text-center text-muted-foreground py-8">{t('UserListTable.noUsersMessage')}</p>;
   }
-
-  const getInitials = (name: string) => {
-    const names = name.split(' ');
-    if (names.length > 1) {
-      return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
 
   const RoleIcon = ({ role }: { role: User['role'] }) => {
     switch (role) {

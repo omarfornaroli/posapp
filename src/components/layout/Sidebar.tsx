@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from '@/context/AuthContext';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { useDexiePOSSettings } from '@/hooks/useDexiePOSSettings';
 import { useSyncStatus } from '@/hooks/useSyncStatus';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -22,18 +22,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 interface SidebarProps {
   toggleSidebar: () => void; 
 }
-
-const getInitials = (name?: string) => {
-  if (!name) return 'U';
-  const names = name.split(' ');
-  if (names.length > 1 && names[0] && names[names.length - 1]) {
-    return `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase();
-  }
-  if (names[0]) {
-    return names[0].substring(0, 2).toUpperCase();
-  }
-  return 'U';
-};
 
 interface MenuItemConfig {
   href: string;

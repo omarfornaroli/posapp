@@ -10,11 +10,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useRxTranslate } from '@/hooks/use-rx-translate';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
+import { cn, getInitials } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
-const SupplierCard = ({ supplier, onEditSupplier, onDeleteSupplier, getInitials, t, hasPermission }: { supplier: Supplier, onEditSupplier: (s: Supplier) => void, onDeleteSupplier: (s: Supplier) => void, getInitials: (name: string) => string, t: (key: string, params?: any) => string, hasPermission: (p: any) => boolean }) => {
+const SupplierCard = ({ supplier, onEditSupplier, onDeleteSupplier, t, hasPermission }: { supplier: Supplier, onEditSupplier: (s: Supplier) => void, onDeleteSupplier: (s: Supplier) => void, t: (key: string, params?: any) => string, hasPermission: (p: any) => boolean }) => {
   return (
     <Card className="mb-2">
       <CardHeader className="p-4">
@@ -83,15 +84,11 @@ export default function SupplierListTable({
 }: SupplierListTableProps) {
   const { t, isLoading: isLoadingTranslations, initializeTranslations, currentLocale } = useRxTranslate();
   const { hasPermission } = useAuth();
+  const { toast } = useToast();
   
   useEffect(() => {
     initializeTranslations(currentLocale);
   }, [initializeTranslations, currentLocale]);
-  
-  const getInitials = (name: string) => {
-    const names = name.split(' ');
-    return names.length > 1 ? `${names[0][0]}${names[names.length - 1][0]}`.toUpperCase() : name.substring(0, 2).toUpperCase();
-  };
   
   const renderCellContent = (supplier: Supplier, columnKey: keyof Supplier | string) => {
     const value = supplier[columnKey as keyof Supplier];
