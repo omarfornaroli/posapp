@@ -67,7 +67,8 @@ export function InitialSyncProvider({ children }: { children: ReactNode }) {
 
         try {
             const response = await fetch(getApiPath(op.endpoint));
-            if (!response.ok) throw new Error(`Failed to fetch ${op.key}`);
+            if (!response.ok) throw new Error(`API Error: ${response.status} ${response.statusText}`);
+            
             const result = await response.json();
             if (result.success) {
                 let dataToStore = result.data;
@@ -80,9 +81,9 @@ export function InitialSyncProvider({ children }: { children: ReactNode }) {
                 }
                 
                 if (Array.isArray(dataToStore)) {
-                    await db.get(op.model.name)?.bulkPut(dataToStore);
+                    await op.model.bulkPut(dataToStore);
                 } else {
-                    await db.get(op.model.name)?.put(dataToStore);
+                    await op.model.put(dataToStore);
                 }
             } else {
                 throw new Error(result.error || `API error for ${op.key}`);
