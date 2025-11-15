@@ -1,3 +1,4 @@
+
 // src/components/layout/AppLayout.tsx
 'use client';
 
@@ -42,8 +43,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number | null>(null);
   const [sessionDurationMinutes, setSessionDurationMinutes] = useState(30);
   
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
-  const publicPaths = ['/login', '/setup-account', '/reset-password'].map(p => `${basePath}${p}`);
+  const publicPaths = ['/login', '/setup-account', '/reset-password'].map(p => getApiPath(p));
   const isPublicPage = publicPaths.some(path => pathname.startsWith(path));
   
   useEffect(() => {
@@ -78,8 +78,8 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
     localStorage.removeItem('loggedInUserEmail');
     localStorage.removeItem('sessionExpiresAt');
     localStorage.removeItem('initialSyncCompleted');
-    window.location.assign(`${basePath}/login`);
-  }, [basePath]);
+    window.location.assign(getApiPath('/login'));
+  }, []);
 
   const handleExtendSession = useCallback(() => {
     const wasRemembered = (sessionExpiresAt && sessionExpiresAt - Date.now() > 5 * 60 * 1000 + SESSION_WARNING_MS); // check if original duration was longer than standard
@@ -97,7 +97,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
       setSessionExpiresAt(storedExpiresAt ? parseInt(storedExpiresAt, 10) : null);
 
       if (!loggedInStatus && !isPublicPage) {
-        window.location.assign(`${basePath}/login`);
+        window.location.assign(getApiPath('/login'));
       } else if (loggedInStatus) {
         syncService.start();
         if (localStorage.getItem('initialSyncCompleted') !== 'true') {
@@ -110,7 +110,7 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
       if (storedSidebarState !== null) setIsSidebarOpen(JSON.parse(storedSidebarState));
     }
     return () => syncService.stop();
-  }, [pathname, isPublicPage, startInitialSync, basePath]);
+  }, [pathname, isPublicPage, startInitialSync]);
 
   useEffect(() => {
     if (user && !isPublicPage && !isSessionWarningVisible) {
@@ -196,7 +196,6 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
 export function AppLayout({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<UserWithPermissions | null>(null);
     const [userSessionKey, setUserSessionKey] = useState('initial');
-    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
     const fetchUserSession = useCallback(async (email: string) => {
         try {
@@ -232,11 +231,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     localStorage.removeItem('loggedInUserEmail');
                     setUser(null);
                     setUserSessionKey('logged-out'); 
-                    if (!window.location.pathname.startsWith(`${basePath}/login`)) window.location.assign(`${basePath}/login`);
+                    if (!window.location.pathname.startsWith(getApiPath('/login'))) window.location.assign(getApiPath('/login'));
                 }
             }
         }
-    }, [userSessionKey, basePath]);
+    }, [userSessionKey]);
 
     useEffect(() => {
         const userEmail = typeof window !== 'undefined' ? localStorage.getItem('loggedInUserEmail') : null;
