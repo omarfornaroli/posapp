@@ -4,6 +4,7 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
 import { db } from '@/lib/dexie-db';
 import { useRxTranslate } from '@/hooks/use-rx-translate';
+import { getApiPath } from '@/lib/utils';
 
 interface SyncContextType {
   isInitialSyncComplete: boolean;
@@ -65,7 +66,7 @@ export function InitialSyncProvider({ children }: { children: ReactNode }) {
         setSyncStatusMessages([...messages]);
 
         try {
-            const response = await fetch(op.endpoint);
+            const response = await fetch(getApiPath(op.endpoint));
             if (!response.ok) throw new Error(`Failed to fetch ${op.key}`);
             const result = await response.json();
             if (result.success) {
@@ -79,9 +80,9 @@ export function InitialSyncProvider({ children }: { children: ReactNode }) {
                 }
                 
                 if (Array.isArray(dataToStore)) {
-                    await op.model.bulkPut(dataToStore);
+                    await db.get(op.model.name)?.bulkPut(dataToStore);
                 } else {
-                    await op.model.put(dataToStore);
+                    await db.get(op.model.name)?.put(dataToStore);
                 }
             } else {
                 throw new Error(result.error || `API error for ${op.key}`);

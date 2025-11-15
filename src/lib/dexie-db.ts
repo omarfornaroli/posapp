@@ -42,7 +42,7 @@ export class AppDexieDB extends Dexie {
 
   constructor() {
     super('posAppDB');
-    this.version(15).stores({
+    this.version(16).stores({
         products: 'id, name, barcode, sku, category, supplier, createdAt, updatedAt',
         clients: 'id, name, email, createdAt, updatedAt',
         suppliers: 'id, name, email, createdAt, updatedAt',
