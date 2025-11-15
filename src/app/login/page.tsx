@@ -84,7 +84,7 @@ export default function LoginPage() {
       localStorage.setItem('sessionExpiresAt', result.expiresAt);
 
       // Use window.location.assign for a full page reload to re-initialize layout and data fetching.
-      window.location.assign(process.env.NEXT_PUBLIC_BASE_PATH || '/');
+      window.location.assign(getApiPath('/'));
       
     } catch (error) {
       toast({
