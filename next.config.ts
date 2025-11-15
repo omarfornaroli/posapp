@@ -104,6 +104,7 @@ const pwaConfig = {
 
 const nextConfig: NextConfig = {
   /* config options here */
+  basePath: '/pepito',
   env: {
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   },
