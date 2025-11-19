@@ -12,6 +12,7 @@ if (!cached) {
 
 async function dbConnect() {
   const MONGODB_URI = process.env.MONGODB_URI;
+  console.log("MONGODB_URI", MONGODB_URI)
   if (!MONGODB_URI || MONGODB_URI.includes('YOUR_MONGODB_CONNECTION_STRING')) {
     console.warn('\n⚠️  MONGODB_URI is not configured in .env.local. Database features will not work.');
     return null;
