@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
 
 networks:
-  posify-net:
+  ${NEXT_PUBLIC_BASE_PATH}-net:
     driver: bridge
 
 volumes:
