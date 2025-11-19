@@ -35,7 +35,7 @@ export default function Header({ toggleSidebar }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
-  const appName = process.env.NEXT_PUBLIC_APP_NAME || 'POSAPP';
+  const appName = process.env.NEXT_PUBLIC_APP_NAME;
 
   const { themes, isLoading: isLoadingThemes, updateTheme } = useDexieThemes();
   const [isLoggedIn, setIsLoggedIn] = useState(false);

@@ -104,9 +104,9 @@ const pwaConfig = {
 
 const nextConfig: NextConfig = {
   /* config options here */
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/pepito',
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/posapp',
   env: {
-    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_APP_NAME: process.env.APP_NAME,
   },
   typescript: {
     ignoreBuildErrors: true,

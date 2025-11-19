@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: ${APP_NAME:-posapp}
+    container_name: ${NEXT_PUBLIC_BASE_PATH}
     ports:
       - "${APP_PORT}:3000"
     environment:
@@ -17,14 +17,14 @@ services:
       # Add your Gemini API key here to enable AI features.
       - GEMINI_API_KEY=
       - NEXT_PUBLIC_BASE_PATH=/${NEXT_PUBLIC_BASE_PATH}
-      - APP_NAME=POSAPP
+      - APP_NAME=${APP_NAME}
     volumes:
       # Mount the current directory into the container to allow git pull
       - .:/app
     depends_on:
       - mongo
     networks:
-      - "${NEXT_PUBLIC_BASE_PATH}-net"
+      - posify-net
     restart: unless-stopped
 
   mongo:
@@ -35,11 +35,12 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-      - "${NEXT_PUBLIC_BASE_PATH}-net"
+      - posify-net
     restart: unless-stopped
 
 networks:
-  "${NEXT_PUBLIC_BASE_PATH}-net":
+  posify-net:
+    name: "${NEXT_PUBLIC_BASE_PATH}-net"
     driver: bridge
 
 volumes:
