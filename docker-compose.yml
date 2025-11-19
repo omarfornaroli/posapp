@@ -39,7 +39,7 @@ services:
     restart: unless-stopped
 
 networks:
-  ${NEXT_PUBLIC_BASE_PATH}-net:
+  pepito-net:
     driver: bridge
 
 volumes:
