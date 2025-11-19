@@ -24,7 +24,7 @@ services:
     depends_on:
       - mongo
     networks:
-      - ${NEXT_PUBLIC_BASE_PATH}-net
+      - "${NEXT_PUBLIC_BASE_PATH}-net"
     restart: unless-stopped
 
   mongo:
@@ -35,7 +35,7 @@ services:
     volumes:
       - mongo-data:/data/db
     networks:
-      - ${NEXT_PUBLIC_BASE_PATH}-net
+      - "${NEXT_PUBLIC_BASE_PATH}-net"
     restart: unless-stopped
 
 networks:
