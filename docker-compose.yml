@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: posapp-nextjs
+    container_name: ${NEXT_PUBLIC_BASE_PATH:-posapp}
     ports:
       - "${APP_PORT:-9002}:3000"
     environment:
