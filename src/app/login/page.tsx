@@ -1,3 +1,4 @@
+
 // This file was moved from src/app/[locale]/login/page.tsx
 'use client';
 
@@ -45,7 +46,8 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const locale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
+    const rawLocale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
+    const locale = rawLocale.split('-')[0];
     setTranslations(getLoginTranslations(locale));
     setIsLoading(false);
   }, []);

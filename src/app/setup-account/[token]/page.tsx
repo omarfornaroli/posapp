@@ -1,3 +1,4 @@
+
 // This file was moved from src/app/[locale]/setup-account/[token]/page.tsx
 'use client';
 
@@ -61,7 +62,8 @@ export default function SetupAccountPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const locale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
+    const rawLocale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
+    const locale = rawLocale.split('-')[0];
     setTranslations(getTranslations(locale));
     setIsLoading(false);
   }, []);

@@ -58,7 +58,8 @@ function MainAppLayout({ children, userSessionKey }: { children: React.ReactNode
   }, []);
 
   useEffect(() => {
-    const initialLocale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
+    const rawLocale = typeof window !== 'undefined' ? (localStorage.getItem('preferredLocale') || navigator.language) : 'en';
+    const initialLocale = rawLocale.split('-')[0];
     translationRxService.initialize(initialLocale);
   }, []);
 
