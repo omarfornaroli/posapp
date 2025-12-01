@@ -685,9 +685,9 @@ export const mockThemes: Omit<Theme, 'id'>[] = [
 ];
 
 export const mockReceiptSettings: Omit<ReceiptSetting, 'id' | 'key'> = {
-  logoUrl: 'https://placehold.co/150x50.png?text=POSAPP',
-  footerText: 'Thank you for your business!\\nVisit us at posapp.example.com',
-  companyName: 'POSAPP Inc.',
+  logoUrl: 'https://placehold.co/150x50.png?text=POSIFY',
+  footerText: 'Thank you for your business!\\nVisit us at posify.example.com',
+  companyName: 'POSIFY Inc.',
   companyAddress: '123 Market Street, Business City, 12345',
   companyPhone: '(555) 123-4567',
   receiptWidth: 'auto',

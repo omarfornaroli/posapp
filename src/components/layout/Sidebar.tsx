@@ -262,7 +262,7 @@ export default function Sidebar({ toggleSidebar }: SidebarProps) {
         
         <Separator className="shrink-0" />
         <div className="py-2 text-center text-xs text-muted-foreground shrink-0">
-          POSAPP v1.0
+          POSIFY v1.0
         </div>
       </aside>
     </TooltipProvider>

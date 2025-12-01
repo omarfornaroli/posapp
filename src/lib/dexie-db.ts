@@ -41,7 +41,7 @@ export class AppDexieDB extends Dexie {
   aiSettings!: Table<AiSetting>;
 
   constructor() {
-    super('posAppDB');
+    super('pOSIFYDB');
     this.version(16).stores({
         products: 'id, name, barcode, sku, category, supplier, createdAt, updatedAt',
         clients: 'id, name, email, createdAt, updatedAt',
