@@ -37,13 +37,13 @@ export class EmailService {
   public static async sendUserSetupEmail(email: string, token: string, invitingUser?: { name?: string }): Promise<EmailSendResult> {
     const setupLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}${getApiPath(`/setup-account/${token}`)}`;
 
-    const subject = "You're invited to join POSAPP!";
+    const subject = "You're invited to join POSIFY!";
     
     // Simple text version
     const text = `
 Hello,
 
-You have been invited to create an account for POSAPP by ${invitingUser?.name || 'an administrator'}.
+You have been invited to create an account for POSIFY by ${invitingUser?.name || 'an administrator'}.
 
 To complete your account setup and create your password, please click the link below:
 ${setupLink}
@@ -53,15 +53,15 @@ This link will expire in 24 hours.
 If you did not expect this invitation, you can safely ignore this email.
 
 Thanks,
-The POSAPP Team
+The POSIFY Team
 `;
 
     // A nicer HTML version
     const html = `
 <div style="font-family: sans-serif; padding: 20px; color: #333;">
-  <h2 style="color: #8000FF;">Welcome to POSAPP!</h2>
+  <h2 style="color: #8000FF;">Welcome to POSIFY!</h2>
   <p>Hello,</p>
-  <p>You have been invited to create an account for POSAPP by <strong>${invitingUser?.name || 'an administrator'}</strong>.</p>
+  <p>You have been invited to create an account for POSIFY by <strong>${invitingUser?.name || 'an administrator'}</strong>.</p>
   <p>To complete your account setup and create your password, please click the button below:</p>
   <p style="text-align: center; margin: 30px 0;">
     <a href="${setupLink}" style="background-color: #8000FF; color: white; padding: 15px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Set Up Your Account</a>
@@ -69,7 +69,7 @@ The POSAPP Team
   <p>This link will expire in 24 hours.</p>
   <p>If you did not expect this invitation, you can safely ignore this email.</p>
   <br/>
-  <p>Thanks,<br/>The POSAPP Team</p>
+  <p>Thanks,<br/>The POSIFY Team</p>
 </div>
 `;
 
@@ -84,7 +84,7 @@ The POSAPP Team
   public static async sendPasswordResetEmail(email: string, token: string): Promise<EmailSendResult> {
     const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}${getApiPath(`/reset-password/${token}`)}`;
 
-    const subject = "Password Reset Request for POSAPP";
+    const subject = "Password Reset Request for POSIFY";
     
     const text = `
 Hello,
@@ -97,7 +97,7 @@ ${resetLink}
 This link will expire in 1 hour.
 
 Thanks,
-The POSAPP Team
+The POSIFY Team
 `;
 
     const html = `
@@ -111,7 +111,7 @@ The POSAPP Team
   </p>
   <p>This link will expire in 1 hour.</p>
   <br/>
-  <p>Thanks,<br/>The POSAPP Team</p>
+  <p>Thanks,<br/>The POSIFY Team</p>
 </div>
 `;
     return this.sendEmail(email, subject, text, html, resetLink);
@@ -121,7 +121,7 @@ The POSAPP Team
   private static async sendEmail(to: string, subject: string, text: string, html: string, linkForLog?: string): Promise<EmailSendResult> {
     const transporter = await this.createTransporter();
     const settings = await SmtpSetting.findOne({});
-    const fromAddress = settings?.from || '"POSAPP" <noreply@posapp.example.com>';
+    const fromAddress = settings?.from || '"POSIFY" <noreply@posify.example.com>';
 
     if (transporter) {
       // Send real email

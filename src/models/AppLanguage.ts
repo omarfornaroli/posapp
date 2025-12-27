@@ -34,7 +34,7 @@ const AppLanguageSchema: Schema<AppLanguageDocument> = new Schema({
   timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
-  collection: 'pos_app_languages'
+  collection: 'posify_languages'
 });
 
 AppLanguageSchema.virtual('id').get(function(this: Document) {

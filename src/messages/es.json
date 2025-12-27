@@ -1,7 +1,7 @@
 
 {
   "Header": {
-    "title": "POSAPP",
+    "title": "POSIFY",
     "dashboardLink": "Dashboard",
     "posLink": "Punto de Venta (PDV)",
     "cartLink": "Carrito",
@@ -1235,10 +1235,10 @@
     "logoUrlPlaceholder": "https://tu-dominio.com/logo.png",
     "logoPreviewAlt": "Vista previa del logo",
     "footerTextLabel": "Texto del Pie de Página (usa \\n para nuevas líneas)",
-    "footerTextPlaceholder": "Ej: ¡Gracias por tu compra!\\nSíguenos en @posapp",
+    "footerTextPlaceholder": "Ej: ¡Gracias por tu compra!\\nSíguenos en @posify",
     "companyInfoTitle": "Información de la Empresa",
     "companyNameLabel": "Nombre de la Empresa",
-    "companyNamePlaceholder": "Ej: POSAPP S.L.",
+    "companyNamePlaceholder": "Ej: POSIFY S.L.",
     "companyAddressLabel": "Dirección de la Empresa",
     "companyAddressPlaceholder": "Ej: Calle Principal 123, Ciudad Tecnológica, 12345",
     "companyPhoneLabel": "Teléfono de la Empresa",

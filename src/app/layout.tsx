@@ -10,7 +10,7 @@ import { InitialSyncProvider } from '@/context/InitialSyncContext';
 import '@/app/globals.css';
 
 export const metadata = {
-  title: 'POSAPP',
+  title: 'POSIFY',
   description: 'Modern Point of Sale application',
 };
 

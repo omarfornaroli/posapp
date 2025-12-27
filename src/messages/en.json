@@ -1,7 +1,7 @@
 
 {
   "Header": {
-    "title": "POSAPP",
+    "title": "POSIFY",
     "dashboardLink": "Dashboard",
     "posLink": "POS",
     "cartLink": "Cart",
@@ -1233,10 +1233,10 @@
     "logoUrlPlaceholder": "https://your-domain.com/logo.png",
     "logoPreviewAlt": "Logo preview",
     "footerTextLabel": "Footer Text (use \\n for new lines)",
-    "footerTextPlaceholder": "e.g. Thank you for your purchase!\\nFollow us @posapp",
+    "footerTextPlaceholder": "e.g. Thank you for your purchase!\\nFollow us @posify",
     "companyInfoTitle": "Company Information",
     "companyNameLabel": "Company Name",
-    "companyNamePlaceholder": "e.g. POSAPP Inc.",
+    "companyNamePlaceholder": "e.g. POSIFY Inc.",
     "companyAddressLabel": "Company Address",
     "companyAddressPlaceholder": "e.g. 123 Main St, Tech City, 12345",
     "companyPhoneLabel": "Company Phone",

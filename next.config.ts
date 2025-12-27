@@ -104,7 +104,7 @@ const pwaConfig = {
 
 const nextConfig: NextConfig = {
   /* config options here */
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/posapp',
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '/posify',
   env: {
     NEXT_PUBLIC_APP_NAME: process.env.APP_NAME,
   },

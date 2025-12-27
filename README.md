@@ -1,6 +1,6 @@
-# Firebase Studio - POSAPP
+# Firebase Studio - POSIFY
 
-This is a NextJS starter in Firebase Studio, evolved into a Point of Sale Application (POSAPP).
+This is a NextJS starter in Firebase Studio, evolved into a Point of Sale Application (POSIFY).
 
 ## Getting Started
 
@@ -37,7 +37,7 @@ The Docker configuration uses a volume for the MongoDB data, so your data will p
     ```
 2.  Create a `.env.local` file in the root directory and add your MongoDB connection string:
     ```env
-    MONGODB_URI=mongodb://localhost:27017/posapp
+    MONGODB_URI=mongodb://localhost:27017/posify
     LOAD_DEMO_DATA=true # Optional: set to false for a clean database
     ```
 3.  Run the development server:
@@ -66,7 +66,7 @@ To test the application in a production-like environment (which enables features
 
 ## Features Overview
 
-The POSAPP is designed to provide a comprehensive solution for managing sales, inventory, and related business operations. Below is an overview of its key features:
+The POSIFY is designed to provide a comprehensive solution for managing sales, inventory, and related business operations. Below is an overview of its key features:
 
 ### 1. Point of Sale (POS)
 - **Intuitive Interface**: Easily add products to a cart via barcode scanning, live search, or a product grid.

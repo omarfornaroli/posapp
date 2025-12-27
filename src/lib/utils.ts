@@ -10,7 +10,7 @@ export function getInitials(name?: string): string {
   const names = name.split(' ');
   let initials = names[0]?.substring(0, 1) || '';
   if (names.length > 1) {
-    initials += names[names.length - 1]?.substring(0, 1) || '/posapp';
+    initials += names[names.length - 1]?.substring(0, 1) || '/posify';
   } else if (name.length > 1) {
     initials = name.substring(0, 2);
   }
@@ -18,7 +18,7 @@ export function getInitials(name?: string): string {
 }
 
 export function getApiPath(path: string) {
-    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/posapp';
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '/posify';
     // Ensure path starts with a slash and doesn't have duplicate slashes
     const normalizedPath = `/${path}`.replace(/\/+/g, '/');
     if (basePath && normalizedPath.startsWith(basePath)) {
