@@ -40,7 +40,7 @@ services:
 
 networks:
   posify-net:
-    name: "${NEXT_PUBLIC_BASE_PATH}-net"
+    name: posify-net
     driver: bridge
 
 volumes:
